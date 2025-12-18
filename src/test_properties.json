@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Test Property JSON Import",
+    "price": 1250000,
+    "location": "Richmond",
+    "status": "available",
+    "beds": 4,
+    "baths": 3,
+    "property_type": "House",
+    "description": "<p>This is a test property imported via JSON.</p>",
+    "full_address": "123 Test Street, Richmond",
+    "features": ["Garden", "Garage", "Modern Kitchen"]
+  },
+  {
+    "title": "Test Property JSON Import 2",
+    "price": 850000,
+    "location": "Twickenham",
+    "status": "available",
+    "beds": 2,
+    "baths": 2,
+    "property_type": "Flat",
+    "description": "<p>Another test property.</p>",
+    "full_address": "456 Test Road, Twickenham",
+    "features": ["Balcony", "River View"]
+  }
+]

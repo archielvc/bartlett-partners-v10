@@ -1,0 +1,557 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Figtree:wght@300;400;500;600&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Custom colors for luxury property agency */
+  --bunting: #1A2551;
+  --clay-creek: #8E8567;
+  --charcoal: #3A3A3A;
+  --light-gray: #F5F5F5;
+  
+  /* Type scale - 8px (0.5rem) increments */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.5rem;       /* 24px - +8px */
+  --text-2xl: 2rem;        /* 32px - +8px */
+  --text-3xl: 2.5rem;      /* 40px - +8px */
+  --text-4xl: 3rem;        /* 48px - +8px */
+  --text-5xl: 3.5rem;      /* 56px - +8px */
+  --text-6xl: 4rem;        /* 64px - +8px */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-bunting: var(--bunting);
+  --color-clay-creek: var(--clay-creek);
+  --color-charcoal: var(--charcoal);
+  --color-light-gray: var(--light-gray);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Figtree', sans-serif;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Playfair Display', serif;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* Ensure all buttons and links show pointer cursor */
+button, a {
+  cursor: pointer;
+}
+
+/* Premium clickable text animation - underline expanding from center */
+.premium-hover {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+}
+
+.premium-hover::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (hover: hover) {
+  .premium-hover:hover::after,
+  button:hover .premium-hover::after,
+  a:hover .premium-hover::after {
+    width: 100%;
+    left: 0;
+  }
+}
+
+/* Custom luxury scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Firefox scrollbar support */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #D1D5DB transparent;
+}
+
+/* Luxury logo shimmer animation */
+@keyframes logoShimmer {
+  0% {
+    filter: brightness(1) drop-shadow(0 0 0px rgba(142, 133, 103, 0));
+  }
+  50% {
+    filter: brightness(1.1) drop-shadow(0 0 8px rgba(142, 133, 103, 0.3));
+  }
+  100% {
+    filter: brightness(1) drop-shadow(0 0 0px rgba(142, 133, 103, 0));
+  }
+}
+
+.logo-shimmer {
+  animation: logoShimmer 3s ease-in-out 1.5s 1;
+}
+
+/* Card scroll animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-animate {
+  opacity: 0;
+  transform: translateY(60px);
+}
+
+.card-animate.animate-in {
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.card-animate:nth-child(1).animate-in {
+  animation-delay: 0s;
+}
+
+.card-animate:nth-child(2).animate-in {
+  animation-delay: 0.1s;
+}
+
+.card-animate:nth-child(3).animate-in {
+  animation-delay: 0.2s;
+}
+
+/* React Quill Rich Text Editor Styling */
+.rich-text-editor .ql-container {
+  font-family: 'Figtree', sans-serif;
+  font-size: 15px;
+  min-height: 300px;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.rich-text-editor .ql-editor {
+  min-height: 300px;
+  padding: 1rem;
+  line-height: 1.8;
+}
+
+.rich-text-editor .ql-editor p {
+  margin-bottom: 1em;
+}
+
+.rich-text-editor .ql-editor h1,
+.rich-text-editor .ql-editor h2,
+.rich-text-editor .ql-editor h3 {
+  font-family: 'Playfair Display', serif;
+  color: #1A2551;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: 400;
+}
+
+.rich-text-editor .ql-editor h1 {
+  font-size: 2em;
+}
+
+.rich-text-editor .ql-editor h2 {
+  font-size: 1.5em;
+}
+
+.rich-text-editor .ql-editor h3 {
+  font-size: 1.25em;
+}
+
+.rich-text-editor .ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.rich-text-editor .ql-stroke {
+  stroke: #4B5563;
+}
+
+.rich-text-editor .ql-fill {
+  fill: #4B5563;
+}
+
+.rich-text-editor .ql-picker-label {
+  color: #4B5563;
+}
+
+.rich-text-editor .ql-toolbar button:hover .ql-stroke,
+.rich-text-editor .ql-toolbar button:focus .ql-stroke,
+.rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #1A2551;
+}
+
+.rich-text-editor .ql-toolbar button:hover .ql-fill,
+.rich-text-editor .ql-toolbar button:focus .ql-fill,
+.rich-text-editor .ql-toolbar button.ql-active .ql-fill {
+  fill: #1A2551;
+}
+
+.rich-text-editor .ql-editor.ql-blank::before {
+  color: #9CA3AF;
+  font-style: normal;
+}
+
+/* ============================================
+   Prose/Typography Styles for Blog Content
+   ============================================ */
+.prose {
+  color: #374151;
+  max-width: 65ch;
+  font-family: 'Figtree', sans-serif;
+  line-height: 1.75;
+}
+
+.prose.max-w-none {
+  max-width: none;
+}
+
+/* Headings */
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  font-family: 'Playfair Display', serif;
+  color: #1A2551;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.prose h1 {
+  font-size: 2.25rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.prose h2 {
+  font-size: 1.875rem;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.prose h3 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.prose h4 {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Paragraphs */
+.prose p {
+  color: #3A3A3A;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+/* Strong and Emphasis */
+.prose strong {
+  color: #1A2551;
+  font-weight: 600;
+}
+
+.prose em {
+  color: #3A3A3A;
+  font-style: italic;
+}
+
+/* Links */
+.prose a {
+  color: #8E8567;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 0.2s ease;
+}
+
+.prose a:hover {
+  color: #1A2551;
+}
+
+/* Lists */
+.prose ul {
+  list-style-type: disc !important;
+  padding-left: 2rem !important;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.prose ol {
+  list-style-type: decimal !important;
+  padding-left: 2rem !important;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.prose li {
+  display: list-item !important;
+  color: #3A3A3A;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  margin-bottom: 0.75rem;
+}
+
+.prose ul > li::marker {
+  color: #1A2551;
+}
+
+.prose ol > li::marker {
+  color: #1A2551;
+  font-weight: 600;
+}
+
+/* Blockquotes */
+.prose blockquote {
+  border-left: 4px solid #8E8567;
+  padding-left: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: #3A3A3A;
+  background-color: #f9fafb;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.prose blockquote p {
+  margin-bottom: 0;
+}
+
+/* Images */
+.prose img {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+}
+
+/* Responsive prose sizes */
+@media (min-width: 768px) {
+  .prose h1 { font-size: 3rem; }
+  .prose h2 { font-size: 2.25rem; }
+  .prose h3 { font-size: 1.875rem; }
+  .prose h4 { font-size: 1.5rem; }
+  .prose p, .prose li { font-size: 1.25rem; }
+}
+
+/* prose-lg and prose-xl variants */
+.prose-lg p, .prose-lg li { font-size: 1.125rem; }
+.prose-xl p, .prose-xl li { font-size: 1.25rem; }
+
+@media (min-width: 768px) {
+  .prose-lg p, .prose-lg li { font-size: 1.25rem; }
+  .prose-xl p, .prose-xl li { font-size: 1.375rem; }
+}
