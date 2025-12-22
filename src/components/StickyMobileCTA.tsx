@@ -76,7 +76,7 @@ export function StickyMobileCTA() {
                         <a
                             href="tel:02086141441"
                             onClick={() => trackPhoneClick('02086141441')}
-                            className="flex items-center justify-center gap-2"
+                            className="flex items-center justify-center gap-2 font-bold"
                         >
                             <Phone className="w-4 h-4" />
                             <span>Call</span>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { get, set } from '../../utils/kvStore';
+import { CMSImageUpload } from './CMSImageUpload';
 
 interface PageTypeDefaults {
     noindex: boolean;
@@ -22,9 +23,15 @@ export const DEFAULT_SEO_SETTINGS: GlobalSEODefaults = {
     static: { noindex: false, nofollow: false, sitemap_enabled: true },
 };
 
+interface GeneralSEOSettings {
+    site_favicon?: string;
+    siteName?: string;
+}
+
 export default function GlobalSEOSettings() {
     const [loading, setLoading] = useState(true);
     const [settings, setSettings] = useState<GlobalSEODefaults>(DEFAULT_SEO_SETTINGS);
+    const [generalSettings, setGeneralSettings] = useState<GeneralSEOSettings>({});
     const [hasChanges, setHasChanges] = useState(false);
 
     useEffect(() => {
@@ -43,6 +50,11 @@ export default function GlobalSEOSettings() {
                     static: { ...DEFAULT_SEO_SETTINGS.static, ...savedSettings.static },
                 });
             }
+
+            const savedGeneralSettings = await get<GeneralSEOSettings>('seo_global');
+            if (savedGeneralSettings) {
+                setGeneralSettings(savedGeneralSettings);
+            }
         } catch (error) {
             console.error('Error loading global SEO settings:', error);
             toast.error('Failed to load settings');
@@ -54,8 +66,12 @@ export default function GlobalSEOSettings() {
     const handleSave = async () => {
         try {
             setLoading(true);
-            const success = await set('global_seo_defaults', settings);
-            if (success) {
+            const [defaultsSuccess, generalSuccess] = await Promise.all([
+                set('global_seo_defaults', settings),
+                set('seo_global', generalSettings)
+            ]);
+
+            if (defaultsSuccess && generalSuccess) {
                 toast.success('Global SEO settings saved');
                 setHasChanges(false);
             } else {
@@ -156,8 +172,8 @@ export default function GlobalSEOSettings() {
                     onClick={handleSave}
                     disabled={!hasChanges || loading}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${hasChanges
-                            ? 'bg-[#1A2551] text-white hover:bg-[#0F1633]'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-[#1A2551] text-white hover:bg-[#0F1633]'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}
                 >
                     {loading ? (
@@ -173,6 +189,27 @@ export default function GlobalSEOSettings() {
                 {renderSection('Blog Posts', 'blog', 'Default settings for new blog articles')}
                 {renderSection('Properties', 'property', 'Default settings for new property listings')}
                 {renderSection('Static Pages', 'static', 'Default settings for new core pages')}
+
+                {/* Site Identity Section */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <div className="mb-4">
+                        <h3 className="text-lg font-medium text-gray-900">Site Identity</h3>
+                        <p className="text-sm text-gray-500">Manage global site assets.</p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <CMSImageUpload
+                            label="Site Favicon"
+                            description="Upload a 32x32px or 64x64px PNG or ICO image."
+                            value={generalSettings.site_favicon || ''}
+                            onChange={(url) => {
+                                setGeneralSettings(prev => ({ ...prev, site_favicon: url }));
+                                setHasChanges(true);
+                            }}
+                            variant="compact"
+                        />
+                    </div>
+                </div>
             </div>
 
             <div className="mt-8 bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-start gap-3">

@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { applySEO, PAGE_SEO } from "../utils/seo";
-import { getPublishedProperties, getPublishedTestimonials, getStored } from "../utils/database";
+import { getPublishedProperties, getPublishedTestimonials, getStored, getGlobalSettings } from "../utils/database";
 import { trackPropertyFilter, trackEvent } from "../utils/analytics";
 import type { Property } from "../types/property";
 import type { Testimonial } from "../types/database";
@@ -24,6 +24,8 @@ export default function Properties() {
     return getStored<Property[]>('properties_published') || [];
   });
 
+  const [heroImage, setHeroImage] = useState<string | undefined>(undefined);
+
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(() => properties.length === 0);
 
@@ -38,10 +40,16 @@ export default function Properties() {
       // Don't show loading spinner if we already have data
       if (properties.length === 0) setIsLoading(true);
 
-      const [propsData, testimonialData] = await Promise.all([
+      const [propsData, testimonialData, globalSettings] = await Promise.all([
         getPublishedProperties(),
-        getPublishedTestimonials()
+        getPublishedTestimonials(),
+        getGlobalSettings<Record<string, string>>('page_hero_images').catch(() => ({}))
       ]);
+
+      const images = globalSettings as Record<string, string> | null;
+      if (images && images.properties) {
+        setHeroImage(images.properties);
+      }
 
       // Update state (this will refresh the UI if data changed)
       setProperties(propsData);
@@ -152,13 +160,13 @@ export default function Properties() {
   const activeFilterCount = selectedAvailability.length + selectedPriceRanges.length;
 
   useEffect(() => {
-    applySEO(PAGE_SEO.properties);
+    applySEO('properties');
   }, []);
 
   return (
     <main id="main-content">
       {/* Hero Section */}
-      <PropertiesHero />
+      <PropertiesHero image={heroImage} />
 
       {/* Filter Section */}
       <Reveal width="100%" variant="fade-in">
@@ -352,8 +360,8 @@ export default function Properties() {
                   onClick={() => changePage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className={`px-8 h-11 flex items-center justify-center rounded-full border transition-all duration-300 ${currentPage === 1
-                      ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-                      : 'border-gray-300 text-[#1A2551] hover:border-[#1A2551] hover:bg-[#1A2551] hover:text-white cursor-pointer'
+                    ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                    : 'border-gray-300 text-[#1A2551] hover:border-[#1A2551] hover:bg-[#1A2551] hover:text-white cursor-pointer'
                     }`}
                   style={{
                     fontFamily: "'Figtree', sans-serif",
@@ -374,8 +382,8 @@ export default function Properties() {
                       key={page}
                       onClick={() => changePage(page)}
                       className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${currentPage === page
-                          ? 'bg-[#1A2551] text-white'
-                          : 'text-[#1A2551] hover:bg-gray-100'
+                        ? 'bg-[#1A2551] text-white'
+                        : 'text-[#1A2551] hover:bg-gray-100'
                         }`}
                       style={{
                         fontFamily: "'Figtree', sans-serif",
@@ -392,8 +400,8 @@ export default function Properties() {
                   onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   className={`px-8 h-11 flex items-center justify-center rounded-full border transition-all duration-300 ${currentPage === totalPages
-                      ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-                      : 'border-gray-300 text-[#1A2551] hover:border-[#1A2551] hover:bg-[#1A2551] hover:text-white cursor-pointer'
+                    ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                    : 'border-gray-300 text-[#1A2551] hover:border-[#1A2551] hover:bg-[#1A2551] hover:text-white cursor-pointer'
                     }`}
                   style={{
                     fontFamily: "'Figtree', sans-serif",

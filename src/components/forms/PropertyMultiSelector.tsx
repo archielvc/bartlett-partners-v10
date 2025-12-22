@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Check, Heart, MapPin, Loader2, X } from "lucide-react";
+import { Check, Heart, MapPin, Loader2 } from "lucide-react";
 import { useFavorites } from "../../contexts/FavoritesContext";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { motion, AnimatePresence } from "motion/react";
@@ -99,11 +99,11 @@ export function PropertyMultiSelector({
                     </div>
 
                     {/* Header */}
-                    <div className="px-6 md:px-12 py-6 border-b border-[#1A2551]/10 flex items-center justify-between flex-shrink-0 bg-white/80 backdrop-blur-md z-10 sticky top-0">
-                        <div>
-                            <h3 
-                                className="text-[#1A2551] mb-1"
-                                style={{ 
+                    <div className="px-6 md:px-12 py-6 border-b border-[#1A2551]/10 flex items-center justify-between gap-4 flex-shrink-0 bg-white/80 backdrop-blur-md z-10 sticky top-0">
+                        <div className="flex-1 min-w-0">
+                            <h3
+                                className="text-[#1A2551] mb-1 whitespace-nowrap"
+                                style={{
                                     fontFamily: "'Playfair Display', serif",
                                     fontSize: "clamp(1.5rem, 4vw, 2rem)",
                                     fontStyle: "italic",
@@ -116,23 +116,17 @@ export function PropertyMultiSelector({
                                 {selectedProperties.length} Selected
                             </p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-shrink-0">
                             <Button
                                 type="button"
                                 onClick={onClose}
                                 variant="default"
                                 size="sm"
                                 premium
-                                className="bg-[#1A2551] text-white hover:bg-[#1A2551]/90 shadow-lg px-8"
+                                className="bg-[#1A2551] text-white hover:bg-[#1A2551]/90 shadow-lg px-6 md:px-8"
                             >
                                 Done
                             </Button>
-                            <button
-                                onClick={onClose}
-                                className="w-10 h-10 rounded-full bg-[#1A2551]/5 flex items-center justify-center text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
                         </div>
                     </div>
 

@@ -16,6 +16,7 @@ export function InsightsNewsletter({
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,13 +26,13 @@ export function InsightsNewsletter({
         email: email,
         message: 'Newsletter subscription request',
         inquiry_type: 'newsletter',
-        property_id: null,
-        propertyTitle: null
+        property_id: undefined,
+        propertyTitle: undefined
       });
 
       trackContactFormSubmit('newsletter');
 
-      alert("Thank you for subscribing!");
+      setIsSubmitted(true);
       setEmail("");
       setFirstName("");
       setLastName("");
@@ -59,50 +60,81 @@ export function InsightsNewsletter({
             </p>
           </div>
 
-          {/* Right: Form */}
+          {/* Right: Form or Success Message */}
           <div className="lg:w-1/2 w-full">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-xl ml-auto">
-              {/* Name Row */}
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all h-11 min-w-0 text-sm"
-                  style={{ fontFamily: "'Figtree', sans-serif" }}
-                />
-                <input
-                  type="text"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all h-11 min-w-0 text-sm"
-                  style={{ fontFamily: "'Figtree', sans-serif" }}
-                />
-              </div>
+            {isSubmitted ? (
+              <div className="max-w-xl ml-auto bg-[#8E8567]/10 border border-[#8E8567] p-8 rounded-md animate-fade-in relative overflow-hidden">
+                {/* Decorative background element */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#8E8567]/10 rounded-full blur-2xl -mr-12 -mt-12 pointer-events-none"></div>
 
-              {/* Email & Subscribe Row */}
-              <div className="flex gap-3 h-11">
-                <input
-                  type="email"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="flex-1 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all min-w-0 h-full text-sm"
-                  style={{ fontFamily: "'Figtree', sans-serif" }}
-                />
-                <Button
-                  type="submit"
-                  premium
-                  className="bg-[#8E8567] text-white border-none rounded-md h-full px-6 flex items-center justify-center gap-3 transition-colors duration-300"
-                >
-                  <span>Subscribe</span>
-                </Button>
+                <div className="relative z-10">
+                  <h3
+                    className="text-white text-2xl mb-3"
+                    style={{ fontFamily: "'Playfair Display', serif" }}
+                  >
+                    Thank you for subscribing
+                  </h3>
+                  <p
+                    className="text-white/80 font-light mb-6"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                  >
+                    You have successfully joined our mailing list. Look out for our latest market insights and exclusive property updates in your inbox.
+                  </p>
+                  <Button
+                    onClick={() => setIsSubmitted(false)}
+                    variant="ghost"
+                    className="text-[#8E8567] hover:text-white hover:bg-[#8E8567]/20 p-0 h-auto font-medium transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      Subscribe another email <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </Button>
+                </div>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-xl ml-auto">
+                {/* Name Row */}
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all h-11 min-w-0 text-sm"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all h-11 min-w-0 text-sm"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                  />
+                </div>
+
+                {/* Email & Subscribe Row */}
+                <div className="flex gap-3 h-11">
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="flex-1 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all min-w-0 h-full text-sm"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                  />
+                  <Button
+                    type="submit"
+                    premium
+                    className="bg-[#8E8567] text-white border-none rounded-md h-full px-6 flex items-center justify-center gap-3 transition-colors duration-300"
+                  >
+                    <span>Subscribe</span>
+                  </Button>
+                </div>
+              </form>
+            )}
           </div>
 
         </div>

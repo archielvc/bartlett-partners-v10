@@ -3,9 +3,13 @@ import { useSiteImage } from "../../hooks/useSiteImage";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import { getOptimizedUrl } from "../OptimizedImage";
 
-export function InsightsHero() {
+interface InsightsHeroProps {
+  image?: string;
+}
+
+export function InsightsHero({ image }: InsightsHeroProps) {
   const { src: rawHeroImage, alt: heroAlt } = useSiteImage('i_hero_bg');
-  const heroImage = getOptimizedUrl(rawHeroImage, 2000, 80, 'webp');
+  const heroImage = image || getOptimizedUrl(rawHeroImage, 2000, 80, 'webp');
 
   return (
     <section id="hero-section" className="relative w-full h-[70vh] md:h-[60vh] lg:h-[50vh] rounded-b-[40px] md:rounded-b-[80px] overflow-hidden bg-[#1A2551]">

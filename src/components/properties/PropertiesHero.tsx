@@ -1,11 +1,15 @@
 import { Reveal } from "../animations/Reveal";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 
-export function PropertiesHero() {
+interface PropertiesHeroProps {
+  image?: string;
+}
+
+export function PropertiesHero({ image }: PropertiesHeroProps) {
   return (
     <section id="hero-section" className="relative w-full h-[70vh] md:h-[60vh] lg:h-[50vh] rounded-b-[40px] md:rounded-b-[80px] overflow-hidden bg-[#1A2551]">
       <ImageWithFallback
-        src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=80"
+        src={image || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=80"}
         alt="Luxury Property Collection"
         className="absolute inset-0 w-full h-full object-cover"
         loading="eager"

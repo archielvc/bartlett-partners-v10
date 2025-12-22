@@ -23,7 +23,9 @@ interface GlobalSEOSettings {
   heatmapId: string;
   facebookAppId?: string;
   twitterHandle?: string;
+
   organizationLogo?: string;
+  site_favicon?: string;
 }
 
 interface SEOSetting {
@@ -185,6 +187,12 @@ export function SEOManager({
           injectMicrosoftClarity(globalSettings.heatmapId);
         }
 
+        // Favicon Handling
+        if (globalSettings?.site_favicon) {
+          updateLinkTag('icon', globalSettings.site_favicon);
+          updateLinkTag('apple-touch-icon', globalSettings.site_favicon);
+        }
+
       } catch (error) {
         console.error('Error updating SEO:', error);
       }
@@ -211,6 +219,25 @@ function updateMetaTag(attribute: 'name' | 'property', attributeValue: string, c
   }
 
   element.setAttribute('content', content);
+}
+
+
+
+/**
+ * Helper function to update or create a link tag (for favicons)
+ */
+function updateLinkTag(rel: string, href: string) {
+  if (!href) return;
+
+  let element = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement;
+
+  if (!element) {
+    element = document.createElement('link');
+    element.setAttribute('rel', rel);
+    document.head.appendChild(element);
+  }
+
+  element.href = href;
 }
 
 /**

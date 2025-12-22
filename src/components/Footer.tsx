@@ -12,6 +12,7 @@ export function Footer() {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
   const { images } = useSiteSettings();
   const whiteLogo = images.branding.brand_logo_white;
@@ -35,11 +36,14 @@ export function Footer() {
       trackContactFormSubmit('newsletter');
 
       console.log("Newsletter subscription:", { firstName, lastName, email });
+      setIsSubmitted(true);
       setEmail("");
       setFirstName("");
       setLastName("");
     } catch (error) {
       console.error('Newsletter error:', error);
+      // Optional: keep error handling or add inline error state too
+      alert("Failed to subscribe. Please try again.");
     }
   };
 
@@ -89,55 +93,85 @@ export function Footer() {
                 Stay informed about the property market and expert insights.
               </p>
 
-              <form onSubmit={handleSubscribe} className="flex flex-col gap-3 mb-4 w-full">
-                <div className="flex flex-col gap-3">
-                  {/* Name Row */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="First Name"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                      className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-10"
-                      style={{ fontFamily: "'Figtree', sans-serif" }}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Last Name"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                      className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-10"
-                      style={{ fontFamily: "'Figtree', sans-serif" }}
-                    />
-                  </div>
-
-                  {/* Email & Button Row */}
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="flex-1 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-11"
-                      style={{ fontFamily: "'Figtree', sans-serif" }}
-                    />
-                    <Button
-                      type="submit"
-                      premium
-                      className="bg-[#8E8567] text-white border-none rounded-md px-4 flex items-center justify-center transition-colors duration-300 h-11 w-12 shrink-0"
+              {isSubmitted ? (
+                <div className="w-full bg-[#8E8567]/10 border border-[#8E8567] p-6 rounded-md animate-fade-in relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h4
+                      className="text-white text-lg mb-2"
+                      style={{ fontFamily: "'Playfair Display', serif" }}
                     >
-                      <ArrowRight className="w-4 h-4" />
+                      Thank you for subscribing
+                    </h4>
+                    <p
+                      className="text-white/80 text-xs font-light mb-4"
+                      style={{ fontFamily: "'Figtree', sans-serif" }}
+                    >
+                      You have successfully joined our mailing list.
+                    </p>
+                    <Button
+                      onClick={() => setIsSubmitted(false)}
+                      variant="ghost"
+                      className="text-[#8E8567] hover:text-white hover:bg-[#8E8567]/20 p-0 h-auto text-xs font-medium transition-colors"
+                    >
+                      <span className="flex items-center gap-1">
+                        Subscribe another <ArrowRight className="w-3 h-3" />
+                      </span>
                     </Button>
                   </div>
                 </div>
-              </form>
+              ) : (
+                <>
+                  <form onSubmit={handleSubscribe} className="flex flex-col gap-3 mb-4 w-full">
+                    <div className="flex flex-col gap-3">
+                      {/* Name Row */}
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="First Name"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          required
+                          className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-10"
+                          style={{ fontFamily: "'Figtree', sans-serif" }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Last Name"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          required
+                          className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-10"
+                          style={{ fontFamily: "'Figtree', sans-serif" }}
+                        />
+                      </div>
 
-              <p className="text-[10px] text-white/40 font-light" style={{ fontFamily: "'Figtree', sans-serif" }}>
-                By subscribing, you agree to our privacy policy.
-              </p>
+                      {/* Email & Button Row */}
+                      <div className="flex gap-2">
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="flex-1 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-11"
+                          style={{ fontFamily: "'Figtree', sans-serif" }}
+                        />
+                        <Button
+                          type="submit"
+                          premium
+                          className="bg-[#8E8567] text-white border-none rounded-md px-4 flex items-center justify-center transition-colors duration-300 h-11 w-12 shrink-0"
+                        >
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+
+                  <p className="text-[10px] text-white/40 font-light" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                    By subscribing, you agree to our privacy policy.
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Right Zone: Navigation Links (7/12 cols, offset by 1) */}
@@ -335,7 +369,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Section */}
-      <div className="w-full px-6 md:px-12 lg:px-20 pb-48 md:pb-20 lg:pb-20">
+      <div className="w-full px-6 md:px-12 lg:px-20 pb-96 md:pb-10 lg:pb-12">
         <div className="max-w-[1600px] mx-auto border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-0">
 

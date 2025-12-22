@@ -30,7 +30,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 
 const AreaGuide = lazy(() => import('./pages/AreaGuide'));
 const AdminPanel = lazy(() => import('./components/cms/AdminPanel').then(module => ({ default: module.AdminPanel })));
-const FigmaExport = lazy(() => import('./pages/FigmaExport'));
+
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -87,8 +87,7 @@ export default function App() {
                         {/* Admin Panel Route */}
                         <Route path="/admin" element={<AdminPanel />} />
 
-                        {/* Figma Export Route - For copying sections */}
-                        <Route path="/figma-export" element={<FigmaExport />} />
+
 
                         {/* Frontend Website Routes */}
                         <Route element={<FrontendLayout />}>

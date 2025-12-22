@@ -10,6 +10,10 @@ import { CharacterCounter } from './CharacterCounter';
 import GlobalSEOSettings from './GlobalSEOSettings';
 import { Button } from '../ui/button';
 import { CMSPageLayout } from './CMSPageLayout';
+import { CMSImageUpload } from './CMSImageUpload';
+import { getGlobalSettings, setGlobalSettings } from '../../utils/database';
+
+const GLOBAL_HERO_IMAGES_KEY = 'page_hero_images';
 
 interface PageDisplay {
   id: string;
@@ -43,6 +47,10 @@ export function PagesModule() {
   const [sitemapEnabled, setSitemapEnabled] = useState(true);
   const [pageStatus, setPageStatus] = useState<'published' | 'draft'>('published');
 
+  // Hero Image State
+  const [heroImage, setHeroImage] = useState('');
+  const [pageHeroImages, setPageHeroImages] = useState<Record<string, string>>({});
+
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   useEffect(() => {
@@ -63,6 +71,15 @@ export function PagesModule() {
         setNofollow(staticData.nofollow);
         setSitemapEnabled(staticData.sitemap_enabled);
         setPageStatus(staticData.status);
+
+        // Set hero image if applicable
+        if (['/properties', '/about', '/insights', '/insights/newsletter'].includes(staticData.slug)) {
+          // Normalize slug to key (remove leading slash)
+          const key = staticData.slug.replace(/^\//, '');
+          setHeroImage(pageHeroImages[key] || '');
+        } else {
+          setHeroImage('');
+        }
       } else if (editingPage.type === 'property') {
         const propertyData = editingPage.data as Property;
         setUrlSlug(propertyData.slug);
@@ -73,6 +90,7 @@ export function PagesModule() {
         setNofollow(false);
         setSitemapEnabled(true);
         setPageStatus(propertyData.status === 'draft' ? 'draft' : 'published');
+        setHeroImage(''); // Properties typically use hero_image field in DB, not global override
       } else if (editingPage.type === 'blog') {
         const blogData = editingPage.data as BlogPost;
         setMetaTitle(blogData.meta_title || '');
@@ -84,9 +102,10 @@ export function PagesModule() {
         setNofollow(blogData.nofollow || false);
         setSitemapEnabled(blogData.sitemap_enabled !== undefined ? blogData.sitemap_enabled : true);
         setPageStatus(blogData.status === 'published' ? 'published' : 'draft');
+        setHeroImage('');
       }
     }
-  }, [editingPage]);
+  }, [editingPage, pageHeroImages]);
 
   async function loadPages() {
     try {
@@ -94,11 +113,16 @@ export function PagesModule() {
       // Initialize static pages if needed (skipping redundant local definition for brevity, assuming DB has them or using empty [] to fail gracefully)
       // await initializeStaticPages(); // Removed local definition to simplify, assuming DB is populated or handled by other means
 
-      const [staticPagesData, properties, blogPosts] = await Promise.all([
+      const [staticPagesData, properties, blogPosts, globalImages] = await Promise.all([
         getAllStaticPages().catch(() => []),
         getAllPropertiesAdmin(),
-        getAllBlogPostsAdmin()
+        getAllBlogPostsAdmin(),
+        getGlobalSettings<Record<string, string>>(GLOBAL_HERO_IMAGES_KEY).catch(() => ({}))
       ]);
+
+      if (globalImages) {
+        setPageHeroImages(globalImages);
+      }
 
       const allPages: PageDisplay[] = [];
 
@@ -201,6 +225,15 @@ export function PagesModule() {
 
       if (editingPage.type === 'static') {
         const staticData = editingPage.data as StaticPage;
+
+        // Save global hero image if applicable
+        if (['/properties', '/about', '/insights', '/insights/newsletter'].includes(editingPage.slug)) {
+          const key = editingPage.slug.replace(/^\//, '');
+          const newImages = { ...pageHeroImages, [key]: heroImage };
+          await setGlobalSettings(GLOBAL_HERO_IMAGES_KEY, newImages);
+          setPageHeroImages(newImages);
+        }
+
         const success = await updateStaticPage(editingPage.slug, {
           name: editingPage.name,
           meta_title: metaTitle,
@@ -325,6 +358,8 @@ export function PagesModule() {
 
   // SEO Settings Edit View
   if (editingPage) {
+    const isSpecialPage = editingPage.type === 'static' && ['/properties', '/about', '/insights', '/insights/newsletter'].includes(editingPage.slug);
+
     return (
       <div className="p-8 max-w-4xl mx-auto">
         <div className="mb-8">
@@ -338,6 +373,21 @@ export function PagesModule() {
 
         <div className="bg-white rounded-xl border border-gray-200 p-8">
           <div className="space-y-6">
+            {/* Hero Image Section for Special Pages */}
+            {isSpecialPage && (
+              <div className="pb-6 border-b border-gray-200">
+                <h3 className="text-sm font-medium text-gray-900 mb-4">Page Appearance</h3>
+                <CMSImageUpload
+                  label="Hero Image"
+                  value={heroImage}
+                  onChange={setHeroImage}
+                  description="Main banner image displayed at the top of the page. Recommended size: 2000x1200px"
+                  bucket="site-assets"
+                  folder="headers"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Meta Title</label>
               <div className="relative">
