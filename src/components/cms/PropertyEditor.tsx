@@ -10,6 +10,8 @@ import { CharacterCounter } from './CharacterCounter';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import type { Property } from '../../types/database';
+import { Switch } from '../ui/switch';
+import { Label } from '../ui/label';
 
 interface PropertyEditorProps {
   property: Partial<Property> | null;
@@ -463,7 +465,20 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
                       <option value="sale-agreed">Sale Agreed</option>
                       <option value="sold">Sold</option>
                       <option value="draft">Draft</option>
+
                     </select>
+
+                    <div className="mt-4 flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <Switch
+                        id="is_featured"
+                        checked={formData.is_featured || false}
+                        onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
+                      />
+                      <div>
+                        <Label htmlFor="is_featured" className="font-medium text-gray-900 block text-sm cursor-pointer">Featured Property</Label>
+                        <p className="text-xs text-gray-500">Display as the main hero property on home page</p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Row 2: Price and Property Type */}
@@ -1081,38 +1096,40 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
       </div>
 
       {/* Unsaved Changes Modal */}
-      {showUnsavedModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-amber-600" />
+      {
+        showUnsavedModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Unsaved Changes</h3>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Unsaved Changes</h3>
-            </div>
-            <p className="text-gray-600 mb-6">
-              You have unsaved changes that will be lost if you leave this page. Would you like to save your work first?
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setShowUnsavedModal(false);
-                  onCancel();
-                }}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium"
-              >
-                Discard Changes
-              </button>
-              <button
-                onClick={() => setShowUnsavedModal(false)}
-                className="px-4 py-2 bg-[#1A2551] text-white rounded-lg hover:bg-[#1A2551]/90 transition-colors font-medium"
-              >
-                Keep Editing
-              </button>
+              <p className="text-gray-600 mb-6">
+                You have unsaved changes that will be lost if you leave this page. Would you like to save your work first?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setShowUnsavedModal(false);
+                    onCancel();
+                  }}
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                >
+                  Discard Changes
+                </button>
+                <button
+                  onClick={() => setShowUnsavedModal(false)}
+                  className="px-4 py-2 bg-[#1A2551] text-white rounded-lg hover:bg-[#1A2551]/90 transition-colors font-medium"
+                >
+                  Keep Editing
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }

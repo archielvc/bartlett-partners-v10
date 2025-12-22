@@ -199,7 +199,7 @@ export default function PropertyDetail() {
                     </button>
 
                     {/* Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[50vh] min-h-[400px] max-h-[600px]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-auto md:h-[50vh] min-h-[400px] max-h-[600px]">
                         {/* Main Large Image */}
                         <div
                             className="relative h-full rounded-lg overflow-hidden cursor-pointer group"
@@ -223,7 +223,7 @@ export default function PropertyDetail() {
                         </div>
 
                         {/* Right Side Grid */}
-                        <div className="hidden lg:grid grid-cols-2 grid-rows-2 gap-4 h-full">
+                        <div className="hidden md:grid grid-cols-2 grid-rows-2 gap-4 h-full">
                             {displayImages.slice(1, 5).map((img, idx) => (
                                 <div
                                     key={idx}
@@ -249,8 +249,10 @@ export default function PropertyDetail() {
                                 </div>
                             ))}
                             {/* Fallbacks if not enough images */}
-                            {displayImages.length < 5 && Array.from({ length: 5 - displayImages.length }).map((_, i) => (
-                                <div key={`placeholder-${i}`} className="bg-gray-200 rounded-lg" />
+                            {displayImages.length < 5 && Array.from({ length: 5 - displayImages.length }).slice(0, 4 - Math.max(0, displayImages.length - 1)).map((_, i) => (
+                                <div key={`placeholder-${i}`} className="bg-[#EBE9E4] rounded-lg flex items-center justify-center opacity-50">
+                                    <Camera className="w-8 h-8 text-[#1A2551]/30" />
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -404,7 +406,14 @@ export default function PropertyDetail() {
                                                 title: property.title,
                                                 location: property.location || '',
                                                 price: formattedPrice,
-                                                type: property.property_type || ''
+                                                priceValue: priceValue,
+                                                image: property.hero_image || '',
+                                                beds: property.beds || 0,
+                                                baths: property.baths || 0,
+                                                sqft: property.sqft?.toString() || '0',
+                                                type: property.property_type || '',
+                                                status: property.status as any,
+                                                slug: property.slug
                                             }}
                                             trigger={
                                                 <button className="w-full bg-[#1A2551] text-white h-12 rounded-md flex items-center justify-center gap-2 hover:bg-[#1A2551]/90 transition-colors uppercase text-sm font-semibold tracking-wider">
@@ -419,7 +428,14 @@ export default function PropertyDetail() {
                                                 title: property.title,
                                                 location: property.location || '',
                                                 price: formattedPrice,
-                                                type: property.property_type || ''
+                                                priceValue: priceValue,
+                                                image: property.hero_image || '',
+                                                beds: property.beds || 0,
+                                                baths: property.baths || 0,
+                                                sqft: property.sqft?.toString() || '0',
+                                                type: property.property_type || '',
+                                                status: property.status as any,
+                                                slug: property.slug
                                             }}
                                             inquiryType="general"
                                             trigger={

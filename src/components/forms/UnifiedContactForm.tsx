@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { Pencil, MapPin, Loader2 } from "lucide-react";
+import { Pencil, MapPin, Loader2, Check } from "lucide-react";
 import { Property } from "../../types/property";
 import { PropertyMultiSelector } from "./PropertyMultiSelector";
 import { submitContactForm } from "../../utils/database";
@@ -12,6 +12,8 @@ export type ContactIntent = 'buy' | 'sell' | 'both' | 'other';
 interface UnifiedContactFormProps {
     // For controlled usage in dialogs
     onSuccess?: () => void;
+    // Callback for when internal success state is triggered (before close)
+    onSubmitted?: () => void;
 
     // Pre-select intent
     defaultIntent?: ContactIntent;
@@ -28,6 +30,7 @@ interface UnifiedContactFormProps {
 
 export function UnifiedContactForm({
     onSuccess,
+    onSubmitted,
     defaultIntent = 'other',
     defaultProperties = [],
     hideIntentSelector = false,
@@ -37,6 +40,7 @@ export function UnifiedContactForm({
     const [selectedProperties, setSelectedProperties] = useState<Property[]>(defaultProperties);
     const [showPropertySelector, setShowPropertySelector] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const showPropertySelection = intent === 'buy' || intent === 'both';
 
@@ -124,10 +128,9 @@ export function UnifiedContactForm({
                 trackContactFormSubmit(inquiryType);
             }
 
-            toast.success("Thank you for your enquiry!", {
-                description: "A member of our team will be in touch within 24 hours.",
-                duration: 5000,
-            });
+            // Show internal success state instead of toast
+            setIsSubmitted(true);
+            onSubmitted?.();
 
             // Reset form
             (e.target as HTMLFormElement).reset();
@@ -136,7 +139,6 @@ export function UnifiedContactForm({
             }
             setSelectedProperties(defaultProperties);
 
-            onSuccess?.();
         } catch (error) {
             console.error(error);
             toast.error("Failed to send message.", {
@@ -146,6 +148,50 @@ export function UnifiedContactForm({
             setIsSubmitting(false);
         }
     };
+
+    if (isSubmitted) {
+        return (
+            <div className="flex flex-col items-center justify-center text-center h-full py-10 animate-in fade-in zoom-in-95 duration-500">
+                <div className="w-20 h-20 bg-[#1A2551]/5 rounded-full flex items-center justify-center mb-6">
+                    <div className="w-16 h-16 bg-[#1A2551] rounded-full flex items-center justify-center shadow-lg shadow-[#1A2551]/20">
+                        <Check className="w-8 h-8 text-white" />
+                    </div>
+                </div>
+
+                <h3
+                    className="text-2xl md:text-3xl text-[#1A2551] mb-4"
+                    style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                    Thank You
+                </h3>
+
+                <p
+                    className="text-[#1A2551]/70 max-w-sm mb-10 leading-relaxed font-light"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                >
+                    We have received your details and a member of our team will be in touch shortly.
+                </p>
+
+                {variant === 'dialog' ? (
+                    <Button
+                        onClick={() => onSuccess?.()}
+                        className="min-w-[200px] shadow-lg shadow-[#1A2551]/10 bg-white text-[#1A2551] hover:bg-[#F9FAFB] border border-[#1A2551]/10"
+                        variant="outline"
+                    >
+                        Close
+                    </Button>
+                ) : (
+                    <Button
+                        onClick={() => setIsSubmitted(false)}
+                        className="min-w-[200px]"
+                        premium
+                    >
+                        Send Another Message
+                    </Button>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className="relative">

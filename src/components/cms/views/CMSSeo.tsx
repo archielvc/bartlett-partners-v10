@@ -111,6 +111,11 @@ export function CMSSeo() {
         await setDBSettings(SEO_GLOBAL_KEY, globalSettings);
       }
 
+      // Clear cache to ensure SEO changes are reflected immediately on the live site
+      const { clearCache } = await import('../../../utils/database');
+      clearCache();
+      console.log('✅ SEO settings saved, cache cleared');
+
       toast.success('SEO settings updated successfully');
     } catch (err) {
       toast.error('Failed to save settings');
@@ -143,8 +148,8 @@ export function CMSSeo() {
     <button
       onClick={() => setActiveTab(id)}
       className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all border-b-2 ${activeTab === id
-          ? 'border-[#1A2551] text-[#1A2551]'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+        ? 'border-[#1A2551] text-[#1A2551]'
+        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
         }`}
     >
       <Icon className="w-4 h-4" />
@@ -181,8 +186,8 @@ export function CMSSeo() {
                       key={page.route}
                       onClick={() => setSelectedPage(page.route)}
                       className={`w-full flex items-center justify-between p-3 rounded-lg text-sm transition-colors ${selectedPage === page.route
-                          ? 'bg-[#1A2551]/5 text-[#1A2551] font-medium'
-                          : 'text-gray-500 hover:bg-gray-50'
+                        ? 'bg-[#1A2551]/5 text-[#1A2551] font-medium'
+                        : 'text-gray-500 hover:bg-gray-50'
                         }`}
                     >
                       <span className="flex items-center gap-3">

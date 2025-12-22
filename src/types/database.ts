@@ -44,6 +44,8 @@ export interface Property {
   featured_images_alt: string[] | null;
   gallery_images_alt: string[] | null;
 
+  is_featured?: boolean; // Controls home hero display
+
   created_at: string;
   updated_at: string;
 }

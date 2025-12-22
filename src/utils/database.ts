@@ -298,8 +298,7 @@ export async function getFeaturedProperty(): Promise<Property | null> {
   const { data, error } = await supabase
     .from('properties')
     .select('*')
-    .eq('status', 'available') // Only show available properties as hero
-    .order('created_at', { ascending: false })
+    .eq('is_featured', true) // Only show the explicitly featured property
     .limit(1)
     .maybeSingle();
 
@@ -353,7 +352,8 @@ export async function createProperty(property: Partial<Property>): Promise<Prope
     hero_image_alt: property.hero_image_alt || null,
     floor_plan_alt: property.floor_plan_alt || null,
     featured_images_alt: property.featured_images_alt || null,
-    gallery_images_alt: property.gallery_images_alt || null
+    gallery_images_alt: property.gallery_images_alt || null,
+    is_featured: property.is_featured || false
   };
 
   const { data, error } = await supabase
@@ -1026,6 +1026,10 @@ export async function updateStaticPage(originalSlug: string, updates: Partial<St
     console.error('Error in updateStaticPage:', error);
     return false;
   }
+
+  // Clear cache after update to ensure SEO changes are reflected immediately
+  clearCache();
+  console.log('✅ Static page updated, cache cleared');
   return true;
 }
 

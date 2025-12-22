@@ -228,6 +228,7 @@ export function FavoritesSheet({ isOpen, onClose, onInquire }: FavoritesSheetPro
                 onInquire();
               }}
               className="w-full shadow-lg shadow-[#1A2551]/20 py-6"
+              premium
             >
               Enquire Now
             </Button>

@@ -2,15 +2,16 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowDown, MapPin, Home, School, TreePine, Train, Coffee, Trophy, UtensilsCrossed, ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
-import { properties } from '../data/properties';
 import { PropertyCard } from '../components/PropertyCard';
 import { PropertyInquiryDialog } from '../components/PropertyInquiryDialog';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { updateSEO, injectSchema } from '../utils/seo';
 import { Reveal } from '../components/animations/Reveal';
 import { Button } from "../components/ui/button";
 import { useSiteSettings } from "../contexts/SiteContext";
 import { trackEvent, trackCTAClick } from '../utils/analytics';
+import { getPublishedProperties } from '../utils/database';
+import { Property } from '../types/property';
 
 // Types for Area Data
 interface AreaStats {
@@ -227,6 +228,15 @@ export default function AreaGuide() {
   const data = AREA_DATA[normalizedSlug] || AREA_DATA['twickenham'];
 
   const { images } = useSiteSettings();
+  const [properties, setProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      const data = await getPublishedProperties();
+      setProperties(data);
+    };
+    fetchProperties();
+  }, []);
 
   // Dynamic CMS Image Override
   const cmsKey = `l_${normalizedSlug.replace('-', '_')}`;
@@ -264,26 +274,10 @@ export default function AreaGuide() {
     .filter(p => p.status.toLowerCase() === 'available')
     .filter(p =>
       (p.location || '').toLowerCase().includes(data.name.toLowerCase()) ||
-      (p.full_address || '').toLowerCase().includes(data.name.toLowerCase())
+      (p.address || '').toLowerCase().includes(data.name.toLowerCase())
     );
 
-  // Transform helper
-  const transformToUI = (p: any) => ({
-    id: p.id,
-    title: p.title,
-    description: p.description || '',
-    image: p.featured_image || '',
-    location: p.location || '',
-    price: `£${p.price.toLocaleString()}`,
-    priceValue: Number(p.price),
-    beds: p.beds || 0,
-    baths: p.baths || 0,
-    sqft: p.sqft?.toLocaleString() || '0',
-    type: p.property_type || 'Property',
-    status: p.status,
-    slug: p.slug,
-    tags: []
-  });
+
 
   return (
     <div className="w-full bg-white">
@@ -451,7 +445,7 @@ export default function AreaGuide() {
           {areaProperties.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
               {areaProperties.slice(0, 3).map((property) => (
-                <PropertyCard key={property.id} property={transformToUI(property)} />
+                <PropertyCard key={property.id} property={property} />
               ))}
             </div>
           ) : (
