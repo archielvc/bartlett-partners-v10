@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowDown, MapPin, Home, School, TreePine, Train, Coffee, Trophy, UtensilsCrossed, ArrowRight } from 'lucide-react';
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { PropertyCard } from '../components/PropertyCard';
 import { PropertyInquiryDialog } from '../components/PropertyInquiryDialog';
 import { useEffect, useState } from 'react';

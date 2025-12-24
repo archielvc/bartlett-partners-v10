@@ -1,8 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "./ui/button";
-import heroImage from "figma:asset/79e5e88e7cbbfa60e22a7da8acfd0f8e04efb7e5.png";
 import { OptimizedImage } from "./OptimizedImage";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { getAllPropertiesAdmin } from "../utils/database";
 import type { Property as DBProperty } from "../types/database";
 import { useNavigate } from "react-router-dom";
@@ -23,8 +22,8 @@ export function Hero() {
   useEffect(() => {
     const fetchFeaturedProperty = async () => {
       const allProperties = await getAllPropertiesAdmin();
-      // Find property with is_hero = true
-      const featured = allProperties.find(p => p.is_hero);
+      // Find property with is_featured = true
+      const featured = allProperties.find(p => p.is_featured);
 
       if (featured) {
         setFeaturedProperty(featured);
@@ -37,7 +36,7 @@ export function Hero() {
           title: featured.title,
           description: featured.description,
           location: featured.location || '',
-          price: typeof featured.price === 'number' ? `£${featured.price.toLocaleString()}` : featured.price,
+          price: featured.price,
           duration: 10000, // 10 seconds for featured property
           ctaLink: `/properties/${featured.slug}`
         };
@@ -54,7 +53,7 @@ export function Hero() {
           },
           {
             type: 'area' as const,
-            src: twickenhamImg,
+            image: "https://images.unsplash.com/photo-1569335687776-f3065463b950?auto=format&fit=crop&w=2000&q=80",
             title: 'Twickenham',
             description: 'Home to rugby, history, and beautiful parks, Twickenham offers a perfect blend of city and country.',
             duration: 5000,

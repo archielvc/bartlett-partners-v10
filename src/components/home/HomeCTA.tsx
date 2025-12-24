@@ -1,5 +1,5 @@
 import { BookEvaluationDialog } from "../BookEvaluationDialog";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 
 export function HomeCTA() {
   return (
@@ -13,11 +13,13 @@ export function HomeCTA() {
           Book a valuation
         </h2>
 
-        <BookEvaluationDialog>
-          <button className="px-10 py-4 bg-[#1A2551] text-white rounded-full text-sm font-bold hover:bg-[#1A2551]/90 transition-all duration-300 uppercase tracking-wider">
-            Get Started
-          </button>
-        </BookEvaluationDialog>
+        <BookEvaluationDialog
+          trigger={
+            <button className="px-10 py-4 bg-[#1A2551] text-white rounded-full text-sm font-bold hover:bg-[#1A2551]/90 transition-all duration-300 uppercase tracking-wider">
+              Get Started
+            </button>
+          }
+        />
       </div>
 
       <div className="w-full max-w-[1600px] mx-auto h-[500px] lg:h-[700px] relative rounded-none overflow-hidden group">

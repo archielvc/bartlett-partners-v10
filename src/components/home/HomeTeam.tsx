@@ -1,38 +1,41 @@
 import { motion } from "motion/react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { Linkedin, Mail, Phone } from "lucide-react";
 import { useSiteSettings } from "../../contexts/SiteContext";
 import { trackPhoneClick, trackEmailClick } from "../../utils/analytics";
+import { useState, useEffect } from "react";
+import { getTeamMembers } from "../../utils/database";
+import type { TeamMember } from "../../types/database";
 
 export function HomeTeam() {
   const { images } = useSiteSettings();
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const team = [
-    {
-      name: "James Bartlett",
-      role: "Founder & Managing Director",
-      image: images.team.t_member_1,
-      bio: "With 25 years in prime London real estate, James established Bartlett & Partners to bring a private office approach to the Richmond market.",
-      phone: "+44 (0) 20 8940 5555",
-      email: "james@bartlett.co.uk"
-    },
-    {
-      name: "Sarah Chen",
-      role: "Head of Sales",
-      image: images.team.t_member_2,
-      bio: "Sarah's background in interior design and architecture gives her a unique lens for valuation and presentation of heritage properties.",
-      phone: "+44 (0) 20 8940 5556",
-      email: "sarah@bartlett.co.uk"
-    },
-    {
-      name: "Marcus Thorne",
-      role: "Senior Partner",
-      image: images.team.t_member_3,
-      bio: "Specialising in off-market transactions, Marcus manages our most discreet acquisitions with military precision.",
-      phone: "+44 (0) 20 8940 5557",
-      email: "marcus@bartlett.co.uk"
+  useEffect(() => {
+    async function loadTeam() {
+      const members = await getTeamMembers();
+      if (members.length > 0) {
+        setTeam(members);
+      } else {
+        // Fallback or empty state if needed, but we seeded data so it should be fine.
+        // If DB is empty, maybe fallback to hardcoded? 
+        // For now, let's stick to DB data.
+      }
+      setLoading(false);
     }
-  ];
+    loadTeam();
+  }, []);
+
+  // Default images mapping if DB image is empty
+  const getDefaultImage = (index: number) => {
+    if (index === 0) return images.team.t_member_1;
+    if (index === 1) return images.team.t_member_2;
+    if (index === 2) return images.team.t_member_3;
+    return images.team.t_member_1;
+  };
+
+  if (loading) return null; // Or a skeleton loader if preferred
 
   return (
     <section className="w-full bg-white py-12 md:py-20">
@@ -52,7 +55,7 @@ export function HomeTeam() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {team.map((member, index) => (
             <motion.div
-              key={index}
+              key={member.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               whileHover={{ y: -12 }}
@@ -63,7 +66,7 @@ export function HomeTeam() {
               {/* Card Image */}
               <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-6 shadow-sm">
                 <ImageWithFallback
-                  src={member.image}
+                  src={member.image || getDefaultImage(index)}
                   alt={member.name}
                   className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
                 />
@@ -89,28 +92,37 @@ export function HomeTeam() {
 
                 {/* Actions - Always Visible */}
                 <div className="flex gap-3">
-                  <a
-                    href={`tel:${member.phone.replace(/\s/g, '')}`}
-                    onClick={() => trackPhoneClick(member.phone)}
-                    className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-all duration-300 hover:shadow-md"
-                    aria-label={`Call ${member.name}`}
-                  >
-                    <Phone className="w-4 h-4" />
-                  </a>
-                  <a
-                    href={`mailto:${member.email}`}
-                    onClick={() => trackEmailClick(member.email)}
-                    className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-all duration-300 hover:shadow-md"
-                    aria-label={`Email ${member.name}`}
-                  >
-                    <Mail className="w-4 h-4" />
-                  </a>
-                  <button
-                    className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-all duration-300 hover:shadow-md"
-                    aria-label="LinkedIn Profile"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </button>
+                  {member.phone && (
+                    <a
+                      href={`tel:${member.phone.replace(/\s/g, '')}`}
+                      onClick={() => trackPhoneClick(member.phone!)}
+                      className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-all duration-300 hover:shadow-md"
+                      aria-label={`Call ${member.name}`}
+                    >
+                      <Phone className="w-4 h-4" />
+                    </a>
+                  )}
+                  {member.email && (
+                    <a
+                      href={`mailto:${member.email}`}
+                      onClick={() => trackEmailClick(member.email!)}
+                      className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-all duration-300 hover:shadow-md"
+                      aria-label={`Email ${member.name}`}
+                    >
+                      <Mail className="w-4 h-4" />
+                    </a>
+                  )}
+                  {member.linkedin_url && (
+                    <a
+                      href={member.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-all duration-300 hover:shadow-md"
+                      aria-label="LinkedIn Profile"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
             </motion.div>

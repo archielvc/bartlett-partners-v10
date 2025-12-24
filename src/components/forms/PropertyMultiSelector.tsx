@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Check, Heart, MapPin, Loader2 } from "lucide-react";
 import { useFavorites } from "../../contexts/FavoritesContext";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "../ui/button";
 import { Property } from "../../types/property";

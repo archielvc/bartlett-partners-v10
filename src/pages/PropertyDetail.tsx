@@ -1,7 +1,10 @@
 
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { PropertyInquiryDialog } from "../components/PropertyInquiryDialog";
+import { BookEvaluationDialog } from "../components/BookEvaluationDialog";
 import { PropertyCard } from "../components/PropertyCard";
+import { Button } from "../components/ui/button";
+import { Reveal } from "../components/animations/Reveal";
 import {
     Bed,
     Bath,
@@ -199,10 +202,10 @@ export default function PropertyDetail() {
                     </button>
 
                     {/* Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-auto md:h-[50vh] min-h-[400px] max-h-[600px]">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-auto md:h-[70vh] min-h-[500px]">
                         {/* Main Large Image */}
                         <div
-                            className="relative h-full rounded-lg overflow-hidden cursor-pointer group"
+                            className="relative h-full md:col-span-2 rounded-lg overflow-hidden cursor-pointer group"
                             onClick={() => {
                                 setGalleryOpen(true);
                                 setSelectedImageIndex(0);
@@ -213,17 +216,12 @@ export default function PropertyDetail() {
                                 alt={getImageAlt(0)}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                             />
-                            {/* Status Badge */}
-                            <div className="absolute top-4 left-4">
-                                <span className="bg-[#4D5E5B] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-sm">
-                                    {property.status === 'available' ? 'AVAILABLE' : property.status.replace('_', ' ')}
-                                </span>
-                            </div>
+
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                         </div>
 
                         {/* Right Side Grid */}
-                        <div className="hidden md:grid grid-cols-2 grid-rows-2 gap-4 h-full">
+                        <div className="grid md:col-span-1 w-full h-full grid-cols-2 grid-rows-2 gap-4">
                             {displayImages.slice(1, 5).map((img, idx) => (
                                 <div
                                     key={idx}
@@ -262,7 +260,7 @@ export default function PropertyDetail() {
             {/* 2. Main Content Layout */}
             <section className="px-4 md:px-8 lg:px-12 xl:px-20">
                 <div className="max-w-[1600px] mx-auto">
-                    <div className="flex flex-col lg:flex-row gap-16">
+                    <div className="flex flex-col lg:flex-row gap-16 relative">
 
                         {/* LEFT COLUMN (Content) */}
                         <div className="w-full lg:w-2/3">
@@ -387,166 +385,131 @@ export default function PropertyDetail() {
                         </div>
 
                         {/* RIGHT COLUMN (Sticky Sidebar) */}
-                        <div className="w-full lg:w-1/3">
-                            <div className="sticky top-32 space-y-6">
+                        <div className="w-full lg:w-1/3 sticky top-32 h-fit z-10">
+                            <Reveal width="100%" delay={0.2}>
+                                <div className="space-y-6">
 
-                                {/* Main Action Card */}
-                                <div className="bg-white rounded-2xl border-2 border-[#1A2551] p-6 shadow-xl shadow-[#1A2551]/5">
-                                    <div className="text-center mb-6">
-                                        <span className="text-[#1A2551]/60 text-xs font-semibold uppercase tracking-widest block mb-2" style={{ fontFamily: "'Figtree', sans-serif" }}>Guide Price</span>
-                                        <span className="text-[#1A2551] text-3xl md:text-4xl block" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                            {formattedPrice}
-                                        </span>
-                                    </div>
-
-                                    <div className="space-y-3 mb-8">
-                                        <PropertyInquiryDialog
-                                            property={{
-                                                id: property.id,
-                                                title: property.title,
-                                                location: property.location || '',
-                                                price: formattedPrice,
-                                                priceValue: priceValue,
-                                                image: property.hero_image || '',
-                                                beds: property.beds || 0,
-                                                baths: property.baths || 0,
-                                                sqft: property.sqft?.toString() || '0',
-                                                type: property.property_type || '',
-                                                status: property.status as any,
-                                                slug: property.slug
-                                            }}
-                                            trigger={
-                                                <button className="w-full bg-[#1A2551] text-white h-12 rounded-md flex items-center justify-center gap-2 hover:bg-[#1A2551]/90 transition-colors uppercase text-sm font-semibold tracking-wider">
-                                                    <span>Book Viewing</span>
-                                                    <Calendar className="w-4 h-4" />
-                                                </button>
-                                            }
-                                        />
-                                        <PropertyInquiryDialog
-                                            property={{
-                                                id: property.id,
-                                                title: property.title,
-                                                location: property.location || '',
-                                                price: formattedPrice,
-                                                priceValue: priceValue,
-                                                image: property.hero_image || '',
-                                                beds: property.beds || 0,
-                                                baths: property.baths || 0,
-                                                sqft: property.sqft?.toString() || '0',
-                                                type: property.property_type || '',
-                                                status: property.status as any,
-                                                slug: property.slug
-                                            }}
-                                            inquiryType="general"
-                                            trigger={
-                                                <button className="w-full bg-[#A89F81] text-white h-12 rounded-md flex items-center justify-center gap-2 hover:bg-[#8E8567] transition-colors uppercase text-sm font-semibold tracking-wider">
-                                                    <span>Make an Offer</span>
-                                                </button>
-                                            }
-                                        />
-                                    </div>
-
-                                    {/* Agent Profile */}
-                                    <div className="flex items-center gap-4 pt-6 border-t border-[#1A2551]/10">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 shrink-0">
-                                            <img
-                                                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80"
-                                                alt="Agent"
-                                                className="w-full h-full object-cover"
-                                            />
+                                    {/* Main Action Card */}
+                                    <div className="bg-white rounded-2xl border-2 border-[#1A2551] p-6 shadow-xl shadow-[#1A2551]/5">
+                                        <div className="text-center mb-6">
+                                            <span className="text-[#1A2551]/60 text-xs font-semibold uppercase tracking-widest block mb-2" style={{ fontFamily: "'Figtree', sans-serif" }}>Guide Price</span>
+                                            <span className="text-[#1A2551] text-3xl md:text-4xl block" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                                {formattedPrice}
+                                            </span>
                                         </div>
-                                        <div>
-                                            <h3 className="text-[#1A2551] font-bold text-sm" style={{ fontFamily: "'Figtree', sans-serif" }}>Darren Bartlett</h3>
-                                            <p className="text-[#1A2551]/60 text-xs" style={{ fontFamily: "'Figtree', sans-serif" }}>Managing Director</p>
-                                            <p className="text-[#1A2551] text-xs font-semibold mt-0.5">Bartlett & Partners</p>
+
+                                        <div className="space-y-3 mb-8">
+                                            <PropertyInquiryDialog
+                                                property={{
+                                                    id: property.id,
+                                                    title: property.title,
+                                                    location: property.location || '',
+                                                    price: formattedPrice,
+                                                    priceValue: priceValue,
+                                                    image: property.hero_image || '',
+                                                    beds: property.beds || 0,
+                                                    baths: property.baths || 0,
+                                                    sqft: property.sqft?.toString() || '0',
+                                                    type: property.property_type || '',
+                                                    status: property.status as any,
+                                                    slug: property.slug
+                                                }}
+                                                trigger={
+                                                    <Button
+                                                        premium
+                                                        className="w-full h-12 text-white"
+                                                        style={{
+                                                            backgroundColor: '#1A2551',
+                                                            borderColor: '#1A2551'
+                                                        }}
+                                                    >
+                                                        Enquire
+                                                    </Button>
+                                                }
+                                            />
+
+                                            <BookEvaluationDialog
+                                                trigger={
+                                                    <Button
+                                                        premium
+                                                        className="w-full h-12 text-white"
+                                                        style={{
+                                                            backgroundColor: '#A89F81',
+                                                            borderColor: '#A89F81'
+                                                        }}
+                                                    >
+                                                        Sell with us
+                                                    </Button>
+                                                }
+                                            />
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Floorplan Card */}
-                                {property.floor_plan_image && (
-                                    <div className="bg-[#F5F4F0] rounded-xl p-4 border border-[#1A2551]/10 flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-lg border border-[#1A2551]/20 flex items-center justify-center text-[#1A2551]">
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                                    <path d="M3 3v18h18" />
-                                                    <path d="M18.8 21A2 2 0 0 0 21 18.8V3H3v18h15.8z" />
-                                                    <path d="M9 3v18" />
-                                                    <path d="M15 3v18" />
-                                                    <path d="M3 9h18" />
-                                                    <path d="M3 15h18" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <span className="block text-[#1A2551] font-bold text-sm" style={{ fontFamily: "'Figtree', sans-serif" }}>Floorplan</span>
-                                                <span className="block text-[#1A2551]/60 text-xs" style={{ fontFamily: "'Figtree', sans-serif" }}>Download PDF</span>
-                                            </div>
-                                        </div>
-                                        <button
-                                            className="text-[#1A2551] hover:text-[#8E8567] transition-colors"
-                                            onClick={() => window.open(property.floor_plan_image!, '_blank')}
-                                        >
-                                            <Download className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                )}
-
-                            </div>
+                            </Reveal>
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Gallery Modal */}
             <AnimatePresence>
-                {galleryOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95"
-                        onClick={() => setGalleryOpen(false)}
-                    >
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setGalleryOpen(false);
-                            }}
-                            className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors"
+                {
+                    galleryOpen && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
+                            onClick={() => setGalleryOpen(false)}
                         >
-                            <X className="w-8 h-8" />
-                        </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setGalleryOpen(false);
+                                }}
+                                className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors"
+                            >
+                                <X className="w-8 h-8" />
+                            </button>
 
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedImageIndex((selectedImageIndex - 1 + displayImages.length) % displayImages.length);
-                            }}
-                            className="absolute left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors hidden md:block"
-                        >
-                            <ChevronLeft className="w-10 h-10" />
-                        </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedImageIndex((selectedImageIndex - 1 + displayImages.length) % displayImages.length);
+                                }}
+                                className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm text-white transition-all hidden md:block"
+                            >
+                                <ChevronLeft className="w-8 h-8" />
+                            </button>
 
-                        <div className="w-full h-full p-4 flex items-center justify-center">
-                            <img
-                                src={displayImages[selectedImageIndex]}
-                                alt={getImageAlt(selectedImageIndex)}
-                                className="max-w-full max-h-full object-contain"
-                            />
-                        </div>
+                            <div className="w-full h-full p-4 md:p-20 flex items-center justify-center overflow-hidden">
+                                <AnimatePresence mode="wait">
+                                    <motion.img
+                                        key={selectedImageIndex}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.3 }}
+                                        src={displayImages[selectedImageIndex]}
+                                        alt={getImageAlt(selectedImageIndex)}
+                                        className="max-w-full max-h-full object-contain shadow-2xl"
+                                    />
+                                </AnimatePresence>
+                            </div>
 
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedImageIndex((selectedImageIndex + 1) % displayImages.length);
-                            }}
-                            className="absolute right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors hidden md:block"
-                        >
-                            <ChevronRight className="w-10 h-10" />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedImageIndex((selectedImageIndex + 1) % displayImages.length);
+                                }}
+                                className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm text-white transition-all hidden md:block"
+                            >
+                                <ChevronRight className="w-8 h-8" />
+                            </button>
+                        </motion.div>
+                    )
+                }
+            </AnimatePresence >
 
             <section className="px-4 md:px-8 lg:px-12 xl:px-20 mt-20">
                 <div className="max-w-[1600px] mx-auto">
@@ -559,6 +522,6 @@ export default function PropertyDetail() {
                 </div>
             </section>
 
-        </main>
+        </main >
     );
 }

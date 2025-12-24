@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Button } from '../components/ui/button';
 import { useCookie } from '../contexts/CookieContext';
 import { useSiteSettings } from "../contexts/SiteContext";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 export default function CookiePolicy() {
   const { openSettings } = useCookie();

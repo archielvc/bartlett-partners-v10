@@ -3,7 +3,7 @@
 // =====================================================
 // Supabase with localStorage fallback for development
 
-import type { Property, PropertyWithDetails, Testimonial, BlogPost, ContactSubmission, ContactSubmissionWithProperty, StaticPage } from '../types/database';
+import type { Property, PropertyWithDetails, Testimonial, BlogPost, ContactSubmission, ContactSubmissionWithProperty, StaticPage, TeamMember } from '../types/database';
 import type { Property as UIProperty } from '../types/property';
 
 // =====================================================
@@ -1057,4 +1057,103 @@ export async function createStaticPage(page: Partial<StaticPage>): Promise<Stati
     return null;
   }
   return data;
+}
+
+// =====================================================
+// TEAM MEMBERS
+// =====================================================
+
+export async function getTeamMembers(): Promise<TeamMember[]> {
+  const cacheKey = 'team_members_active';
+  const cached = getStored<TeamMember[]>(cacheKey);
+  if (cached) return cached;
+
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('*')
+    .eq('status', 'active')
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching team members:', error);
+    return [];
+  }
+
+  const result = data || [];
+  setCache(cacheKey, result);
+  return result;
+}
+
+export async function getAllTeamMembersAdmin(): Promise<TeamMember[]> {
+  const { data, error } = await supabase
+    .from('team_members')
+    .select('*')
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching team members:', error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function upsertTeamMember(member: Partial<TeamMember>): Promise<TeamMember | null> {
+  const payload = {
+    ...member,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await supabase
+    .from('team_members')
+    .upsert(payload)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error upserting team member:', error);
+    return null;
+  }
+
+  clearCache();
+  return data;
+}
+
+export async function deleteTeamMember(id: number): Promise<boolean> {
+  const { error } = await supabase
+    .from('team_members')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting team member:', error);
+    return false;
+  }
+
+  clearCache();
+  return true;
+}
+
+export async function reorderTeamMembers(members: TeamMember[]): Promise<boolean> {
+  try {
+    const updates = members.map((m, index) => ({
+      id: m.id,
+      display_order: index,
+      updated_at: new Date().toISOString()
+    }));
+
+    const { error } = await supabase
+      .from('team_members')
+      .upsert(updates, { onConflict: 'id' });
+
+    if (error) {
+      console.error('Error reordering team members:', error);
+      return false;
+    }
+
+    clearCache();
+    return true;
+  } catch (error) {
+    console.error('Error reordering team members:', error);
+    return false;
+  }
 }

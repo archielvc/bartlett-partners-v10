@@ -113,10 +113,14 @@ export interface ContactSubmissionWithProperty extends ContactSubmission {
 export interface TeamMember {
   id: number;
   name: string;
-  email: string;
   role: string;
+  bio: string | null;
+  email: string | null;
+  phone: string | null;
+  image: string | null;
+  linkedin_url: string | null;
+  display_order: number;
   status: string;
-  last_active: string | null;
   created_at: string;
   updated_at: string;
 }

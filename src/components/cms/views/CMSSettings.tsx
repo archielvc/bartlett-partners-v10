@@ -131,7 +131,7 @@ export function CMSSettings() {
     if (stored && storedVersion === CURRENT_ROLES_VERSION) {
       const storedRoles = JSON.parse(stored);
       // Filter to only keep admin and editor roles
-      const filteredRoles = storedRoles.filter((role: PermissionRole) => 
+      const filteredRoles = storedRoles.filter((role: PermissionRole) =>
         role.id === 'admin' || role.id === 'editor'
       );
       // If we have both roles, use them; otherwise reset to defaults
@@ -240,30 +240,28 @@ export function CMSSettings() {
   };
 
   return (
-    <CMSPageLayout 
-      title="Settings" 
+    <CMSPageLayout
+      title="Settings"
       description="Manage team access, permissions, and system settings"
     >
       {/* Tabs */}
       <div className="flex items-center gap-1 mb-8 bg-white p-1 rounded-lg border border-gray-200 w-fit">
         <button
           onClick={() => setActiveTab('team')}
-          className={`px-6 py-2.5 rounded-md transition-all font-medium text-sm ${
-            activeTab === 'team'
+          className={`px-6 py-2.5 rounded-md transition-all font-medium text-sm ${activeTab === 'team'
               ? 'bg-[#1A2551] text-white shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
-          }`}
+            }`}
         >
           <Users className="w-4 h-4 inline-block mr-2" />
           Team Access
         </button>
         <button
           onClick={() => setActiveTab('roles')}
-          className={`px-6 py-2.5 rounded-md transition-all font-medium text-sm ${
-            activeTab === 'roles'
+          className={`px-6 py-2.5 rounded-md transition-all font-medium text-sm ${activeTab === 'roles'
               ? 'bg-[#1A2551] text-white shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
-          }`}
+            }`}
         >
           <Shield className="w-4 h-4 inline-block mr-2" />
           Permission Roles
@@ -490,7 +488,7 @@ export function CMSSettings() {
                 toast.success('Local storage cleared! Refreshing page...');
                 setTimeout(() => window.location.reload(), 1000);
               }}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+              className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors text-sm font-medium"
             >
               Clear Local Data & Refresh
             </button>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface FloorPlanViewerProps {

@@ -1,19 +1,26 @@
 import { Reveal } from "../animations/Reveal";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
+import { useSiteImage } from "../../hooks/useSiteImage";
+import { getOptimizedUrl } from "../OptimizedImage";
 
 interface PropertiesHeroProps {
   image?: string;
 }
 
 export function PropertiesHero({ image }: PropertiesHeroProps) {
+  const { src: rawHeroImage, alt: heroAlt } = useSiteImage('p_hero_bg');
+  const heroImage = image || (rawHeroImage ? getOptimizedUrl(rawHeroImage, 2000, 80, 'webp') : '');
+
   return (
     <section id="hero-section" className="relative w-full h-[70vh] md:h-[60vh] lg:h-[50vh] rounded-b-[40px] md:rounded-b-[80px] overflow-hidden bg-[#1A2551]">
-      <ImageWithFallback
-        src={image || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=80"}
-        alt="Luxury Property Collection"
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-      />
+      {heroImage && (
+        <ImageWithFallback
+          src={heroImage}
+          alt={heroAlt || "Luxury Property Collection"}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+        />
+      )}
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/40 z-10" />

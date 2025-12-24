@@ -128,7 +128,7 @@ export function InsightsNewsletter({
                   <Button
                     type="submit"
                     premium
-                    className="bg-[#8E8567] text-white border-none rounded-md h-full px-6 flex items-center justify-center gap-3 transition-colors duration-300"
+                    className="bg-[#8E8567] text-white border-none rounded-md h-full px-6 flex items-center justify-center gap-3 transition-colors duration-300 hover:bg-[#8E8567]"
                   >
                     <span>Subscribe</span>
                   </Button>

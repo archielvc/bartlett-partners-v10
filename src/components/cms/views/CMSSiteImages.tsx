@@ -7,7 +7,7 @@ import { CMSImageUpload } from '../CMSImageUpload';
 import { clearSiteImageCache } from '../../../hooks/useSiteImage';
 import { useSiteSettings } from '../../../contexts/SiteContext';
 
-type ImageSection = 'branding' | 'home' | 'about' | 'contact' | 'properties' | 'insights' | 'team' | 'locations' | 'film' | 'policies';
+type ImageSection = 'branding' | 'about' | 'contact' | 'properties' | 'insights' | 'locations' | 'film' | 'policies';
 
 interface ImageBlock {
   id: string;
@@ -34,51 +34,15 @@ const DEFAULT_IMAGES: Record<ImageSection, ImageBlock[]> = {
       description: 'The white version of the logo used on dark backgrounds, primarily in the transparent navigation bar over hero images and in the footer.',
       alt: 'Bartlett & Partners logo'
     },
+    {
+      id: 'brand_logo_load',
+      label: 'Load Screen Logo',
+      value: '',
+      description: 'The logo used exclusively on the initial loading screen. If not set, it defaults to the White Logo.',
+      alt: 'Bartlett & Partners loading logo'
+    },
   ],
-  home: [
-    {
-      id: 'h_exp_staging',
-      label: 'Staging Service Image',
-      value: '',
-      description: 'Background image for "Preparation & Staging" in the Experience/Services accordion.',
-      alt: 'Professional home staging'
-    },
-    {
-      id: 'h_exp_photo',
-      label: 'Photography Service Image',
-      value: '',
-      description: 'Background image for "Photography & Media" in the Experience/Services accordion.',
-      alt: 'Professional property photography'
-    },
-    {
-      id: 'h_exp_marketing',
-      label: 'Marketing Service Image',
-      value: '',
-      description: 'Background image for "Marketing & Promotion" in the Experience/Services accordion.',
-      alt: 'Property marketing materials'
-    },
-    {
-      id: 'h_exp_negotiation',
-      label: 'Negotiation Service Image',
-      value: '',
-      description: 'Background image for "Viewings & Negotiation" in the Experience/Services accordion.',
-      alt: 'Property viewing and negotiation'
-    },
-    {
-      id: 'h_exp_trans',
-      label: 'Transaction Service Image',
-      value: '',
-      description: 'Background image for "Transaction Management" in the Experience/Services accordion.',
-      alt: 'Property transaction management'
-    },
-    {
-      id: 'h_exp_analysis',
-      label: 'Analysis Service Image',
-      value: '',
-      description: 'Background image for "Market Analysis" in the Experience/Services accordion.',
-      alt: 'Property market analysis'
-    }
-  ],
+
   about: [
     {
       id: 'a_hero_bg',
@@ -194,29 +158,7 @@ const DEFAULT_IMAGES: Record<ImageSection, ImageBlock[]> = {
       alt: 'Ham neighbourhood'
     }
   ],
-  team: [
-    {
-      id: 't_member_1',
-      label: 'James Bartlett',
-      value: '',
-      description: 'Portrait photo of James Bartlett.',
-      alt: 'James Bartlett, Founder'
-    },
-    {
-      id: 't_member_2',
-      label: 'Sarah Chen',
-      value: '',
-      description: 'Portrait photo of Sarah Chen.',
-      alt: 'Sarah Chen, Senior Agent'
-    },
-    {
-      id: 't_member_3',
-      label: 'Marcus Thorne',
-      value: '',
-      description: 'Portrait photo of Marcus Thorne.',
-      alt: 'Marcus Thorne, Property Specialist'
-    }
-  ],
+
   film: [
     {
       id: 'film_hero',

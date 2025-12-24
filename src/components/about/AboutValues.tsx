@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { useSiteSettings } from "../../contexts/SiteContext";
 
 export function AboutValues() {

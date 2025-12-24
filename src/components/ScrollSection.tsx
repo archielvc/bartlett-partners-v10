@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 import { Button } from './ui/button';
 
 interface SubSection {
@@ -39,7 +39,7 @@ export function ScrollSection({
 
       const sectionRect = sectionRef.current.getBoundingClientRect();
       const contentHeight = contentRef.current.clientHeight;
-      
+
       // Calculate how far we've scrolled through this section
       // The section becomes "active" when it reaches the top of the viewport
       if (sectionRect.top <= 0 && sectionRect.bottom > contentHeight) {
@@ -63,12 +63,12 @@ export function ScrollSection({
   const sectionHeight = `calc(100vh + ${subSections.length * 80}vh)`;
 
   return (
-    <section 
+    <section
       ref={sectionRef}
-      className="w-full bg-white relative" 
+      className="w-full bg-white relative"
       style={{ height: sectionHeight }}
     >
-      <div 
+      <div
         ref={contentRef}
         className="sticky top-0 w-full h-screen py-20 px-6 lg:px-16 flex items-center"
       >
@@ -76,9 +76,9 @@ export function ScrollSection({
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Content */}
             <div className={imagePosition === 'left' ? 'order-1 lg:order-2' : ''}>
-              <p 
+              <p
                 className="text-[#1A2551] mb-6"
-                style={{ 
+                style={{
                   fontFamily: "'Figtree', sans-serif",
                   fontSize: "0.875rem",
                   textTransform: "uppercase",
@@ -87,9 +87,9 @@ export function ScrollSection({
               >
                 {label}
               </p>
-              <h2 
+              <h2
                 className="text-[#1A2551] mb-6"
-                style={{ 
+                style={{
                   fontFamily: "'Playfair Display', serif",
                   fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)",
                   fontWeight: 400,
@@ -98,9 +98,9 @@ export function ScrollSection({
               >
                 {mainTitle}<br />{mainTitleLine2}
               </h2>
-              <p 
+              <p
                 className="text-[#6B7280] mb-12"
-                style={{ 
+                style={{
                   fontFamily: "'Figtree', sans-serif",
                   fontSize: "0.9375rem",
                   lineHeight: "1.7"
@@ -114,11 +114,10 @@ export function ScrollSection({
                   const isActive = index === activeIndex;
                   return (
                     <div key={index} className="transition-all duration-300">
-                      <h3 
-                        className={`mb-3 transition-all duration-300 ${
-                          isActive ? 'text-[#1A2551]' : 'text-[#6B7280]'
-                        }`}
-                        style={{ 
+                      <h3
+                        className={`mb-3 transition-all duration-300 ${isActive ? 'text-[#1A2551]' : 'text-[#6B7280]'
+                          }`}
+                        style={{
                           fontFamily: "'Playfair Display', serif",
                           fontSize: isActive ? "1.375rem" : "1.125rem",
                           fontWeight: 400,
@@ -127,9 +126,9 @@ export function ScrollSection({
                       >
                         {subSection.title}
                       </h3>
-                      <p 
+                      <p
                         className="text-[#6B7280]"
-                        style={{ 
+                        style={{
                           fontFamily: "'Figtree', sans-serif",
                           fontSize: "0.875rem",
                           lineHeight: "1.6"
@@ -153,9 +152,8 @@ export function ScrollSection({
             </div>
 
             {/* Image */}
-            <div className={`relative aspect-[4/5] overflow-hidden ${
-              imagePosition === 'left' ? 'order-2 lg:order-1' : ''
-            }`}>
+            <div className={`relative aspect-[4/5] overflow-hidden ${imagePosition === 'left' ? 'order-2 lg:order-1' : ''
+              }`}>
               {subSections.map((subSection, index) => (
                 <div
                   key={index}

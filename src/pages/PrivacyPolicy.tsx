@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { useSiteSettings } from "../contexts/SiteContext";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 
 export default function PrivacyPolicy() {
   const { images } = useSiteSettings();

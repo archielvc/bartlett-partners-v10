@@ -192,7 +192,7 @@ export function CMSImageUpload({
                 <button
                   type="button"
                   onClick={() => handleDelete()}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
                   disabled={isUploading}
                 >
                   <X className="w-3 h-3" />
@@ -289,7 +289,7 @@ export function CMSImageUpload({
                 <button
                   type="button"
                   onClick={() => handleDelete()}
-                  className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors shadow-sm"
+                  className="p-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors shadow-sm"
                   title="Remove image"
                   disabled={isUploading}
                 >
@@ -389,7 +389,7 @@ export function CMSImageUpload({
               <button
                 type="button"
                 onClick={() => handleDelete()}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-lg"
+                className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700 transition-colors shadow-lg"
                 disabled={isUploading}
               >
                 <X className="w-4 h-4" />
@@ -471,7 +471,7 @@ export function CMSImageUpload({
               <button
                 type="button"
                 onClick={() => handleDelete()}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-lg"
+                className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700 transition-colors shadow-lg"
                 disabled={isUploading}
               >
                 <X className="w-4 h-4" />

@@ -6,7 +6,7 @@
 
 import { Property } from "../types/property";
 import { motion } from "motion/react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { Heart, Bed, Bath, Square, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";

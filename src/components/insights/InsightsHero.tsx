@@ -1,6 +1,6 @@
 import { Reveal } from "../animations/Reveal";
 import { useSiteImage } from "../../hooks/useSiteImage";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { getOptimizedUrl } from "../OptimizedImage";
 
 interface InsightsHeroProps {
@@ -9,16 +9,18 @@ interface InsightsHeroProps {
 
 export function InsightsHero({ image }: InsightsHeroProps) {
   const { src: rawHeroImage, alt: heroAlt } = useSiteImage('i_hero_bg');
-  const heroImage = image || getOptimizedUrl(rawHeroImage, 2000, 80, 'webp');
+  const heroImage = image || (rawHeroImage ? getOptimizedUrl(rawHeroImage, 2000, 80, 'webp') : '');
 
   return (
     <section id="hero-section" className="relative w-full h-[70vh] md:h-[60vh] lg:h-[50vh] rounded-b-[40px] md:rounded-b-[80px] overflow-hidden bg-[#1A2551]">
-      <ImageWithFallback
-        src={heroImage || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=80"}
-        alt={heroAlt || "Insights hero"}
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-      />
+      {heroImage && (
+        <ImageWithFallback
+          src={heroImage}
+          alt={heroAlt || "Insights hero"}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+        />
+      )}
 
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/40 z-10" />

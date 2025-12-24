@@ -12,6 +12,9 @@ import { CMSBlog } from './views/CMSBlog';
 import { TestimonialsModule } from './TestimonialsModule';
 import { CMSSettings } from './views/CMSSettings';
 import { CMSSiteImages } from './views/CMSSiteImages';
+import { CMSTeam } from './views/CMSTeam';
+import { CMSBulkImageUpload } from './views/CMSBulkImageUpload';
+
 
 function AdminContent() {
   const { user } = useAuth();
@@ -37,6 +40,10 @@ function AdminContent() {
         return <CMSSiteImages />;
       case 'settings':
         return <CMSSettings />;
+      case 'team':
+        return <CMSTeam />;
+      case 'bulk-upload':
+        return <CMSBulkImageUpload />;
       default:
         return (
           <div className="p-12 text-center text-gray-400">

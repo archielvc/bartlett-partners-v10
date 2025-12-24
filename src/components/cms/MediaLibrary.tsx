@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Upload, Search, Edit, Trash2, Folder, X, ArrowLeft, Image as ImageIcon } from 'lucide-react';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
+import { ImageWithFallback } from '../ui/ImageWithFallback';
 import { CMSPageLayout } from './CMSPageLayout';
 import { Button } from '../ui/button';
 
@@ -33,7 +33,7 @@ export function MediaLibrary() {
     {
       id: 2,
       name: 'townhouse-interior-living.jpg',
-      url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400',
+      url: '',
       alt: 'Modern interior design',
       folder: 'Properties',
       linkedTo: 'Luxury Richmond Townhouse',
@@ -167,8 +167,8 @@ export function MediaLibrary() {
                 setSelectedFolder(null);
               }}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm font-medium ${folderFilter === folder
-                  ? 'bg-[#1A2551] text-white shadow-sm'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                ? 'bg-[#1A2551] text-white shadow-sm'
+                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
                 }`}
             >
               <Folder className="w-4 h-4" />

@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSiteSettings } from "../../contexts/SiteContext";
-import { ImageWithFallback } from "../figma/ImageWithFallback";
+import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { cn } from "../ui/utils";
 
 export function HomeLocations() {

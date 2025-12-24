@@ -1,27 +1,28 @@
 import { ReactNode } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { 
-  LayoutDashboard, 
-  Home, 
-  MessageSquare, 
-  Settings, 
-  Users, 
-  FileText, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Home,
+  MessageSquare,
+  Settings,
+  Users,
+  FileText,
+  LogOut,
   Search,
   Globe,
   Film,
   BookOpen,
   Image,
   Quote,
-  User
+  User,
+  FolderUp
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../ui/utils';
 import type { CMSView } from '../../types/cms';
-import whiteLogo from "figma:asset/a49a304c14bdb50701e6c3c6ec4ac8419c70162c.png";
 import { useNavigate } from 'react-router-dom';
 import { NotificationBadge } from './NotificationBadge';
+import { useSiteSettings } from '../../contexts/SiteContext';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -32,6 +33,8 @@ interface AdminLayoutProps {
 export function AdminLayout({ children, currentView, onChangeView }: AdminLayoutProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { images } = useSiteSettings();
+  const whiteLogo = images.branding.brand_logo_white;
 
   const menuItems = [
     { id: 'properties' as CMSView, label: 'Properties', icon: Home, roles: ['admin', 'agent'] },
@@ -39,7 +42,9 @@ export function AdminLayout({ children, currentView, onChangeView }: AdminLayout
     { id: 'testimonials' as CMSView, label: 'Testimonials', icon: Quote, roles: ['admin', 'agent'] },
     { id: 'enquiries' as CMSView, label: 'Enquiries', icon: MessageSquare, roles: ['admin', 'agent'] },
     { id: 'site-images' as CMSView, label: 'Site Images', icon: Image, roles: ['admin'] },
+    { id: 'bulk-upload' as CMSView, label: 'Bulk Upload', icon: FolderUp, roles: ['admin'] },
     { id: 'seo' as CMSView, label: 'SEO Toolkit', icon: Search, roles: ['admin'] },
+    { id: 'team' as CMSView, label: 'Team', icon: Users, roles: ['admin'] },
   ];
 
   return (
@@ -47,12 +52,21 @@ export function AdminLayout({ children, currentView, onChangeView }: AdminLayout
       {/* Sidebar */}
       <aside className="w-64 bg-[#1A2551] text-white flex flex-col fixed h-full z-50 shadow-2xl">
         <div className="p-6 flex flex-col items-center justify-center h-28 border-b border-white/5 bg-[#1A2551]">
-          <img 
-            src={whiteLogo} 
-            alt="Bartlett & Partners" 
-            className="h-16 w-auto cursor-pointer opacity-90 hover:opacity-100 transition-opacity"
-            onClick={() => navigate('/')}
-          />
+          {whiteLogo ? (
+            <img
+              src={whiteLogo}
+              alt="Bartlett & Partners"
+              className="h-16 w-auto cursor-pointer opacity-90 hover:opacity-100 transition-opacity"
+              onClick={() => navigate('/')}
+            />
+          ) : (
+            <div
+              className="text-xl font-serif text-white cursor-pointer"
+              onClick={() => navigate('/')}
+            >
+              Bartlett & Partners
+            </div>
+          )}
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto custom-scrollbar">
@@ -63,8 +77,8 @@ export function AdminLayout({ children, currentView, onChangeView }: AdminLayout
                 onClick={() => onChangeView(item.id)}
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-300 rounded-lg group relative overflow-hidden",
-                  currentView === item.id 
-                    ? "bg-white text-[#1A2551] font-medium shadow-lg shadow-black/10" 
+                  currentView === item.id
+                    ? "bg-white text-[#1A2551] font-medium shadow-lg shadow-black/10"
                     : "text-white/60 hover:text-white hover:bg-white/5 font-light"
                 )}
               >

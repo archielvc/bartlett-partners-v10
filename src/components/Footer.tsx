@@ -1,51 +1,16 @@
 import { Instagram, Facebook, Linkedin, ArrowRight } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { Button } from "./ui/button";
 import { useSiteSettings } from "../contexts/SiteContext";
 import { trackEvent, trackNavigation, trackContactFormSubmit } from "../utils/analytics";
-
-import { saveSubscriber, submitContactForm } from '../utils/database';
+import { useState } from "react";
+import { submitContactForm } from "../utils/database";
 
 export function Footer() {
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
   const { images } = useSiteSettings();
   const whiteLogo = images.branding.brand_logo_white;
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !email.includes('@')) {
-      return;
-    }
-
-    try {
-      await submitContactForm({
-        name: `${firstName} ${lastName}`.trim() || 'Newsletter Subscriber',
-        email: email,
-        message: 'Newsletter subscription request',
-        inquiry_type: 'newsletter',
-        property_id: undefined,
-        propertyTitle: undefined
-      });
-
-      trackContactFormSubmit('newsletter');
-
-      console.log("Newsletter subscription:", { firstName, lastName, email });
-      setIsSubmitted(true);
-      setEmail("");
-      setFirstName("");
-      setLastName("");
-    } catch (error) {
-      console.error('Newsletter error:', error);
-      // Optional: keep error handling or add inline error state too
-      alert("Failed to subscribe. Please try again.");
-    }
-  };
 
   const handleNavClick = (e: React.MouseEvent, path: string) => {
     e.preventDefault();
@@ -53,6 +18,29 @@ export function Footer() {
     navigate(path);
     window.scrollTo(0, 0);
   };
+
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await submitContactForm({
+        name: name || 'Newsletter Subscriber',
+        email: email,
+        message: 'Footer newsletter subscription',
+        inquiry_type: 'newsletter',
+      });
+      trackContactFormSubmit('newsletter');
+      setIsSubmitted(true);
+      setEmail("");
+    } catch (error) {
+      console.error("Newsletter subscription failed:", error);
+    }
+  };
+
+
 
   return (
     <footer
@@ -81,103 +69,54 @@ export function Footer() {
             <span className="sr-only">Bartlett & Partners</span>
           </div>
 
-          {/* Main Content Layout - Grid 12-Col: Strict allocation to prevent overlap */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 mb-12 lg:mb-16">
+          {/* Main Content Layout - Full Width Links Only */}
+          <div className="w-full mb-12 lg:mb-16">
 
-            {/* Left Zone: Newsletter (4/12 cols - narrower inputs) */}
-            <div className="lg:col-span-4">
-              <h3 className="text-lg font-medium mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
-                Newsletter
-              </h3>
-              <p className="text-white/70 text-sm mb-6 font-light" style={{ fontFamily: "'Figtree', sans-serif" }}>
-                Stay informed about the property market and expert insights.
-              </p>
+            {/* Navigation Links (Full Width - Flex Row) */}
+            <div className="w-full flex flex-row justify-between gap-2 md:gap-4 lg:gap-8">
 
-              {isSubmitted ? (
-                <div className="w-full bg-[#8E8567]/10 border border-[#8E8567] p-6 rounded-md animate-fade-in relative overflow-hidden">
-                  <div className="relative z-10">
-                    <h4
-                      className="text-white text-lg mb-2"
-                      style={{ fontFamily: "'Playfair Display', serif" }}
-                    >
-                      Thank you for subscribing
-                    </h4>
-                    <p
-                      className="text-white/80 text-xs font-light mb-4"
+              {/* Col 0: Newsletter */}
+              <div className="flex flex-col w-full md:w-[30%] max-w-sm">
+                <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                  Newsletter
+                </h3>
+                <p className="text-white/60 text-sm mb-6 font-light leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                  Join our exclusive mailing list for the latest property news, market analysis, and off-market opportunities.
+                </p>
+                {isSubmitted ? (
+                  <p className="text-green-400 text-sm">Thanks for subscribing!</p>
+                ) : (
+                  <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-3">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      className="w-full bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
+                      style={{ fontFamily: "'Figtree', sans-serif" }}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
+                      style={{ fontFamily: "'Figtree', sans-serif" }}
+                    />
+                    <button
+                      type="submit"
+                      className="w-full bg-[#8E8567] text-white border-none rounded-md py-2 text-sm font-medium hover:bg-[#7d755a] transition-colors"
                       style={{ fontFamily: "'Figtree', sans-serif" }}
                     >
-                      You have successfully joined our mailing list.
-                    </p>
-                    <Button
-                      onClick={() => setIsSubmitted(false)}
-                      variant="ghost"
-                      className="text-[#8E8567] hover:text-white hover:bg-[#8E8567]/20 p-0 h-auto text-xs font-medium transition-colors"
-                    >
-                      <span className="flex items-center gap-1">
-                        Subscribe another <ArrowRight className="w-3 h-3" />
-                      </span>
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <form onSubmit={handleSubscribe} className="flex flex-col gap-3 mb-4 w-full">
-                    <div className="flex flex-col gap-3">
-                      {/* Name Row */}
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="First Name"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          required
-                          className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-10"
-                          style={{ fontFamily: "'Figtree', sans-serif" }}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Last Name"
-                          value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
-                          required
-                          className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-10"
-                          style={{ fontFamily: "'Figtree', sans-serif" }}
-                        />
-                      </div>
-
-                      {/* Email & Button Row */}
-                      <div className="flex gap-2">
-                        <input
-                          type="email"
-                          placeholder="Email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          className="flex-1 bg-transparent border border-[#8E8567] text-white px-4 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm h-11"
-                          style={{ fontFamily: "'Figtree', sans-serif" }}
-                        />
-                        <Button
-                          type="submit"
-                          premium
-                          className="bg-[#8E8567] text-white border-none rounded-md px-4 flex items-center justify-center transition-colors duration-300 h-11 w-12 shrink-0"
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
+                      Subscribe
+                    </button>
                   </form>
+                )}
+              </div>
 
-                  <p className="text-[10px] text-white/40 font-light" style={{ fontFamily: "'Figtree', sans-serif" }}>
-                    By subscribing, you agree to our privacy policy.
-                  </p>
-                </>
-              )}
-            </div>
-
-            {/* Right Zone: Navigation Links (7/12 cols, offset by 1) */}
-            <div className="lg:col-span-7 lg:col-start-6 flex flex-wrap md:flex-nowrap justify-between gap-8 lg:gap-12">
-
-              {/* Col 2: Company */}
+              {/* Col 1: Company */}
               <div className="flex flex-col">
                 <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Company
@@ -211,7 +150,7 @@ export function Footer() {
                 </ul>
               </div>
 
-              {/* Col 3: Explore */}
+              {/* Col 2: Explore */}
               <div className="flex flex-col">
                 <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Explore
@@ -244,7 +183,7 @@ export function Footer() {
                 </ul>
               </div>
 
-              {/* Col: Enquire */}
+              {/* Col 3: Enquire */}
               <div className="flex flex-col">
                 <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Enquire
@@ -318,7 +257,7 @@ export function Footer() {
                 </ul>
               </div>
 
-              {/* Col: Find Us */}
+              {/* Col 5: Find Us */}
               <div className="flex flex-col">
                 <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Find Us
@@ -369,7 +308,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Section */}
-      <div className="w-full px-6 md:px-12 lg:px-20 pb-96 md:pb-10 lg:pb-12">
+      <div className="w-full px-6 md:px-12 lg:px-20 pb-12 md:pb-10 lg:pb-12">
         <div className="max-w-[1600px] mx-auto border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-0">
 
@@ -389,6 +328,8 @@ export function Footer() {
           </div>
         </div>
       </div>
+      {/* Mobile Spacer to clear sticky CTA */}
+      <div className="h-20 md:hidden" aria-hidden="true" />
     </footer >
   );
 }

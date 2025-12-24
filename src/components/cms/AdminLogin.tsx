@@ -3,11 +3,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
-import blueLogo from "figma:asset/4dc31e3d4d8476a091118f1ea8f376b69a8e629a.png";
+import { useSiteSettings } from '../../contexts/SiteContext';
 
 export function AdminLogin() {
   const { login, isLoading } = useAuth();
   const [selectedRole, setSelectedRole] = useState<'admin' | 'agent' | null>(null);
+  const { images } = useSiteSettings();
+  const blueLogo = images.branding.brand_logo_dark;
 
   const handleLogin = (role: 'admin' | 'agent') => {
     setSelectedRole(role);
@@ -16,20 +18,24 @@ export function AdminLogin() {
 
   return (
     <div className="min-h-screen w-full bg-[#1A2551] flex items-center justify-center p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="w-full max-w-sm bg-white p-12 shadow-2xl flex flex-col items-center rounded-3xl"
       >
-        <img 
-          src={blueLogo} 
-          alt="Bartlett & Partners" 
-          className="h-16 w-auto mb-12"
-        />
+        {blueLogo ? (
+          <img
+            src={blueLogo}
+            alt="Bartlett & Partners"
+            className="h-16 w-auto mb-12"
+          />
+        ) : (
+          <div className="text-2xl font-serif text-[#1A2551] mb-12">Bartlett & Partners</div>
+        )}
 
         <div className="w-full space-y-4 flex flex-col items-center">
-          <Button 
+          <Button
             onClick={() => handleLogin('admin')}
             disabled={isLoading}
             className="w-full h-12 bg-[#1A2551] hover:bg-[#2A3561] text-white uppercase tracking-widest text-xs font-semibold rounded-lg transition-all duration-300"
@@ -41,7 +47,7 @@ export function AdminLogin() {
             )}
           </Button>
 
-          <Button 
+          <Button
             onClick={() => handleLogin('agent')}
             disabled={isLoading}
             variant="outline"

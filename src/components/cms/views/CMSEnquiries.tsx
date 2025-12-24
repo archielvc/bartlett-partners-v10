@@ -222,7 +222,7 @@ export function CMSEnquiries() {
           {activeTab === 'newsletter' && newNewsletterCount > 0 && (
             <Button
               onClick={handleExportNewNewsletters}
-              className="bg-[#C5A059] hover:bg-[#C5A059]/90 text-white"
+              className="bg-[#C5A059] hover:bg-[#C5A059]/90 text-white uppercase tracking-wider font-bold px-6"
             >
               <Download className="w-4 h-4 mr-2" />
               Export New Sign-ups ({newNewsletterCount})
@@ -429,9 +429,9 @@ export function CMSEnquiries() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700 text-white font-medium shadow-sm transition-all active:scale-95"
+              className="bg-red-700 hover:bg-red-800 text-white font-medium shadow-sm transition-all active:scale-95"
             >
-              Delete Permanently
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

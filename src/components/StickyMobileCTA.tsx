@@ -72,11 +72,11 @@ export function StickyMobileCTA() {
 
                 {/* Call - 1/3 width (spans 1 column) */}
                 <div className="col-span-1">
-                    <Button variant="outline" className="w-full" asChild>
+                    <Button variant="outline" className="w-full font-extrabold" asChild>
                         <a
                             href="tel:02086141441"
                             onClick={() => trackPhoneClick('02086141441')}
-                            className="flex items-center justify-center gap-2 font-bold"
+                            className="flex items-center justify-center gap-2"
                         >
                             <Phone className="w-4 h-4" />
                             <span>Call</span>

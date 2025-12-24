@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useLocation } from 'react-router-dom';
 
 // Default Assets for Fallback
-import blueLogo from "figma:asset/4dc31e3d4d8476a091118f1ea8f376b69a8e629a.png";
-import whiteLogo from "figma:asset/a49a304c14bdb50701e6c3c6ec4ac8419c70162c.png";
+// Note: These should be configured in the CMS Site Settings
+// Defaulting to empty strings to avoid hardcoded external dependencies
 
 // Structure matches CMSSiteImages
 type ImageSection = 'branding' | 'home' | 'about' | 'contact' | 'properties' | 'insights' | 'team' | 'locations' | 'film' | 'policies';
@@ -28,11 +28,10 @@ interface SiteContextType {
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
 // Defaults are now empty strings to respect user request for "no image default"
-// EXCEPT logos, which need a structural fallback to avoid broken headers
 const DEFAULT_IMAGES_MAP: Record<ImageSection, Record<string, string>> = {
   branding: {
-    brand_logo_dark: blueLogo,
-    brand_logo_white: whiteLogo
+    brand_logo_dark: '',
+    brand_logo_white: ''
   },
   home: {
     h_exp_staging: '',
