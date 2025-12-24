@@ -429,7 +429,7 @@ export function CMSEnquiries() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-700 hover:bg-red-800 text-white font-medium shadow-sm transition-all active:scale-95"
+              className="!bg-red-700 !hover:bg-red-800 !text-white !border-red-700 hover:border-red-800 font-medium shadow-sm transition-all active:scale-95"
             >
               Delete
             </AlertDialogAction>

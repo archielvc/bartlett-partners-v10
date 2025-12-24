@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { trackPropertyFavorited } from '../utils/analytics';
 
 interface Property {
@@ -27,7 +27,26 @@ interface FavoritesContextType {
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const [favorites, setFavorites] = useState<Property[]>([]);
+  const [favorites, setFavorites] = useState<Property[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('bartlett_saved_properties');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error('Failed to parse saved properties:', e);
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bartlett_saved_properties', JSON.stringify(favorites));
+    }
+  }, [favorites]);
 
   const addToFavorites = (property: Property) => {
     trackPropertyFavorited(String(property.id), property.title);
@@ -56,12 +75,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <FavoritesContext.Provider value={{ 
-      favorites, 
-      addToFavorites, 
-      removeFromFavorites, 
+    <FavoritesContext.Provider value={{
+      favorites,
+      addToFavorites,
+      removeFromFavorites,
       isFavorite,
-      toggleFavorite 
+      toggleFavorite
     }}>
       {children}
     </FavoritesContext.Provider>
