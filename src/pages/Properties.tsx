@@ -250,10 +250,10 @@ export default function Properties() {
                       setSearchQuery(e.target.value);
                       changePage(1, false);
                     }}
-                    className="pl-12 pr-4 h-11 rounded-full border border-gray-200 focus:border-[#1A2551] focus:ring-1 focus:ring-[#1A2551] outline-none text-sm w-64 transition-all"
+                    className="pl-14 pr-4 h-11 rounded-full border border-gray-200 focus:border-[#1A2551] focus:ring-1 focus:ring-[#1A2551] outline-none text-sm w-64 transition-all"
                     style={{ fontFamily: "'Figtree', sans-serif" }}
                   />
-                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   {searchQuery && (
                     <button
                       onClick={() => {

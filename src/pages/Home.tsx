@@ -2,7 +2,7 @@ import { HomeHero } from '../components/home/HomeHero';
 import { HomeFeaturedProperties } from '../components/home/HomeFeaturedProperties';
 import { ExploreBoroughs } from '../components/ExploreBoroughs';
 
-import { HomeExperience } from '../components/home/HomeExperience';
+import { HomeServicesNew } from '../components/home/HomeServicesNew';
 import { HomeTeam } from '../components/home/HomeTeam';
 import { GlobalTestimonials } from '../components/global/GlobalTestimonials';
 import { useEffect } from 'react';
@@ -34,9 +34,9 @@ export function Home() {
         <HomeTeam />
       </Reveal>
 
-      <Reveal width="100%">
-        <HomeExperience />
-      </Reveal>
+
+      <HomeServicesNew />
+
 
 
       <GlobalTestimonials />

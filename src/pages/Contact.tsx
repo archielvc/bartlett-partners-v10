@@ -41,8 +41,8 @@ export default function Contact() {
                     <div className="space-y-8">
                       {/* Email */}
                       <a
-                        href="mailto:hello@bartlettpartners.co.uk"
-                        onClick={() => trackEmailClick('hello@bartlettpartners.co.uk')}
+                        href="mailto:info@bartlettandpartners.com"
+                        onClick={() => trackEmailClick('info@bartlettandpartners.com')}
                         className="flex items-start gap-4 group"
                       >
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#8E8567] transition-colors duration-300">
@@ -50,14 +50,14 @@ export default function Contact() {
                         </div>
                         <div>
                           <p className="text-[#8E8567] text-xs font-bold uppercase tracking-widest mb-1" style={{ fontFamily: "'Figtree', sans-serif" }}>Email</p>
-                          <p className="text-lg font-light group-hover:text-[#8E8567] transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>hello@bartlettpartners.co.uk</p>
+                          <p className="text-lg font-light group-hover:text-[#8E8567] transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>info@bartlettandpartners.com</p>
                         </div>
                       </a>
 
                       {/* Phone */}
                       <a
-                        href="tel:+442089408000"
-                        onClick={() => trackPhoneClick('+442089408000')}
+                        href="tel:02086141441"
+                        onClick={() => trackPhoneClick('02086141441')}
                         className="flex items-start gap-4 group"
                       >
                         <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#8E8567] transition-colors duration-300">
@@ -65,13 +65,13 @@ export default function Contact() {
                         </div>
                         <div>
                           <p className="text-[#8E8567] text-xs font-bold uppercase tracking-widest mb-1" style={{ fontFamily: "'Figtree', sans-serif" }}>Phone</p>
-                          <p className="text-lg font-light group-hover:text-[#8E8567] transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>020 8940 8000</p>
+                          <p className="text-lg font-light group-hover:text-[#8E8567] transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>020 8614 1441</p>
                         </div>
                       </a>
 
                       {/* WhatsApp */}
                       <a
-                        href="https://wa.me/442089408000"
+                        href="https://wa.me/442086141441"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-start gap-4 group"
@@ -81,13 +81,13 @@ export default function Contact() {
                         </div>
                         <div>
                           <p className="text-[#8E8567] text-xs font-bold uppercase tracking-widest mb-1" style={{ fontFamily: "'Figtree', sans-serif" }}>WhatsApp</p>
-                          <p className="text-lg font-light group-hover:text-[#8E8567] transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>020 8940 8000</p>
+                          <p className="text-lg font-light group-hover:text-[#8E8567] transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>020 8614 1441</p>
                         </div>
                       </a>
 
                       {/* Address */}
                       <a
-                        href="https://www.google.com/maps/search/?api=1&query=14+The+Quadrant+Richmond+Surrey+TW9+1BP"
+                        href="https://www.google.com/maps/search/?api=1&query=102-104+Church+Road+Teddington+TW11+8PY"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-start gap-4 group"
@@ -98,7 +98,7 @@ export default function Contact() {
                         <div>
                           <p className="text-[#8E8567] text-xs font-bold uppercase tracking-widest mb-1" style={{ fontFamily: "'Figtree', sans-serif" }}>Office</p>
                           <p className="text-lg font-light group-hover:text-[#8E8567] transition-colors leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
-                            14 The Quadrant, Richmond,<br />Surrey TW9 1BP
+                            102-104 Church Road,<br />Teddington TW11 8PY
                           </p>
                         </div>
                       </a>

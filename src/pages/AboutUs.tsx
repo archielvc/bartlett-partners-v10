@@ -43,39 +43,7 @@ export default function AboutUs() {
         <AboutValues />
         <AboutApproach />
 
-        {/* CTA Section - Moved above Testimonials */}
-        <section className="w-full py-24 bg-[#1A2551] text-white text-center px-6">
-          <div className="max-w-3xl mx-auto">
-            <Reveal width="100%" variant="fade-in">
-              <h2
-                className="text-4xl md:text-5xl mb-6 leading-tight font-light"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                Ready to be a priority?
-              </h2>
-            </Reveal>
-            <Reveal width="100%" delay={0.2}>
-              <p className="text-white/70 text-base md:text-lg font-light mb-10 max-w-3xl mx-auto leading-relaxed">
-                Let us help you achieve exceptional results with your property sale.
-              </p>
-            </Reveal>
-            <Reveal width="100%" delay={0.3}>
-              <Button
-                variant="hero"
-                premium
-                asChild
-                className="mx-auto bg-white text-[#1A2551] border-none hover:bg-[#8E8567] hover:text-white"
-              >
-                <Link
-                  to="/contact"
-                  onClick={() => trackCTAClick('Book a Valuation', 'About Us Page')}
-                >
-                  Book a Valuation
-                </Link>
-              </Button>
-            </Reveal>
-          </div>
-        </section>
+
 
         {/* Testimonials - Wrapper removed to eliminate grey background */}
         <Reveal width="100%">

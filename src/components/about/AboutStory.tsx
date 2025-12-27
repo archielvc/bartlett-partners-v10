@@ -1,3 +1,7 @@
+import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
+import { trackCTAClick } from "../../utils/analytics";
+import { Reveal } from "../animations/Reveal";
 import { motion } from "motion/react";
 import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { useSiteSettings } from "../../contexts/SiteContext";
@@ -45,9 +49,6 @@ export function AboutStory() {
               <p>
                 Today, that promise remains at the heart of everything we do. When you instruct us, you work directly with our directors throughout your entire journey. We are available on WhatsApp, we attend every viewing personally and we keep you informed at every stage.
               </p>
-              <p className="text-[#1A2551] font-medium italic">
-                The result? Homes that sell faster, for better prices, with far less stress.
-              </p>
             </div>
           </motion.div>
 
@@ -73,16 +74,31 @@ export function AboutStory() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="absolute top-12 -left-12 w-1/2 aspect-square bg-[#1A2551] p-8 flex flex-col justify-between shadow-2xl hidden md:flex z-20"
+              className="absolute top-12 -left-12 w-1/2 aspect-square bg-[#1A2551] p-12 flex items-center justify-center shadow-2xl hidden md:flex z-20"
             >
-              <span className="text-white/40 text-xs uppercase tracking-widest">Active Portfolio</span>
-              <div className="text-white text-4xl font-serif italic">
+              <div className="text-white text-4xl font-serif italic text-center leading-tight">
                 "We treat your home as our only asset."
               </div>
-              <div className="w-full h-[1px] bg-white/20" />
             </motion.div>
           </div>
 
+        </div>
+
+        {/* Split Conclusion & CTA Section */}
+        <div className="mt-20 pt-10 border-t border-[#1A2551]/10">
+          <div className="flex flex-col gap-12">
+
+            {/* Top: Conclusion - Full Width */}
+            <div className="w-full">
+              <Reveal width="100%">
+                <p className="text-[#1A2551] text-2xl md:text-3xl font-light italic leading-relaxed" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  The result? Homes that sell faster, for better prices, with far less stress.
+                </p>
+              </Reveal>
+            </div>
+
+
+          </div>
         </div>
       </div>
     </section>

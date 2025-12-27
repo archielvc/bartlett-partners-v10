@@ -82,7 +82,22 @@ export function Footer() {
                   Join our exclusive mailing list for the latest property news, market analysis, and off-market opportunities.
                 </p>
                 {isSubmitted ? (
-                  <p className="text-green-400 text-sm">Thanks for subscribing!</p>
+                  <div className="w-full bg-[#8E8567]/10 border border-[#8E8567] p-6 rounded-md relative overflow-hidden">
+                    <div className="relative z-10">
+                      <h3
+                        className="text-white text-lg mb-2"
+                        style={{ fontFamily: "'Playfair Display', serif" }}
+                      >
+                        Thanks for subscribing
+                      </h3>
+                      <p
+                        className="text-white/80 text-xs font-light"
+                        style={{ fontFamily: "'Figtree', sans-serif" }}
+                      >
+                        You have successfully joined our mailing list.
+                      </p>
+                    </div>
+                  </div>
                 ) : (
                   <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-3">
                     <input

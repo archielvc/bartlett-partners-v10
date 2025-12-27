@@ -112,15 +112,7 @@ const DEFAULT_IMAGES: Record<ImageSection, ImageBlock[]> = {
       alt: 'Property market insights'
     }
   ],
-  contact: [
-    {
-      id: 'c_hero_bg',
-      label: 'Contact Hero',
-      value: '',
-      description: 'The full-width banner image at the top of the Contact page.',
-      alt: 'Contact Bartlett & Partners'
-    },
-  ],
+  contact: [],
   locations: [
     {
       id: 'l_twickenham',
@@ -136,13 +128,7 @@ const DEFAULT_IMAGES: Record<ImageSection, ImageBlock[]> = {
       description: 'The main image for Teddington, used for both the home page thumbnail and the area guide hero section.',
       alt: 'Teddington neighbourhood'
     },
-    {
-      id: 'l_st_margarets',
-      label: 'St Margarets Image',
-      value: '',
-      description: 'The main image for St Margarets, used for both the home page thumbnail and the area guide hero section.',
-      alt: 'St Margarets neighbourhood'
-    },
+
     {
       id: 'l_kew',
       label: 'Kew Image',

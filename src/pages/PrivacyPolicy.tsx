@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
               </p>
               <div className="space-y-4 text-gray-600 font-light leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
                 <p>
-                  This Privacy Policy describes the policies of Bartlett & Partners, 26 The Quadrant, Richmond, London TW9 1DL, United Kingdom of Great Britain and Northern Ireland (the), email: info@bartlettandpartners.com, phone: 020 8614 1441 on the collection, use and disclosure of your information that we collect when you use our website ( https://www.bartlettandpartners.com ). (the "Service"). By accessing or using the Service, you are consenting to the collection, use and disclosure of your information in accordance with this Privacy Policy. If you do not consent to the same, please do not access or use the Service.
+                  This Privacy Policy describes the policies of Bartlett & Partners, 102-104 Church Road, Teddington TW11 8PY, United Kingdom of Great Britain and Northern Ireland (the), email: info@bartlettandpartners.com, phone: 020 8614 1441 on the collection, use and disclosure of your information that we collect when you use our website ( https://www.bartlettandpartners.com ). (the "Service"). By accessing or using the Service, you are consenting to the collection, use and disclosure of your information in accordance with this Privacy Policy. If you do not consent to the same, please do not access or use the Service.
                 </p>
                 <p>
                   We may modify this Privacy Policy at any time without any prior notice to you and will post the revised Privacy Policy on the Service. The revised Policy will be effective 180 days from when the revised Policy is posted in the Service and your continued access or use of the Service after such time will constitute your acceptance of the revised Privacy Policy. We therefore recommend that you periodically review this page.
@@ -161,7 +161,7 @@ export default function PrivacyPolicy() {
                 </h2>
                 <div className="pl-4 text-gray-600 font-light leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   <p>
-                    If you have any queries or concerns about the processing of your information that is available with us, you may email our Grievance Officer at Bartlett & Partners, 26 The Quadrant, Richmond, email: info@bartlettandpartners.com. We will address your concerns in accordance with applicable law.
+                    If you have any queries or concerns about the processing of your information that is available with us, you may email our Grievance Officer at Bartlett & Partners, 102-104 Church Road, Teddington TW11 8PY, email: info@bartlettandpartners.com. We will address your concerns in accordance with applicable law.
                   </p>
                 </div>
               </section>

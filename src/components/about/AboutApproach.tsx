@@ -1,5 +1,9 @@
 import { motion } from "motion/react";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
+import { Reveal } from "../animations/Reveal";
+import { trackCTAClick } from "../../utils/analytics";
 
 export function AboutApproach() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,6 +34,25 @@ export function AboutApproach() {
               </p>
 
               <div className="w-full h-[1px] bg-white/10 mb-12" />
+
+              <div className="hidden lg:block mt-8">
+                <Reveal width="100%" delay={0.2}>
+                  <Button
+                    variant="ghost"
+                    premium
+                    size="lg"
+                    className="bg-white border border-[#1A2551] text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-colors px-8 py-6 text-base w-full justify-center rounded-md"
+                    asChild
+                  >
+                    <Link to="/contact" onClick={() => trackCTAClick('Start your journey', 'About Approach')}>
+                      <span className="premium-hover !inline-flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm">
+                        Book Valuation
+                      </span>
+                    </Link>
+                  </Button>
+                </Reveal>
+              </div>
+
             </motion.div>
           </div>
 
@@ -72,7 +95,7 @@ export function AboutApproach() {
           </div>
 
         </div>
-      </div>
-    </section>
+      </div >
+    </section >
   );
 }

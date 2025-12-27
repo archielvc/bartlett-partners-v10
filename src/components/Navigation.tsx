@@ -500,7 +500,9 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                                 to={item.toLowerCase() === 'login' ? '/admin' : `/${item.toLowerCase()}`}
                                 onClick={() => handleNavigate(item.toLowerCase())}
                               >
-                                {item}
+                                <span className="premium-hover !inline-flex items-center justify-center gap-2">
+                                  {item}
+                                </span>
                               </Link>
                             </Button>
                           </motion.div>

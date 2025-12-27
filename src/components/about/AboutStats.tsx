@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 
 export function AboutStats() {
   const stats = [
-    { label: "Success Rate", value: "93%", sub: "Industry average is 37%. That's a lot worse than our success rate." },
+    { label: "Success Rate", value: "93%", sub: "Industry average is 37%." },
     { label: "Client Cap", value: "10", sub: "Maximum clients at any time ensuring dedicated attention" },
     { label: "Total property sold", value: "£450M+", sub: "£550k to £5M+ properties" },
   ];

@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { Button } from "../ui/button";
+import { PhoneInput } from "../ui/phone-input";
 import { Pencil, MapPin, Loader2, Check } from "lucide-react";
 import { Property } from "../../types/property";
 import { PropertyMultiSelector } from "./PropertyMultiSelector";
@@ -41,6 +43,7 @@ export function UnifiedContactForm({
     const [showPropertySelector, setShowPropertySelector] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [phone, setPhone] = useState<string | undefined>("");
 
     const showPropertySelection = intent === 'buy' || intent === 'both';
 
@@ -88,10 +91,24 @@ export function UnifiedContactForm({
         e.preventDefault();
         setIsSubmitting(true);
 
+        // Basic validation for phone
+        if (!phone) {
+            toast.error("Please enter a phone number");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (!isValidPhoneNumber(phone)) {
+            toast.error("Please enter a valid phone number");
+            setIsSubmitting(false);
+            return;
+        }
+
+
         const formData = new FormData(e.currentTarget);
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
-        const phone = formData.get('phone') as string;
+        // Phone is handled via state
         const message = formData.get('message') as string;
 
         // Determine inquiry type for database
@@ -111,7 +128,7 @@ export function UnifiedContactForm({
             await submitContactForm({
                 name,
                 email,
-                phone,
+                phone: phone || "",
                 message: fullMessage,
                 property_id: selectedProperties.length > 0 ? String(selectedProperties[0].id) : undefined,
                 inquiry_type: inquiryType
@@ -138,6 +155,7 @@ export function UnifiedContactForm({
                 setIntent('other');
             }
             setSelectedProperties(defaultProperties);
+            setPhone("");
 
         } catch (error) {
             console.error(error);
@@ -183,7 +201,7 @@ export function UnifiedContactForm({
                 ) : (
                     <Button
                         onClick={() => setIsSubmitted(false)}
-                        className="min-w-[200px]"
+                        className="min-w-[200px] px-8"
                         premium
                     >
                         Send Another Message
@@ -293,11 +311,11 @@ export function UnifiedContactForm({
                         />
                     </div>
                     <div>
-                        <label style={inputLabelStyle}>Phone</label>
-                        <input
+                        <label style={inputLabelStyle}>Phone*</label>
+                        <PhoneInput
                             name="phone"
-                            type="tel"
-                            className={inputClasses}
+                            value={phone}
+                            onChange={setPhone}
                             placeholder="Phone number"
                         />
                     </div>

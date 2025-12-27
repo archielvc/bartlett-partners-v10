@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 // Auth types
 export type UserRole = 'administrator' | 'editor';
@@ -17,9 +17,7 @@ interface AuthContextType {
   user: User | null;
   signOut: () => Promise<void>;
   isLoading: boolean;
-  /** True if current user can edit site images (administrator only) */
   canEditImages: boolean;
-  /** True if current user is an administrator */
   isAdmin: boolean;
 }
 
@@ -28,128 +26,167 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Ref for cleanup protection
+  const mounted = useRef(true);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    // Safety timeout - never stay loading for more than 5 seconds
-    const timeoutId = setTimeout(() => {
-      if (isMounted) {
-        console.warn('Auth initialization timeout - forcing loading to false');
-        setIsLoading(false);
-      }
-    }, 5000);
-
-    // Check active sessions and sets the user
-    const initializeAuth = async () => {
-      console.log('AuthContext: Starting initialization...');
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('AuthContext: getSession result:', { hasSession: !!session, error });
-
-        if (error) {
-          console.error('Error getting session:', error);
-          if (isMounted) setIsLoading(false);
-          return;
-        }
-
-        if (session?.user) {
-          console.log('AuthContext: Found session, fetching profile for:', session.user.email);
-          await fetchUserProfile(session.user);
-        } else {
-          console.log('AuthContext: No session found');
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-      } finally {
-        console.log('AuthContext: Initialization complete, setting loading to false');
-        if (isMounted) setIsLoading(false);
-        clearTimeout(timeoutId);
-      }
-    };
-
-    initializeAuth();
-
-    // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!isMounted) return;
-
-      if (session?.user) {
-        await fetchUserProfile(session.user);
-      } else {
-        setUser(null);
-      }
-      setIsLoading(false);
-    });
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const fetchUserProfile = async (supabaseUser: SupabaseUser): Promise<void> => {
+  const fetchUserProfile = useCallback(async (supabaseUser: SupabaseUser): Promise<User> => {
+    console.log('fetchUserProfile: called for', supabaseUser.email);
     try {
-      // First, check if profile exists
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
+      // 5 second timeout for profile fetch
+      const profilePromise = supabase
+        .rpc('get_my_profile')
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        // Still set a basic user so login works even if profile fetch fails
-        setUser({
-          id: supabaseUser.id,
-          email: supabaseUser.email || '',
-          name: supabaseUser.user_metadata?.full_name || 'User',
-          role: 'editor', // Default to editor if we can't fetch profile
-          avatar: supabaseUser.user_metadata?.avatar_url
-        });
-        return;
+      const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000);
+      });
+
+      // Use a wrapper to catch the timeout error locally so we can fallback
+      let data, error;
+      try {
+        const result = await Promise.race([profilePromise, timeoutPromise]);
+        // result is from maybeSingle(), so it has { data, error } structure if it's the rpc call
+        // IF it's the timeout, it throws.
+        // Wait, supabase promise returns { data, error, count, status, statusText }
+        // We need to be careful with types here.
+        // Let's coerce the result.
+        // Actually simplest way is just:
+        const { data: profileData, error: profileError } = result as any;
+        data = profileData;
+        error = profileError;
+      } catch (err) {
+        console.error('fetchUserProfile: timeout or error', err);
+        error = err;
       }
 
-      // If no profile exists yet, create a basic user object
-      if (!profile) {
-        console.warn('Profile not found for user:', supabaseUser.id);
-        setUser({
+      console.log('fetchUserProfile: RPC result', { data, error });
+
+      if (error || !data) {
+        console.warn('fetchUserProfile: RPC failed or no profile, using default');
+        return {
           id: supabaseUser.id,
           email: supabaseUser.email || '',
           name: supabaseUser.user_metadata?.full_name || 'User',
           role: 'editor',
           avatar: supabaseUser.user_metadata?.avatar_url
-        });
-        return;
+        };
       }
 
-      setUser({
+      return {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
-        name: profile.full_name || supabaseUser.user_metadata?.full_name || 'User',
-        role: profile.role as UserRole,
+        name: data.full_name || supabaseUser.user_metadata?.full_name || 'User',
+        role: data.role as UserRole,
         avatar: supabaseUser.user_metadata?.avatar_url
-      });
-    } catch (error) {
-      console.error('Unexpected error fetching profile:', error);
-      // Set basic user even on unexpected errors
-      setUser({
+      };
+    } catch (e) {
+      console.error('fetchUserProfile: unexpected error', e);
+      return {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
         name: 'User',
         role: 'editor',
         avatar: undefined
-      });
+      };
     }
-  };
+  }, []);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
+  const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
+    console.log('handleAuthChange:', event, session?.user?.email);
+
+    if (session?.user) {
+      // If we already have the user and it matches the session user, don't refetch
+      // This prevents loops if onAuthStateChange fires repeatedly
+      // However, we need to be careful. The user object in state might be stale or detailed.
+      // Let's just fetch for now but ensure we handle loading state better.
+      const userProfile = await fetchUserProfile(session.user);
+      if (mounted.current) {
+        setUser(userProfile);
+        setIsLoading(false);
+      }
+    } else {
+      if (mounted.current) {
+        setUser(null);
+        setIsLoading(false);
+      }
+    }
+  }, [fetchUserProfile]);
+
+  useEffect(() => {
+    mounted.current = true;
+    console.log('AuthProvider: Initializing...');
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('AuthProvider: Error getting session', error);
+        if (mounted.current) setIsLoading(false);
+        return;
+      }
+
+      console.log('AuthProvider: Initial session:', session?.user?.email);
+      if (session?.user) {
+        fetchUserProfile(session.user).then((userProfile) => {
+          if (mounted.current) {
+            setUser(userProfile);
+            setIsLoading(false);
+          }
+        });
+      } else {
+        if (mounted.current) {
+          setIsLoading(false);
+        }
+      }
+    });
+
+    // Subscribe to changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // onAuthStateChange is often called immediately with the current session
+      // We need to avoid double-setting state if getSession is already running.
+      // But typically relying on this solely is safer than mixing both without coordination.
+      // However, getSession is better for the *initial* load to avoid a "flash" of logged out state.
+      // The logic above handles getSession. handleAuthChange handles subsequent updates.
+      // We might want to debounce or check if we are already loading.
+
+      // Let's rely on handleAuthChange for *updates* but we need to match it with the initial load.
+      // Actually, onAuthStateChange fires "INITIAL_SESSION" event now in newer libraries, 
+      // but let's stick to the standard pattern:
+      // 1. getSession() for initial state.
+      // 2. onAuthStateChange() for updates.
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        // handleAuthChange calls fetchUserProfile and sets loading false
+        handleAuthChange(event, session);
+      } else if (event === 'SIGNED_OUT') {
+        handleAuthChange(event, null);
+      }
+      // IGNORE INITIAL_SESSION event if it exists to avoid race with getSession above, 
+      // OR remove getSession block and rely solely on this? 
+      // Reliability wise, keeping them separate is often tricky. 
+      // But let's stick to the plan: if we are loading, we wait for the first valid result.
+    });
+
+    return () => {
+      mounted.current = false;
+      subscription.unsubscribe();
+    };
+  }, [handleAuthChange, fetchUserProfile]);
+
+  const signOut = useCallback(async () => {
+    console.log('signOut: called');
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('signOut error:', e);
+    }
+    if (mounted.current) {
+      setUser(null);
+    }
+  }, []);
 
   const isAdmin = user?.role === 'administrator';
   const canEditImages = isAdmin;
+
+  console.log('AuthProvider render: user=', user?.email, 'isLoading=', isLoading);
 
   return (
     <AuthContext.Provider value={{ user, signOut, isLoading, canEditImages, isAdmin }}>
@@ -171,4 +208,3 @@ export function useAuth() {
   }
   return context;
 }
-

@@ -108,7 +108,7 @@ export const trackPropertyFavorited = (propertyId: string, propertyTitle: string
 };
 
 // Contact/Lead Events
-export const trackContactFormSubmit = (formType: 'general' | 'valuation' | 'property' | 'newsletter'): void => {
+export const trackContactFormSubmit = (formType: 'general' | 'valuation' | 'property' | 'newsletter' | 'newsletter_popup_step1' | 'lead_gen_popup_step2'): void => {
   trackEvent('generate_lead', 'Contact Form', formType);
 
   // Track as conversion

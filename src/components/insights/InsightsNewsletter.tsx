@@ -10,19 +10,18 @@ interface InsightsNewsletterProps {
 }
 
 export function InsightsNewsletter({
-  title = "Market Insights to Your Inbox",
+  title = "Market Insights",
   description = "Join our exclusive mailing list for the latest property news, market analysis, and off-market opportunities in Richmond."
 }: InsightsNewsletterProps) {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await submitContactForm({
-        name: `${firstName} ${lastName}`.trim() || 'Newsletter Subscriber',
+        name: firstName || 'Newsletter Subscriber',
         email: email,
         message: 'Newsletter subscription request',
         inquiry_type: 'newsletter',
@@ -35,7 +34,6 @@ export function InsightsNewsletter({
       setIsSubmitted(true);
       setEmail("");
       setFirstName("");
-      setLastName("");
     } catch (error) {
       console.error(error);
       alert("Failed to subscribe. Please try again.");
@@ -92,47 +90,32 @@ export function InsightsNewsletter({
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-xl ml-auto">
-                {/* Name Row */}
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all h-11 min-w-0 text-sm"
-                    style={{ fontFamily: "'Figtree', sans-serif" }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="w-1/2 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all h-11 min-w-0 text-sm"
-                    style={{ fontFamily: "'Figtree', sans-serif" }}
-                  />
-                </div>
-
-                {/* Email & Subscribe Row */}
-                <div className="flex gap-3 h-11">
-                  <input
-                    type="email"
-                    placeholder="Email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="flex-1 bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all min-w-0 h-full text-sm"
-                    style={{ fontFamily: "'Figtree', sans-serif" }}
-                  />
-                  <Button
-                    type="submit"
-                    premium
-                    className="bg-[#8E8567] text-white border-none rounded-md h-full px-6 flex items-center justify-center gap-3 transition-colors duration-300 hover:bg-[#8E8567]"
-                  >
-                    <span>Subscribe</span>
-                  </Button>
-                </div>
+              <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-3 max-w-2xl ml-auto">
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className="w-full lg:w-1/3 bg-transparent border border-[#8E8567] text-white px-4 py-3 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
+                  style={{ fontFamily: "'Figtree', sans-serif" }}
+                />
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full lg:flex-1 bg-transparent border border-[#8E8567] text-white px-4 py-3 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
+                  style={{ fontFamily: "'Figtree', sans-serif" }}
+                />
+                <Button
+                  type="submit"
+                  premium
+                  className="w-full lg:w-auto bg-[#8E8567] text-white border-none rounded-md px-8 py-3 flex items-center justify-center gap-2 transition-colors duration-300 hover:bg-[#8E8567] whitespace-nowrap"
+                >
+                  <span>Subscribe</span>
+                </Button>
               </form>
             )}
           </div>

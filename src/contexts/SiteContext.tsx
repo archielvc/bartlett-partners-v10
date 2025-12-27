@@ -50,9 +50,7 @@ const DEFAULT_IMAGES_MAP: Record<ImageSection, Record<string, string>> = {
     a_val_2: '',
     a_val_3: ''
   },
-  contact: {
-    c_hero_bg: ''
-  },
+  contact: {},
   properties: {
     p_hero_bg: ''
   },
@@ -63,8 +61,7 @@ const DEFAULT_IMAGES_MAP: Record<ImageSection, Record<string, string>> = {
     l_twickenham: '',
     l_teddington: '',
     l_kew: '',
-    l_ham: '',
-    l_st_margarets: ''
+    l_ham: ''
   },
   team: {
     t_member_1: '',

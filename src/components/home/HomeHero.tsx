@@ -9,9 +9,12 @@ import { getOptimizedUrl } from "../OptimizedImage";
 
 import { useSiteSettings } from "../../contexts/SiteContext";
 
+const MotionLink = motion(Link);
+
 export function HomeHero() {
   const navigate = useNavigate();
-  const MotionLink = motion(Link);
+  // MotionLink removed from here as it caused re-renders
+
 
   // Initialize from cache for instant loading
   const [featuredProperty, setFeaturedProperty] = useState<DBProperty | null>(() => {

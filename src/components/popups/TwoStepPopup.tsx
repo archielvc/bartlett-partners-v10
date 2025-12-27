@@ -4,12 +4,13 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { PhoneInput } from "../ui/phone-input";
 import { X, ArrowRight, Check, MapPin, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { cn } from "../ui/utils";
 import { useLocation } from "react-router-dom";
-import { saveSubscriber } from "../../utils/database";
+import { submitContactForm } from "../../utils/database";
 import { trackEvent, trackContactFormSubmit } from "../../utils/analytics";
 
 export function TwoStepPopup() {
@@ -17,11 +18,10 @@ export function TwoStepPopup() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
 
   // Step 2 fields
   const [address, setAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState<string | undefined>("");
   const [priceRange, setPriceRange] = useState("");
   const [minBeds, setMinBeds] = useState("");
 
@@ -103,14 +103,14 @@ export function TwoStepPopup() {
 
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !firstName || !lastName) return;
+    if (!email || !firstName) return;
 
     // Save initial contact info
-    await saveSubscriber({
-      email,
-      firstName,
-      lastName,
-      preferences: { step: 1 }
+    await submitContactForm({
+      name: firstName,
+      email: email,
+      message: 'Newsletter subscription from Two Step Popup',
+      inquiry_type: 'newsletter'
     });
 
     trackContactFormSubmit('newsletter_popup_step1');
@@ -120,19 +120,13 @@ export function TwoStepPopup() {
   const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Update with preferences (mocked implementation logic)
-    await saveSubscriber({
-      email,
-      firstName,
-      lastName,
-      preferences: {
-        step: 2,
-        buying: 'buying',
-        address,
-        phoneNumber,
-        priceRange,
-        minBeds
-      }
+    // Update with preferences
+    await submitContactForm({
+      name: firstName,
+      email: email,
+      phone: phoneNumber,
+      message: `Lead Magnet Priority Access Request.\nAddress: ${address}\nPrice Range: ${priceRange}\nMin Beds: ${minBeds}`,
+      inquiry_type: 'newsletter'
     });
 
     trackContactFormSubmit('lead_gen_popup_step2');
@@ -200,36 +194,20 @@ export function TwoStepPopup() {
                   </div>
 
                   <form onSubmit={handleStep1Submit} className="w-full max-w-md space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2 text-left">
-                        <Label htmlFor="firstName" className="text-xs uppercase tracking-widest font-bold text-[#1A2551] ml-1">
-                          First Name*
-                        </Label>
-                        <Input
-                          id="firstName"
-                          type="text"
-                          placeholder="First Name"
-                          className="h-11 px-5 rounded-md border-[#1A2551]/20 bg-white/80 focus:bg-white text-base"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          required
-                          autoFocus
-                        />
-                      </div>
-                      <div className="space-y-2 text-left">
-                        <Label htmlFor="lastName" className="text-xs uppercase tracking-widest font-bold text-[#1A2551] ml-1">
-                          Last Name*
-                        </Label>
-                        <Input
-                          id="lastName"
-                          type="text"
-                          placeholder="Last Name"
-                          className="h-11 px-5 rounded-md border-[#1A2551]/20 bg-white/80 focus:bg-white text-base"
-                          value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
-                          required
-                        />
-                      </div>
+                    <div className="space-y-2 text-left">
+                      <Label htmlFor="firstName" className="text-xs uppercase tracking-widest font-bold text-[#1A2551] ml-1">
+                        First Name*
+                      </Label>
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder="First Name"
+                        className="h-11 px-5 rounded-md border-[#1A2551]/20 bg-white/80 focus:bg-white text-base"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                        autoFocus
+                      />
                     </div>
 
                     <div className="space-y-2 text-left">
@@ -309,17 +287,12 @@ export function TwoStepPopup() {
                       <Label htmlFor="phone" className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">
                         Phone Number
                       </Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1A2551]/40" />
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="+44 7700 900000"
-                          className="h-11 pl-10 rounded-md border-[#1A2551]/20 bg-white/80 focus:bg-white text-sm"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                        />
-                      </div>
+                      <PhoneInput
+                        id="phone"
+                        placeholder="Phone number"
+                        value={phoneNumber}
+                        onChange={setPhoneNumber}
+                      />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 text-left">

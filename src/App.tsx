@@ -72,7 +72,14 @@ function FrontendLayout() {
   );
 }
 
+import { cleanupSiteImages } from './utils/cleanupSiteImages';
+
 export default function App() {
+  useEffect(() => {
+    // Temporary cleanup for obsolete site images
+    cleanupSiteImages();
+  }, []);
+
   return (
     <BrowserRouter>
       <SEOProvider>
