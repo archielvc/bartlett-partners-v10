@@ -7,7 +7,7 @@ import { AboutStory } from "../components/about/AboutStory";
 import { GlobalTestimonials } from "../components/global/GlobalTestimonials";
 import { useEffect, useState } from "react";
 import { applySEO } from "../utils/seo";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { trackCTAClick } from "../utils/analytics";
 import { getGlobalSettings } from "../utils/database";
@@ -61,15 +61,17 @@ export default function AboutUs() {
             </Reveal>
             <Reveal width="100%" delay={0.3}>
               <Button
-                onClick={() => {
-                  trackCTAClick('Book a Valuation', 'About Us Page');
-                  navigate('/contact');
-                }}
                 variant="hero"
                 premium
+                asChild
                 className="mx-auto bg-white text-[#1A2551] border-none hover:bg-[#8E8567] hover:text-white"
               >
-                Book a Valuation
+                <Link
+                  to="/contact"
+                  onClick={() => trackCTAClick('Book a Valuation', 'About Us Page')}
+                >
+                  Book a Valuation
+                </Link>
               </Button>
             </Reveal>
           </div>

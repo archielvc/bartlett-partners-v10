@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Bed, Bath } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { getFeaturedProperty, getStored } from "../../utils/database";
@@ -11,10 +11,11 @@ import { useSiteSettings } from "../../contexts/SiteContext";
 
 export function HomeHero() {
   const navigate = useNavigate();
+  const MotionLink = motion(Link);
 
   // Initialize from cache for instant loading
   const [featuredProperty, setFeaturedProperty] = useState<DBProperty | null>(() => {
-    return getStored<DBProperty>('property_featured');
+    return getStored<DBProperty>('property_featured_v2');
   });
 
   const [isMobile, setIsMobile] = useState(false);
@@ -85,24 +86,17 @@ export function HomeHero() {
         <div className="w-full max-w-[1600px] mx-auto">
 
           {/* Frosted Glass Property Card */}
-          <motion.div
+          <MotionLink
+            to={featuredProperty ? `/properties/${featuredProperty.slug}` : "/properties"}
             initial={{ opacity: 0, y: 20 }}
             animate={{
               opacity: featuredProperty ? 1 : 0,
               y: featuredProperty ? 0 : 20
             }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-sm w-full bg-white border border-[#1A2551] rounded-xl overflow-hidden shadow-2xl relative cursor-pointer group hover:shadow-xl transition-all duration-300"
-            onClick={() => featuredProperty ? navigate(`/properties/${featuredProperty.slug}`) : undefined}
-            role="button"
-            tabIndex={0}
+            className="max-w-sm w-full bg-white border border-[#1A2551] rounded-xl overflow-hidden shadow-2xl relative cursor-pointer group hover:shadow-xl transition-all duration-300 block"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                featuredProperty ? navigate(`/properties/${featuredProperty.slug}`) : navigate('/properties');
-              }
-            }}
           >
             <div className="p-6 flex flex-col gap-1 relative z-10">
               {/* Top Row: Title & Price */}
@@ -141,19 +135,12 @@ export function HomeHero() {
                   </div>
                 </div>
 
-                {/* View Pill Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    featuredProperty ? navigate(`/properties/${featuredProperty.slug}`) : navigate('/properties');
-                  }}
-                  className="px-5 py-1.5 rounded-full border border-[#1A2551]/20 text-[#1A2551] text-[10px] font-bold uppercase tracking-widest hover:bg-[#1A2551] hover:text-white transition-all duration-300"
-                >
+                <div className="px-5 py-1.5 rounded-full border border-[#1A2551]/20 text-[#1A2551] text-[10px] font-bold uppercase tracking-widest group-hover:bg-[#1A2551] group-hover:text-white transition-all duration-300">
                   View
-                </button>
+                </div>
               </div>
             </div>
-          </motion.div>
+          </MotionLink>
 
         </div>
       </div>

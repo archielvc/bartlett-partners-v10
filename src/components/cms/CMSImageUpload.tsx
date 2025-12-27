@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { cn } from '../../components/ui/utils';
 import { getImageMetadata, setImageMetadata } from '../../utils/imageMetadata';
 import { OptimizedImage } from '../OptimizedImage';
+import { compressImage } from '../../utils/imageCompression';
 
 interface CMSImageUploadProps {
   value: string;
@@ -86,16 +87,38 @@ export function CMSImageUpload({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-      toast.error('Image size must be less than 10MB');
-      return;
+    let fileToUpload = file;
+
+    // If file is larger than 10MB, try to compress it
+    if (file.size > 10 * 1024 * 1024) {
+      try {
+        const toastId = toast.loading(`Compressing ${file.name}...`);
+        fileToUpload = await compressImage(file, {
+          maxWidth: 2048,
+          quality: 0.8
+        });
+        toast.dismiss(toastId);
+
+        // Check if it's still too big (unlikely with these settings)
+        if (fileToUpload.size > 10 * 1024 * 1024) {
+          const sizeMB = (fileToUpload.size / (1024 * 1024)).toFixed(2);
+          toast.error(`Image is still too large (${sizeMB}MB) after compression.`);
+          return;
+        }
+      } catch (error) {
+        console.error('Compression failed:', error);
+        toast.error(`Failed to compress large image. Error: ${error}`);
+        return;
+      }
+    } else {
+      console.log(`File ${file.name} is ${(file.size / (1024 * 1024)).toFixed(2)}MB - no compression needed`);
     }
 
     setIsUploading(true);
 
     try {
       // Create a unique file name
-      const fileExt = file.name.split('.').pop();
+      const fileExt = fileToUpload.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       const filePath = folder ? `${folder}/${fileName}` : fileName;
 
@@ -105,9 +128,9 @@ export function CMSImageUpload({
       const response = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': file.type,
+          'Content-Type': fileToUpload.type,
         },
-        body: file,
+        body: fileToUpload,
       });
 
       if (!response.ok) {
@@ -125,7 +148,7 @@ export function CMSImageUpload({
       }
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error(`Upload failed: ${error.message || 'Unknown error'}`);
+      toast.error(`Upload failed: ${error.message || 'Unknown error'} (Server Response)`);
     } finally {
       setIsUploading(false);
     }
@@ -438,7 +461,7 @@ export function CMSImageUpload({
               <>
                 <Upload className="w-10 h-10 mx-auto mb-3 text-gray-400" />
                 <p className="text-sm font-medium text-gray-700 mb-1">Click or drag image to upload</p>
-                <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                <p className="text-xs text-gray-500">PNG, JPG • Large images will be automatically compressed</p>
               </>
             )}
           </div>
@@ -508,7 +531,7 @@ export function CMSImageUpload({
                 <div className="flex flex-col items-center justify-center h-full">
                   <Upload className="w-10 h-10 mb-3 text-gray-400" />
                   <p className="text-sm font-medium text-gray-700 mb-1">Click or drag to upload</p>
-                  <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                  <p className="text-xs text-gray-500">PNG, JPG • Large images will be automatically compressed</p>
                 </div>
               )}
             </div>

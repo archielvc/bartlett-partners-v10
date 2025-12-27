@@ -2,7 +2,7 @@
 // KEY-VALUE STORE (SUPABASE + LOCALSTORAGE FALLBACK)
 // =====================================================
 
-import { supabase } from './supabase/client';
+import { supabase, supabaseUrl } from './supabase/client';
 
 const KV_PREFIX = 'bartlett_kv_';
 
@@ -38,25 +38,25 @@ export async function get<T = any>(key: string): Promise<T | null> {
         .select('setting_value')
         .eq('setting_key', key)
         .maybeSingle();
-      
+
       if (error) {
         console.error(`Error reading from Supabase (${key}):`, error);
         return getFromStorage<T>(key); // Fallback
       }
-      
+
       return data?.setting_value || null;
     } catch (error) {
       console.error(`Error in KV get (${key}):`, error);
       return getFromStorage<T>(key);
     }
   }
-  
+
   // Fallback to localStorage
   return getFromStorage<T>(key);
 }
 
 export async function set<T = any>(key: string, value: T): Promise<boolean> {
-  // Use Supabase if available
+  // 1. Prioritize direct Supabase DB call (fastest, standard RLS)
   if (supabase) {
     try {
       const { error } = await supabase
@@ -68,41 +68,77 @@ export async function set<T = any>(key: string, value: T): Promise<boolean> {
         }, {
           onConflict: 'setting_key'
         });
-      
-      if (error) {
-        console.error(`Error writing to Supabase (${key}):`, error);
-        return saveToStorage(key, value); // Fallback
-      }
-      
-      return true;
+
+      if (!error) return true;
+      console.error(`Error writing to Supabase (${key}):`, error);
     } catch (error) {
-      console.error(`Error in KV set (${key}):`, error);
-      return saveToStorage(key, value);
+      console.error(`Error in KV set Supabase (${key}):`, error);
     }
   }
-  
-  // Fallback to localStorage
+
+  // 2. Fallback to Edge Function (Legacy/Alternative)
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/cms-settings/set`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ key, value })
+    });
+
+    if (response.ok) return true;
+  } catch (error) {
+    // Ignore edge function errors if primary method failed too
+  }
+
+  // 3. Final Fallback to localStorage
   return saveToStorage(key, value);
 }
 
 export async function del(key: string): Promise<boolean> {
+  // 1. Prioritize direct Supabase DB call
   if (supabase) {
     try {
       const { error } = await supabase
         .from('global_settings')
         .delete()
         .eq('setting_key', key);
-      
-      if (error) {
-        console.error(`Error deleting from Supabase (${key}):`, error);
-      }
-      return !error;
+
+      if (!error) return true;
+      console.error(`Error deleting from Supabase (${key}):`, error);
     } catch (error) {
-      console.error(`Error in KV del (${key}):`, error);
-      return false;
+      console.error(`Error in KV del Supabase (${key}):`, error);
     }
   }
-  
+
+  // 2. Fallback to Edge Function
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/cms-settings/del`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ key })
+    });
+
+    if (response.ok) return true;
+  } catch (error) {
+    // Ignore
+  }
+
+  // 3. LocalStorage fallback
   try {
     const fullKey = `${KV_PREFIX}${key}`;
     localStorage.removeItem(fullKey);
@@ -145,24 +181,24 @@ export async function getByPrefix<T = any>(prefix: string): Promise<T[]> {
         .from('global_settings')
         .select('setting_value')
         .like('setting_key', `${prefix}%`);
-      
+
       if (error) {
         console.error(`Error in getByPrefix (${prefix}):`, error);
         return [];
       }
-      
+
       return (data || []).map(row => row.setting_value);
     } catch (error) {
       console.error(`Error in getByPrefix (${prefix}):`, error);
       return [];
     }
   }
-  
+
   // localStorage fallback
   try {
     const fullPrefix = `${KV_PREFIX}${prefix}`;
     const results: T[] = [];
-    
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith(fullPrefix)) {
@@ -172,7 +208,7 @@ export async function getByPrefix<T = any>(prefix: string): Promise<T[]> {
         }
       }
     }
-    
+
     return results;
   } catch (error) {
     return [];
@@ -183,14 +219,14 @@ export async function clear(): Promise<boolean> {
   // Only clears localStorage keys, not Supabase
   try {
     const keysToRemove: string[] = [];
-    
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith(KV_PREFIX)) {
         keysToRemove.push(key);
       }
     }
-    
+
     keysToRemove.forEach(key => localStorage.removeItem(key));
     return true;
   } catch (error) {

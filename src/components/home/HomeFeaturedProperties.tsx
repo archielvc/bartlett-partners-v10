@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { getPublishedProperties } from "../../utils/database";
+import { useNavigate, Link } from "react-router-dom";
+import { getHomeFeaturedProperties } from "../../utils/database";
 import type { Property } from "../../types/property";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { PropertyCard } from "../PropertyCard";
 import { Button } from "../ui/button";
 
@@ -13,14 +13,10 @@ export function HomeFeaturedProperties() {
 
   useEffect(() => {
     const fetchProperties = async () => {
-      const properties = await getPublishedProperties();
-      // Filter for Available properties only
-      const availableProperties = properties.filter(p => p.status.toLowerCase() === 'available');
-
-      // Select the first 3 available properties as featured
-      if (availableProperties && availableProperties.length > 0) {
-        setFeaturedProperties(availableProperties.slice(0, 3));
-      }
+      // Use new specific fetch function
+      // If no specific properties are selected, it falls back to 3 available (handled in util)
+      const properties = await getHomeFeaturedProperties();
+      setFeaturedProperties(properties);
     };
     fetchProperties();
   }, []);
@@ -45,15 +41,15 @@ export function HomeFeaturedProperties() {
             </h2>
           </div>
 
-          <button
-            onClick={() => navigate('/properties')}
+          <Link
+            to="/properties"
             className="flex items-center gap-2 text-[#1A2551] hover:text-[#8E8567] transition-colors group mb-2"
           >
             <span className="text-sm font-medium tracking-widest uppercase border-b border-[#1A2551] group-hover:border-[#8E8567] pb-1 transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>
               View all properties
             </span>
             <ArrowRight className="w-4 h-4 mb-1" />
-          </button>
+          </Link>
         </div>
 
         {/* Desktop Grid / Mobile Carousel Wrapper */}

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Armchair, Camera, Megaphone, Handshake, FileText, TrendingUp, ArrowRight, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Reveal } from "../animations/Reveal";
 
 export function HomeExperience() {
@@ -147,16 +147,14 @@ export function HomeExperience() {
                                                                 {service.description}
                                                             </p>
                                                             <div className="flex flex-col items-start justify-end h-full">
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        navigate('/contact');
-                                                                    }}
+                                                                <Link
+                                                                    to="/contact"
                                                                     className="group flex items-center gap-4 text-white text-sm tracking-[0.2em] uppercase font-medium transition-all hover:text-[#8E8567]"
+                                                                    onClick={() => window.scrollTo(0, 0)}
                                                                 >
                                                                     <span>Enquire</span>
                                                                     <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                                                                </button>
+                                                                </Link>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -229,16 +227,14 @@ export function HomeExperience() {
                                                     <p className="text-white/80 text-sm font-light leading-relaxed mb-6" style={{ fontFamily: "'Figtree', sans-serif" }}>
                                                         {service.description}
                                                     </p>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigate('/contact');
-                                                        }}
+                                                    <Link
+                                                        to="/contact"
                                                         className="flex items-center gap-3 text-[#8E8567] text-xs tracking-widest uppercase font-bold"
+                                                        onClick={() => window.scrollTo(0, 0)}
                                                     >
                                                         <span>Enquire</span>
                                                         <ArrowRight className="w-3 h-3" />
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </motion.div>
                                         )}

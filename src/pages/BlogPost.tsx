@@ -2,7 +2,7 @@ import { Navigation } from "../components/Navigation";
 import { Reveal } from "../components/animations/Reveal";
 import { OptimizedImage } from "../components/OptimizedImage";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
 import { getBlogPostBySlug, getPublishedBlogPostsLight } from "../utils/database";
@@ -86,12 +86,12 @@ export default function BlogPost() {
           <div className="max-w-[1600px] mx-auto">
             {/* Back Button */}
             <Reveal variant="fade-in" duration={0.5}>
-              <button
+              <Link
+                to="/insights"
                 onClick={() => {
                   trackEvent('navigation_click', { destination: 'insights', location: 'blog_post_back' });
-                  navigate("/insights");
                 }}
-                className="flex items-center gap-2 text-[#1A2551] mb-6 md:mb-10 hover:opacity-70 transition-opacity group cursor-pointer"
+                className="flex items-center gap-2 text-[#1A2551] mb-6 md:mb-10 hover:opacity-70 transition-opacity group cursor-pointer w-fit"
               >
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                 <span
@@ -105,7 +105,7 @@ export default function BlogPost() {
                 >
                   Back to Insights
                 </span>
-              </button>
+              </Link>
             </Reveal>
 
             <div className="max-w-5xl">
@@ -351,13 +351,13 @@ export default function BlogPost() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {relatedPosts.map((relatedPost, index) => (
                     <Reveal key={relatedPost.id} delay={0.8 + (index * 0.1)} width="100%" className="h-full">
-                      <div
+                      <Link
+                        to={`/blog/${relatedPost.slug}`}
                         onClick={() => {
                           trackEvent('related_article_click', {
                             article_title: relatedPost.title,
                             article_slug: relatedPost.slug
                           });
-                          navigate(`/blog/${relatedPost.slug}`);
                         }}
                         className="flex flex-col h-full bg-white cursor-pointer group hover:shadow-md transition-shadow duration-300"
                       >
@@ -420,7 +420,7 @@ export default function BlogPost() {
                             Read Article <ArrowRight className="w-4 h-4 ml-2" />
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     </Reveal>
                   ))}
                 </div>

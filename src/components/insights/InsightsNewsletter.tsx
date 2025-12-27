@@ -83,7 +83,7 @@ export function InsightsNewsletter({
                   <Button
                     onClick={() => setIsSubmitted(false)}
                     variant="ghost"
-                    className="text-[#8E8567] hover:text-white hover:bg-[#8E8567]/20 p-0 h-auto font-medium transition-colors"
+                    className="text-[#8E8567] hover:text-white hover:bg-[#8E8567]/20 p-0 h-auto w-auto justify-start font-medium transition-colors"
                   >
                     <span className="flex items-center gap-2">
                       Subscribe another email <ArrowRight className="w-4 h-4" />

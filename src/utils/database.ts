@@ -133,12 +133,23 @@ const sortProperties = <T extends { id: number; status: string; created_at?: str
   const statusPriority: Record<string, number> = {
     'available': 0,
     'under_offer': 1,
-    'sold': 2,
-    'draft': 3
+    'sale-agreed': 2,
+    'under-offer': 2, // Map both
+    'sold': 3,
+    'draft': 4
   };
 
   return [...properties].sort((a, b) => {
-    // 1. Sort by Status
+    // 1. Sort by Custom Order (PRIMARY)
+    // If the user has manually reordered, this should take precedence
+    const indexA = orderIds.indexOf(a.id);
+    const indexB = orderIds.indexOf(b.id);
+
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+
+    // 2. Sort by Status (SECONDARY - for new items not in custom list)
     const statusA = statusPriority[a.status?.toLowerCase()] ?? 99;
     const statusB = statusPriority[b.status?.toLowerCase()] ?? 99;
 
@@ -146,20 +157,7 @@ const sortProperties = <T extends { id: number; status: string; created_at?: str
       return statusA - statusB;
     }
 
-    // 2. Sort by Custom Order
-    const indexA = orderIds.indexOf(a.id);
-    const indexB = orderIds.indexOf(b.id);
-
-    // If both are in the list, respect the relative order
-    if (indexA !== -1 && indexB !== -1) {
-      return indexA - indexB;
-    }
-
-    // New items (not in list) go to the TOP
-    if (indexA === -1 && indexB !== -1) return -1;
-    if (indexA !== -1 && indexB === -1) return 1;
-
-    // 3. Sort by Date (descending)
+    // 3. Sort by Date (TERTIARY - descending)
     return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
   });
 };
@@ -182,7 +180,7 @@ export async function getAllPropertiesAdminLight(): Promise<Partial<Property>[]>
 
   const { data, error } = await supabase
     .from('properties')
-    .select('id, title, slug, location, price, status, beds, baths, hero_image, thumbnail_image, created_at, updated_at')
+    .select('id, title, slug, location, price, status, beds, baths, hero_image, thumbnail_image, meta_title, meta_description, created_at, updated_at')
     .order('created_at', { ascending: false })
     .limit(500); // Prevent timeout
 
@@ -231,42 +229,40 @@ export async function getAllPropertiesAdmin(): Promise<Property[]> {
 }
 
 export async function getPublishedProperties(): Promise<UIProperty[]> {
-  const cacheKey = 'properties_published';
-  const cached = getStored<UIProperty[]>(cacheKey);
-  if (cached) {
-    console.log('✅ Returning cached published properties:', cached.length, 'properties');
-    return cached;
-  }
+  const cacheKey = 'properties_published_raw_v2';
 
-  console.log('🔍 Fetching published properties from database...');
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .in('status', ['available', 'under_offer', 'sold'])
-    .order('created_at', { ascending: false });
+  // 1. Get Raw Data (Cached)
+  let properties: Property[] = getStored<Property[]>(cacheKey) || [];
 
-  if (error) {
-    console.error('❌ Error fetching published properties:', error);
-    return [];
-  }
-  const properties = data || [];
-  console.log('✅ Fetched', properties.length, 'published properties from database');
+  if (properties.length === 0) {
+    console.log('🔍 Fetching published properties from database...');
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .in('status', ['available', 'under_offer', 'sold', 'sale-agreed', 'under-offer'])
+      .order('created_at', { ascending: false });
 
-  // Apply custom sorting
-  const orderIds = await get<number[]>('property_sort_order') || [];
-  const sortedProperties = sortProperties(properties, orderIds);
+    if (error) {
+      console.error('❌ Error fetching published properties:', error);
+      return [];
+    }
 
-  const result = sortedProperties.map(transformPropertyToUI);
+    properties = data || [];
 
-  // Only cache if we have results
-  if (result.length > 0) {
-    setCache(cacheKey, result);
-    console.log('💾 Cached', result.length, 'published properties');
+    if (properties.length > 0) {
+      setCache(cacheKey, properties);
+      console.log('💾 Cached', properties.length, 'raw published properties');
+    }
   } else {
-    console.warn('⚠️ No published properties found - not caching empty result');
+    console.log('✅ Used cached raw properties:', properties.length);
   }
 
-  return result;
+  // 2. Get Sort Order (Fresh)
+  const orderIds = await get<number[]>('property_sort_order') || [];
+
+  // 3. Apply Sort & Transform
+  const sortedProperties = sortProperties(properties, orderIds);
+  return sortedProperties.map(transformPropertyToUI);
 }
 
 export async function getPropertyBySlug(slug: string): Promise<PropertyWithDetails | null> {
@@ -284,34 +280,80 @@ export async function getPropertyBySlug(slug: string): Promise<PropertyWithDetai
 }
 
 export async function getFeaturedProperty(): Promise<Property | null> {
-  const cacheKey = 'property_featured';
-  const cached = getStored<Property>(cacheKey);
+  const metaCacheKey = 'property_featured_v2';
 
-  // Return cached immediately if available (Stale-While-Revalidate)
-  if (cached) {
-    // Trigger background refresh?
-    // For now, we just return cached to be fast. 
-    // We can add a "stale" check in a more advanced hook if needed.
-    return cached;
-  }
+  // Always fetch dynamic ID first
+  try {
+    const heroId = await get<number>('home_hero_id');
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .eq('is_featured', true) // Only show the explicitly featured property
-    .limit(1)
-    .maybeSingle();
+    if (heroId) {
+      const cacheKey = `property_${heroId}`;
+      const cached = getStored<Property>(cacheKey);
+      if (cached) {
+        // Update the meta-cache for HomeHero initialization
+        setCache(metaCacheKey, cached);
+        return cached;
+      }
 
-  if (error) {
+      const { data } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', heroId)
+        .maybeSingle();
+
+      if (data) {
+        setCache(cacheKey, data);
+        setCache(metaCacheKey, data); // Ensure HomeHero gets it too
+        return data;
+      }
+    }
+
+    // Fallback: Check for 'is_featured' flag if no specific hero set
+    const { data } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('is_featured', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (data) setCache(metaCacheKey, data);
+    return data;
+  } catch (error) {
     console.error('Error fetching featured property:', error);
     return null;
   }
+}
 
-  if (data) {
-    setCache(cacheKey, data);
+export async function getHomeFeaturedProperties(): Promise<UIProperty[]> {
+  try {
+    // Always get IDs fresh
+    const ids = await get<number[]>('home_featured_ids');
+
+    if (ids && ids.length > 0) {
+      // We could check cache for each ID, but fetching 3 items is cheap
+      const { data } = await supabase
+        .from('properties')
+        .select('*')
+        .in('id', ids);
+
+      if (data) {
+        // Sort by the order in the IDs array
+        const sortedData = [...data].sort((a, b) => {
+          return ids.indexOf(a.id) - ids.indexOf(b.id);
+        });
+
+        return sortedData.map(transformPropertyToUI);
+      }
+    }
+
+    // Fallback
+    const result = await getPublishedProperties();
+    return result.filter(p => p.status.toLowerCase() === 'available').slice(0, 3);
+
+  } catch (error) {
+    console.error('Error fetching home featured properties:', error);
+    return [];
   }
-
-  return data;
 }
 
 export async function createProperty(property: Partial<Property>): Promise<Property | null> {
@@ -750,6 +792,8 @@ export async function createBlogPost(post: Partial<BlogPost>): Promise<BlogPost 
     console.warn('⚠️ Insert succeeded but no data returned');
   }
 
+  // Clear cache after creation
+  clearCache();
   return data;
 }
 
@@ -1056,6 +1100,9 @@ export async function createStaticPage(page: Partial<StaticPage>): Promise<Stati
     console.error('Error in createStaticPage:', error);
     return null;
   }
+
+  // Clear cache after creation
+  clearCache();
   return data;
 }
 

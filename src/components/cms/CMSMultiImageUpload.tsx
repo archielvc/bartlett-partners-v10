@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../components/ui/utils';
+import { compressImage } from '../../utils/imageCompression';
 
 interface CMSMultiImageUploadProps {
   onImagesUploaded: (urls: string[]) => void;
@@ -30,10 +31,9 @@ export function CMSMultiImageUpload({
         toast.error(`${file.name} is not an image file`);
         continue;
       }
-      if (file.size > 10 * 1024 * 1024) { // 10MB
-        toast.error(`${file.name} is larger than 10MB`);
-        continue;
-      }
+      // logic change: accept all images, we will handle compression later if needed
+      // (or we can warn here but still allow?)
+      // Let's just allow them and compress.
       validFiles.push(file);
     }
 
@@ -48,8 +48,35 @@ export function CMSMultiImageUpload({
 
       // Upload each file to Supabase Storage via Edge Function
       for (const file of validFiles) {
+        let fileToUpload = file;
+
+        // If file is larger than 10MB, try to compress it
+        if (file.size > 10 * 1024 * 1024) {
+          try {
+            // Show loading toast or update status
+            const toastId = toast.loading(`Compressing ${file.name}...`);
+            fileToUpload = await compressImage(file, {
+              maxWidth: 2048,
+              quality: 0.8
+            });
+            toast.dismiss(toastId);
+
+            if (fileToUpload.size > 10 * 1024 * 1024) {
+              const sizeMB = (fileToUpload.size / (1024 * 1024)).toFixed(2);
+              toast.error(`${file.name} is still too large (${sizeMB}MB) after compression.`);
+              continue;
+            }
+          } catch (error) {
+            console.error(`Compression failed for ${file.name}:`, error);
+            toast.error(`Failed to compress ${file.name}. Error: ${error}`);
+            continue;
+          }
+        } else {
+          console.log(`File ${file.name} is ${(file.size / (1024 * 1024)).toFixed(2)}MB - no compression needed`);
+        }
+
         // Create a unique file name
-        const fileExt = file.name.split('.').pop();
+        const fileExt = fileToUpload.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
         // Default to property-images folder for multi-upload
         const folder = 'property-images';
@@ -61,9 +88,9 @@ export function CMSMultiImageUpload({
         const response = await fetch(EDGE_FUNCTION_URL, {
           method: 'POST',
           headers: {
-            'Content-Type': file.type,
+            'Content-Type': fileToUpload.type,
           },
-          body: file,
+          body: fileToUpload,
         });
 
         if (!response.ok) {
@@ -84,7 +111,7 @@ export function CMSMultiImageUpload({
       toast.success(`${uploadedUrls.length} image${uploadedUrls.length > 1 ? 's' : ''} uploaded successfully`);
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error(`Upload failed: ${error.message || 'Unknown error'}`);
+      toast.error(`Upload failed: ${error.message || 'Unknown error'} (Server Response)`);
     } finally {
       setIsUploading(false);
     }
@@ -178,7 +205,7 @@ export function CMSMultiImageUpload({
           <>
             <Upload className="w-10 h-10 mx-auto mb-3 text-gray-400" />
             <p className="text-sm font-medium text-gray-700 mb-1">Click or drag images to upload</p>
-            <p className="text-xs text-gray-500">Multiple images supported • PNG, JPG up to 10MB each</p>
+            <p className="text-xs text-gray-500">Multiple images supported • Auto-compression active</p>
           </>
         )}
       </div>

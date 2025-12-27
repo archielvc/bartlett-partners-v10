@@ -1,5 +1,5 @@
 import { Instagram, Facebook, Linkedin, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { Button } from "./ui/button";
 import { useSiteSettings } from "../contexts/SiteContext";
@@ -12,10 +12,8 @@ export function Footer() {
   const { images } = useSiteSettings();
   const whiteLogo = images.branding.brand_logo_white;
 
-  const handleNavClick = (e: React.MouseEvent, path: string) => {
-    e.preventDefault();
+  const handleNavClick = (path: string) => {
     trackNavigation(path);
-    navigate(path);
     window.scrollTo(0, 0);
   };
 
@@ -123,29 +121,29 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/" onClick={() => handleNavClick('/')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Home
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Properties
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/about')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/about" onClick={() => handleNavClick('/about')} className="text-white/60 hover:text-white transition-colors text-sm">
                       About Us
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/insights')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/insights" onClick={() => handleNavClick('/insights')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Insights
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Contact
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -157,28 +155,28 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/twickenham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/twickenham" onClick={() => handleNavClick('/twickenham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Twickenham
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/teddington')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/teddington" onClick={() => handleNavClick('/teddington')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Teddington
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/kew')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/kew" onClick={() => handleNavClick('/kew')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Kew
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/ham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/ham" onClick={() => handleNavClick('/ham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Ham
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -190,24 +188,24 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Buying
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Selling
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Both
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" onClick={(e) => handleNavClick(e, '/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Other
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -321,8 +319,8 @@ export function Footer() {
 
             {/* Right: Legal Links */}
             <div className="flex gap-8">
-              <a href="#" onClick={(e) => handleNavClick(e, '/privacy-policy')} className="text-xs text-white/40 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Privacy Policy</a>
-              <a href="#" onClick={(e) => handleNavClick(e, '/cookie-policy')} className="text-xs text-white/40 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Cookie Policy</a>
+              <Link to="/privacy-policy" onClick={() => handleNavClick('/privacy-policy')} className="text-xs text-white/40 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Privacy Policy</Link>
+              <Link to="/cookie-policy" onClick={() => handleNavClick('/cookie-policy')} className="text-xs text-white/40 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Cookie Policy</Link>
             </div>
 
           </div>

@@ -7,7 +7,7 @@ import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { applySEO, PAGE_SEO } from "../utils/seo";
 import { getPublishedBlogPostsLight, getPublishedTestimonials, getGlobalSettings } from "../utils/database";
 import { trackEvent } from "../utils/analytics";
@@ -100,11 +100,11 @@ export default function Insights() {
                   }}
                 >
                   {blogPosts.map((post) => (
-                    <div
+                    <Link
                       key={post.id}
+                      to={`/blog/${post.slug}`}
                       onClick={() => {
                         trackEvent('select_content', 'Blog Post', post.title);
-                        navigate(`/blog/${post.slug}`);
                       }}
                       className="flex-shrink-0 w-full md:w-[calc(33.33%-1rem)] cursor-pointer group bg-white transition-all duration-300 flex flex-col h-auto border border-gray-200 rounded-md overflow-hidden hover:shadow-xl hover:border-[#1A2551]/30"
                     >
@@ -163,11 +163,8 @@ export default function Insights() {
                           </p>
                         )}
 
-                        <div className="mt-auto pt-6 border-t border-gray-100 flex items-center text-[#1A2551] font-medium text-sm group-hover:translate-x-2 transition-transform duration-300">
-                          Read Article <ArrowRight className="w-4 h-4 ml-2" />
-                        </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (

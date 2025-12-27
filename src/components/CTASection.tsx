@@ -1,6 +1,6 @@
 import { BookEvaluationDialog } from "./BookEvaluationDialog";
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { TYPOGRAPHY, COLORS, SPACING } from "../utils/designTokens";
 
 interface CTASectionProps {
@@ -17,33 +17,28 @@ interface CTASectionProps {
   variant?: 'default' | 'centered' | 'minimal';
 }
 
-export function CTASection({ 
-  title, 
-  description, 
+export function CTASection({
+  title,
+  description,
   primaryCTA = { text: 'Book Free Valuation', type: 'book-valuation' },
   secondaryCTA,
   variant = 'default'
 }: CTASectionProps) {
   const navigate = useNavigate();
 
-  const handleSecondaryCTA = () => {
-    if (secondaryCTA?.type === 'properties') navigate('/properties');
-    else if (secondaryCTA?.type === 'contact') navigate('/contact');
-    else if (secondaryCTA?.type === 'insights') navigate('/insights');
-  };
 
   const isCentered = variant === 'centered';
   const isMinimal = variant === 'minimal';
 
   return (
-    <section 
+    <section
       className="w-full"
       style={{
         backgroundColor: isMinimal ? 'transparent' : COLORS.neutral.background,
         padding: isMinimal ? `${SPACING.xl} 0` : `${SPACING['2xl']} 0`,
       }}
     >
-      <div 
+      <div
         className={`max-w-[1280px] mx-auto px-6 lg:px-16 ${isCentered ? 'text-center' : ''}`}
       >
         <h2
@@ -85,19 +80,21 @@ export function CTASection({
               }
             />
           ) : (
-            <Button
-              onClick={() => navigate(`/${primaryCTA.type}`)}
-            >
-              {primaryCTA.text}
+            <Button asChild>
+              <Link to={`/${primaryCTA.type}`}>
+                {primaryCTA.text}
+              </Link>
             </Button>
           )}
 
           {secondaryCTA && (
             <Button
               variant="outline"
-              onClick={handleSecondaryCTA}
+              asChild
             >
-              {secondaryCTA.text}
+              <Link to={`/${secondaryCTA.type}`}>
+                {secondaryCTA.text}
+              </Link>
             </Button>
           )}
         </div>

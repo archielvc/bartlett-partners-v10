@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { CMSPageLayout } from '../CMSPageLayout';
 import { BlogEditor } from '../BlogEditor';
 import { JSONImportModal } from '../JSONImportModal';
+import { BulkImageUploadModal } from '../BulkImageUploadModal';
 import type { BlogPost } from '../../../types/database';
 import { getAllBlogPostsAdmin, getAllBlogPostsAdminLight, createBlogPost, deleteBlogPost, updateBlogPost, getBlogPostBySlug } from '../../../utils/database';
 import { generateBlogSEO } from '../../../utils/autoSEO';
@@ -24,6 +25,7 @@ export function CMSBlog() {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showJSONImport, setShowJSONImport] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
   // Selection & Deletion State
@@ -59,6 +61,7 @@ export function CMSBlog() {
       // Use lightweight query for list view - much faster!
       const data = await getAllBlogPostsAdminLight();
       setPosts(data as BlogPost[]);
+      console.log('📚 Loaded blog posts:', (data as BlogPost[]).length);
       setSelectedIds([]);
     } catch (error) {
       console.error('Failed to load blog posts', error);
@@ -155,15 +158,24 @@ export function CMSBlog() {
       };
 
       if (editingPost) {
-        await updateBlogPost(editingPost.id, postData);
-        toast.success('Blog post updated successfully');
+        const success = await updateBlogPost(editingPost.id, postData);
+        if (success) {
+          toast.success('Blog post updated successfully');
+        } else {
+          throw new Error('Update failed');
+        }
       } else {
-        await createBlogPost({
+        const result = await createBlogPost({
           ...postData,
           view_count: 0,
           published_at: postData.status === 'published' ? new Date().toISOString() : null
         });
-        toast.success('Blog post created successfully');
+
+        if (result) {
+          toast.success('Blog post created successfully');
+        } else {
+          throw new Error('Creation failed');
+        }
       }
 
       setShowModal(false);
@@ -342,6 +354,7 @@ export function CMSBlog() {
 
   const actions = [
     { label: "Import JSON", icon: Code, onClick: () => setShowJSONImport(true), variant: 'outline' as const },
+    { label: "Bulk Images", icon: Tag, onClick: () => setShowBulkUpload(true), variant: 'outline' as const },
     { label: "New Article", icon: Plus, onClick: handleAdd },
   ];
 
@@ -370,6 +383,13 @@ export function CMSBlog() {
       description="Manage articles, news, and market insights"
       actions={actions}
     >
+      <BulkImageUploadModal
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
+        onUploadComplete={loadPosts}
+        posts={filteredPosts}
+      />
+
       <AlertDialog open={deleteConfirm.isOpen} onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, isOpen: open }))}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -405,6 +425,22 @@ export function CMSBlog() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1A2551] focus:border-transparent text-sm"
           />
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center gap-3 pl-1">
+        <div className="h-6 w-1 bg-[#1A2551] rounded-full"></div>
+        <h2 className="text-xl font-semibold text-[#1A2551] select-none">All Articles</h2>
+        <span className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-medium border border-gray-200">
+          {posts.length} Total
+        </span>
+        <div className="flex items-center gap-2 ml-2">
+          <span className="bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-medium border border-emerald-200">
+            {posts.filter(p => p.status === 'published').length} Published
+          </span>
+          <span className="bg-yellow-100 text-yellow-700 px-2.5 py-0.5 rounded-full text-xs font-medium border border-yellow-200">
+            {posts.filter(p => p.status !== 'published').length} Drafts
+          </span>
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { useAuth, AuthProvider } from '../../contexts/AuthContext';
 import { AdminLogin } from './AdminLogin';
 import { AdminLayout } from './AdminLayout';
 import type { CMSView } from '../../types/cms';
+import { SEOManager } from '../SEOManager';
 
 // View Components (Lazy loaded or direct imports)
 import { CMSProperties } from './views/CMSProperties';
@@ -13,12 +14,23 @@ import { TestimonialsModule } from './TestimonialsModule';
 import { CMSSettings } from './views/CMSSettings';
 import { CMSSiteImages } from './views/CMSSiteImages';
 import { CMSTeam } from './views/CMSTeam';
-import { CMSBulkImageUpload } from './views/CMSBulkImageUpload';
 
 
 function AdminContent() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState<CMSView>('properties');
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full bg-[#1A2551] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          <p className="text-white/60 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <AdminLogin />;
@@ -42,8 +54,6 @@ function AdminContent() {
         return <CMSSettings />;
       case 'team':
         return <CMSTeam />;
-      case 'bulk-upload':
-        return <CMSBulkImageUpload />;
       default:
         return (
           <div className="p-12 text-center text-gray-400">
@@ -56,6 +66,7 @@ function AdminContent() {
 
   return (
     <AdminLayout currentView={currentView} onChangeView={setCurrentView}>
+      <SEOManager title="CMS Panel - Bartlett & Partners" noindex={true} />
       {renderView()}
     </AdminLayout>
   );

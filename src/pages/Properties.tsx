@@ -3,7 +3,7 @@ import { PropertyCard } from "../components/PropertyCard";
 import { PropertiesHero } from "../components/properties/PropertiesHero";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Search, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
@@ -13,10 +13,17 @@ import { trackPropertyFilter, trackEvent } from "../utils/analytics";
 import type { Property } from "../types/property";
 import type { Testimonial } from "../types/database";
 
+const STATUS_MAPPING: Record<string, string[]> = {
+  "Available": ["available"],
+  "Sale Agreed": ["sale-agreed", "under-offer", "under_offer"],
+  "Sold": ["sold"]
+};
+
 export default function Properties() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   // Initialize from persistent cache for instant load
@@ -130,25 +137,32 @@ export default function Properties() {
   // Filter and sort properties
   const filteredProperties = properties
     .filter(property => {
-      // If no filters selected, show all
       const hasAvailabilityFilter = selectedAvailability.length > 0;
       const hasPriceFilter = selectedPriceRanges.length > 0;
-
-      if (!hasAvailabilityFilter && !hasPriceFilter) return true;
+      const hasSearchQuery = searchQuery.trim().length > 0;
 
       // Check availability filter
-      const matchesAvailability = !hasAvailabilityFilter || selectedAvailability.includes(property.status);
+      const matchesAvailability = !hasAvailabilityFilter ||
+        selectedAvailability.some(label => {
+          const validStatuses = STATUS_MAPPING[label];
+          return validStatuses ? validStatuses.includes(property.status) : false;
+        });
 
       // Check price range filter
       const matchesPrice = !hasPriceFilter || selectedPriceRanges.some(range => matchesPriceRange(property.priceValue, range));
 
-      // AND logic: must match both filters if both are active
-      return matchesAvailability && matchesPrice;
-    })
-    .sort((a, b) => {
-      // Sort by status: Available, Sale Agreed, Sold
-      const statusOrder: { [key: string]: number } = { "Available": 1, "Sale Agreed": 2, "Sold": 3 };
-      return statusOrder[a.status] - statusOrder[b.status];
+      // Check search query - searches title, location, price, beds, baths
+      const query = searchQuery.toLowerCase().trim();
+      const matchesSearch = !hasSearchQuery || (
+        property.title.toLowerCase().includes(query) ||
+        property.location.toLowerCase().includes(query) ||
+        property.price.toLowerCase().includes(query) ||
+        String(property.beds).includes(query) ||
+        String(property.baths).includes(query)
+      );
+
+      // AND logic: must match all active filters
+      return matchesAvailability && matchesPrice && matchesSearch;
     });
 
   // Pagination calculations
@@ -226,6 +240,32 @@ export default function Properties() {
                     </span>
                   )}
                 </button>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search properties..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      changePage(1, false);
+                    }}
+                    className="pl-12 pr-4 h-11 rounded-full border border-gray-200 focus:border-[#1A2551] focus:ring-1 focus:ring-[#1A2551] outline-none text-sm w-64 transition-all"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                  />
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  {searchQuery && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        changePage(1, false);
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1A2551]"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -241,9 +281,11 @@ export default function Properties() {
                       <h3
                         className="text-[#1A2551] mb-6"
                         style={{
-                          fontFamily: "'Playfair Display', serif",
-                          fontSize: "1.25rem",
-                          fontStyle: "italic"
+                          fontFamily: "'Figtree', sans-serif",
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em"
                         }}
                       >
                         Availability
@@ -280,9 +322,11 @@ export default function Properties() {
                       <h3
                         className="text-[#1A2551] mb-6"
                         style={{
-                          fontFamily: "'Playfair Display', serif",
-                          fontSize: "1.25rem",
-                          fontStyle: "italic"
+                          fontFamily: "'Figtree', sans-serif",
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em"
                         }}
                       >
                         Price Range

@@ -7,7 +7,7 @@ import { CMSImageUpload } from '../CMSImageUpload';
 import { clearSiteImageCache } from '../../../hooks/useSiteImage';
 import { useSiteSettings } from '../../../contexts/SiteContext';
 
-type ImageSection = 'branding' | 'about' | 'contact' | 'properties' | 'insights' | 'locations' | 'film' | 'policies';
+type ImageSection = 'branding' | 'about' | 'contact' | 'properties' | 'insights' | 'locations';
 
 interface ImageBlock {
   id: string;
@@ -157,32 +157,6 @@ const DEFAULT_IMAGES: Record<ImageSection, ImageBlock[]> = {
       description: 'The main image for Ham, used for both the home page thumbnail and the area guide hero section.',
       alt: 'Ham neighbourhood'
     }
-  ],
-
-  film: [
-    {
-      id: 'film_hero',
-      label: 'Film Archive Hero',
-      value: '',
-      description: 'Hero background image for the Property Films page.',
-      alt: 'Property in Motion video archive'
-    }
-  ],
-  policies: [
-    {
-      id: 'privacy_hero',
-      label: 'Privacy Policy Hero',
-      value: '',
-      description: 'Hero image for Privacy Policy page.',
-      alt: 'Privacy Policy'
-    },
-    {
-      id: 'cookie_hero',
-      label: 'Cookie Policy Hero',
-      value: '',
-      description: 'Hero image for Cookie Policy page.',
-      alt: 'Cookie Policy'
-    }
   ]
 };
 
@@ -247,10 +221,24 @@ export function CMSSiteImages() {
     }
   };
 
+  // Calculate missing images count
+  const { missingCount, totalCount } = Object.values(images).reduce(
+    (acc, section) => {
+      section.forEach((block) => {
+        acc.totalCount++;
+        if (!block.value) {
+          acc.missingCount++;
+        }
+      });
+      return acc;
+    },
+    { missingCount: 0, totalCount: 0 }
+  );
+
   return (
     <CMSPageLayout
       title="Site Images"
-      description="Manage and update images across the website. Images are uploaded to the database."
+      description={`Manage and update images across the website. ${missingCount > 0 ? `${missingCount} of ${totalCount} images missing.` : 'All images uploaded.'}`}
       action={{ label: "Save Changes", icon: Save, onClick: handleSave }}
     >
       <div className="flex flex-col lg:flex-row gap-8">

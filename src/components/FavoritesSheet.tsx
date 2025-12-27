@@ -3,7 +3,7 @@ import { OptimizedImage } from "./OptimizedImage";
 import { getPropertyStatusStyles } from "../utils/propertyUtils";
 import { Sheet, SheetContent, SheetTitle, SheetDescription, SheetHeader } from "./ui/sheet";
 import { X, Bed, Bath, Maximize, MapPin, Heart } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 
 import { Button } from "./ui/button";
@@ -18,10 +18,6 @@ export function FavoritesSheet({ isOpen, onClose, onInquire }: FavoritesSheetPro
   const { favorites, removeFromFavorites } = useFavorites();
   const navigate = useNavigate();
 
-  const handlePropertyClick = (slug: string) => {
-    navigate(`/properties/${slug}`);
-    onClose();
-  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -121,9 +117,10 @@ export function FavoritesSheet({ isOpen, onClose, onInquire }: FavoritesSheetPro
                     <X className="w-4 h-4" />
                   </button>
 
-                  <div
+                  <Link
+                    to={`/properties/${property.slug}`}
                     className="flex flex-col cursor-pointer"
-                    onClick={() => handlePropertyClick(property.slug)}
+                    onClick={onClose}
                   >
                     {/* Image with status badge */}
                     <div className="w-full h-48 flex-shrink-0 overflow-hidden bg-gray-100 flex flex-col relative">
@@ -212,13 +209,12 @@ export function FavoritesSheet({ isOpen, onClose, onInquire }: FavoritesSheetPro
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               ))}
             </div>
           )}
         </div>
-
         {/* Footer - Inquire Now Button */}
         {favorites.length > 0 && (
           <div className="px-8 py-6 border-t border-[#1A2551]/10 bg-white/50 backdrop-blur-md z-10">

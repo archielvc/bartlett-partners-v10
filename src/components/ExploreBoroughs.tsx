@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { useSiteSettings } from "../contexts/SiteContext";
 
@@ -25,16 +25,16 @@ export function ExploreBoroughs() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Twickenham */}
-          <div
-            className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md"
-            onClick={() => navigate('/twickenham')}
+          <Link
+            to="/twickenham"
+            className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
           >
             <ImageWithFallback
               src={images.locations.l_twickenham}
               alt="Luxury Homes in Twickenham"
               className="w-full h-full object-cover transition-transform duration-700 lg:group-hover:scale-105 will-change-transform"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1A2551]/90 via-[#1A2551]/20 to-transparent opacity-80 transition-opacity lg:group-hover:opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity lg:group-hover:opacity-90" />
 
             <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 lg:p-12">
               <h3
@@ -50,19 +50,19 @@ export function ExploreBoroughs() {
                 <ArrowRight className="w-5 h-5 transition-transform duration-300 lg:group-hover:translate-x-1" />
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Teddington */}
-          <div
-            className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md"
-            onClick={() => navigate('/teddington')}
+          <Link
+            to="/teddington"
+            className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
           >
             <ImageWithFallback
               src={images.locations.l_teddington}
               alt="Luxury Homes in Teddington"
               className="w-full h-full object-cover transition-transform duration-700 lg:group-hover:scale-105 will-change-transform"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1A2551]/90 via-[#1A2551]/20 to-transparent opacity-80 transition-opacity lg:group-hover:opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity lg:group-hover:opacity-90" />
 
             <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 lg:p-12">
               <h3
@@ -78,7 +78,7 @@ export function ExploreBoroughs() {
                 <ArrowRight className="w-5 h-5 transition-transform duration-300 lg:group-hover:translate-x-1" />
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./OptimizedImage";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { getAllPropertiesAdmin } from "../utils/database";
 import type { Property as DBProperty } from "../types/database";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { useLoading } from "../contexts/LoadingContext";
 import { useState, useEffect } from "react";
@@ -239,11 +239,13 @@ export function Hero() {
                   <div className="mt-2">
                     <Button
                       variant="hero"
-                      onClick={() => navigate(slide.ctaLink || '/properties')}
+                      asChild
                       className="flex items-center justify-center gap-4 md:gap-2 group"
                     >
-                      View Property
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      <Link to={slide.ctaLink || '/properties'}>
+                        View Property
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      </Link>
                     </Button>
                   </div>
                 </>
@@ -281,14 +283,13 @@ export function Hero() {
                   <div className="mt-2">
                     <Button
                       variant="hero"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(slide.ctaLink || '/properties');
-                      }}
+                      asChild
                       className="flex items-center justify-center gap-4 md:gap-2 group"
                     >
-                      Explore Area
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      <Link to={slide.ctaLink || '/properties'}>
+                        Explore Area
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      </Link>
                     </Button>
                   </div>
                 </>

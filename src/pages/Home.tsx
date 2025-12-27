@@ -1,6 +1,6 @@
 import { HomeHero } from '../components/home/HomeHero';
 import { HomeFeaturedProperties } from '../components/home/HomeFeaturedProperties';
-import { HomeLocations } from '../components/home/HomeLocations';
+import { ExploreBoroughs } from '../components/ExploreBoroughs';
 
 import { HomeExperience } from '../components/home/HomeExperience';
 import { HomeTeam } from '../components/home/HomeTeam';
@@ -24,7 +24,7 @@ export function Home() {
       </Reveal>
 
       <Reveal width="100%">
-        <HomeLocations />
+        <ExploreBoroughs />
       </Reveal>
 
 

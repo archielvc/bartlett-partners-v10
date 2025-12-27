@@ -20,6 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 
 type FilterStatus = 'all' | 'new' | 'in_progress' | 'closed';
 type TabType = 'enquiries' | 'newsletter';
@@ -222,9 +229,10 @@ export function CMSEnquiries() {
           {activeTab === 'newsletter' && newNewsletterCount > 0 && (
             <Button
               onClick={handleExportNewNewsletters}
-              className="bg-[#C5A059] hover:bg-[#C5A059]/90 text-white uppercase tracking-wider font-bold px-6"
+              variant="outline"
+              className="border-[#1A2551]/20 text-[#1A2551] hover:bg-[#1A2551]/5 px-6 font-semibold w-auto"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4" />
               Export New Sign-ups ({newNewsletterCount})
             </Button>
           )}
@@ -377,19 +385,38 @@ export function CMSEnquiries() {
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="flex items-center gap-2">
-                      <select
+                      <Select
                         value={
                           ['read', 'replied'].includes(enquiry.status || '') ? 'in_progress' :
                             ['archived'].includes(enquiry.status || '') ? 'closed' :
                               (enquiry.status || 'new')
                         }
-                        onChange={(e) => handleStatusChange(enquiry.id, e.target.value as any)}
-                        className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-[#1A2551]"
+                        onValueChange={(value) => handleStatusChange(enquiry.id, value as any)}
                       >
-                        <option value="new">New</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="closed">Closed</option>
-                      </select>
+                        <SelectTrigger className="w-[130px] h-8 bg-white border-gray-200 text-[#1A2551] rounded-md text-xs font-medium focus:ring-1 focus:ring-[#1A2551]/20 shadow-sm transition-all hover:bg-gray-50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-gray-200 text-[#1A2551] min-w-[130px] p-1 shadow-xl rounded-lg">
+                          <SelectItem
+                            value="new"
+                            className="text-[#1A2551] hover:bg-gray-100 focus:bg-gray-100 focus:text-[#1A2551] rounded-md cursor-pointer transition-colors"
+                          >
+                            New
+                          </SelectItem>
+                          <SelectItem
+                            value="in_progress"
+                            className="data-[state=checked]:bg-[#76BC5F] data-[state=checked]:text-white hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 rounded-md cursor-pointer transition-colors"
+                          >
+                            In Progress
+                          </SelectItem>
+                          <SelectItem
+                            value="closed"
+                            className="text-[#1A2551] hover:bg-gray-100 focus:bg-gray-100 focus:text-[#1A2551] rounded-md cursor-pointer transition-colors"
+                          >
+                            Closed
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
 
                       <button
                         onClick={() => handleDeleteClick(enquiry)}
@@ -429,7 +456,7 @@ export function CMSEnquiries() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="!bg-red-700 !hover:bg-red-800 !text-white !border-red-700 hover:border-red-800 font-medium shadow-sm transition-all active:scale-95"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Delete
             </AlertDialogAction>

@@ -5,7 +5,7 @@ interface SEOData {
   description?: string;
   keywords?: string[];
   ogImage?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'product';
 }
 
 interface SEOContextType {

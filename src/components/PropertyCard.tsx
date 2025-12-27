@@ -66,7 +66,7 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
               fontFamily: "'Figtree', sans-serif",
             }}
           >
-            {property.status.replace(/_/g, ' ')}
+            {property.status === 'under_offer' || property.status === 'under-offer' ? 'Sale Agreed' : property.status.replace(/_/g, ' ')}
           </span>
         </div>
 

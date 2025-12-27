@@ -6,5 +6,4 @@ export type CMSView =
   | 'site-images'
   | 'settings'
   | 'seo'
-  | 'team'
-  | 'bulk-upload';
+  | 'team';

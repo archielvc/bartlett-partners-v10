@@ -221,7 +221,7 @@ export function UnifiedContactForm({
                                             setSelectedProperties([]);
                                         }
                                     }}
-                                    className={`w-full capitalize ${intent !== option ? "border-gray-200 text-[#1A2551] hover:border-[#1A2551]" : ""}`}
+                                    className={`w-full uppercase ${intent !== option ? "border-gray-200 text-[#1A2551] hover:border-[#1A2551]" : ""}`}
                                     premium
                                 >
                                     {intentLabels[option]}

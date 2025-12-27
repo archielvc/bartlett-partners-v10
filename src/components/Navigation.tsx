@@ -1,15 +1,16 @@
-
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { X, Menu, Heart, Instagram, Facebook, Linkedin } from "lucide-react";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { useSiteSettings } from "../contexts/SiteContext";
 import { FavoritesSheet } from "./FavoritesSheet";
 import { BookEvaluationDialog } from "./BookEvaluationDialog";
 import { PropertyInquiryDialog } from "./PropertyInquiryDialog";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { trackEvent, trackNavigation, trackCTAClick } from "../utils/analytics";
+
+const MotionLink = motion(Link);
 
 interface NavigationProps {
   currentPage?: string;
@@ -133,11 +134,6 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
   const handleNavigate = (page: string) => {
     const target = page.toLowerCase();
     trackNavigation(target);
-    if (target === 'login') {
-      navigate('/admin');
-    } else {
-      navigate(target === 'home' ? '/' : `/${target}`);
-    }
     setIsMenuOpen(false);
   };
 
@@ -162,22 +158,22 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
   };
 
   // Removed default hover:shadow-md to prevent sticky hover on mobile
-  const buttonBaseStyles = `relative w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm lg:hover:shadow-md active:scale-95`;
+  const buttonBaseStyles = "relative w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm lg:hover:shadow-md active:scale-95";
 
   // Transparent White (Dark Backgrounds) - Now matches new card scheme (White Bg, Dark Text, Blue Border)
-  const transparentWhiteStyles = `bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm`;
+  const transparentWhiteStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
 
   // Transparent Blue (Light Backgrounds) - Matches new scheme
-  const transparentBlueStyles = `bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm`;
+  const transparentBlueStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
 
   // Primary CTA Styles
-  const primaryWhiteStyles = `bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm`;
-  const primaryBlueStyles = `bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-lg`;
+  const primaryWhiteStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
+  const primaryBlueStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
 
   const getButtonStyle = () => {
     // Mobile Menu Open: Force high visibility dark styling
     if (isMobile && isMenuOpen) {
-      return `bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm`;
+      return "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
     }
     return transparentBlueStyles; // Always use the new "Card Scheme" style
   };
@@ -196,7 +192,12 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
     return (
       <>
         <nav className={`${isMenuOpen ? 'fixed' : 'absolute'} top-4 sm:top-6 left-6 md:left-12 lg:left-20 z-[70] flex items-center pointer-events-auto`}>
-          <button onClick={() => handleNavigate('home')} className="cursor-pointer transition-opacity hover:opacity-80" aria-label="Home">
+          <Link
+            to="/"
+            onClick={() => handleNavigate('home')}
+            className="cursor-pointer transition-opacity hover:opacity-80"
+            aria-label="Home"
+          >
             <motion.img
               key={showBlueLogo ? "blue" : "white"}
               initial={{ opacity: 0 }}
@@ -206,7 +207,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
               alt="Bartlett & Partners"
               style={{ height: "clamp(3.75rem, 11vw, 5.5rem)", width: "auto" }}
             />
-          </button>
+          </Link>
         </nav>
 
         <nav className="fixed top-4 sm:top-6 right-6 md:right-12 lg:right-20 z-[70] mt-2 sm:mt-3 md:mt-5 pointer-events-auto">
@@ -217,7 +218,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                 trackEvent('click', 'Favorites', 'mobile_header');
                 setIsFavoritesOpen(true);
               }}
-              className={`${buttonBaseStyles} ${buttonStyle}`}
+              className={`${buttonBaseStyles} ${buttonStyle} `}
               aria-label="View favorites"
             >
               <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -234,7 +235,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                 handleMenuToggle();
               }}
               // Use active state for mobile feedback instead of hover
-              className={`${buttonBaseStyles} ${buttonStyle}`}
+              className={`${buttonBaseStyles} ${buttonStyle} `}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
             >
@@ -261,9 +262,10 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
 
               <div className="flex-1 flex flex-col justify-center px-8 relative z-10 pt-32 sm:pt-40 md:pt-48 pb-12">
                 <div className="flex flex-col gap-6">
-                  {['Properties', 'About', 'Insights', 'Contact', 'Login'].map((item, index) => (
-                    <motion.button
+                  {['Properties', 'About', 'Insights', 'Contact'].map((item, index) => (
+                    <MotionLink
                       key={item}
+                      to={item.toLowerCase() === 'login' ? '/admin' : (item.toLowerCase() === 'home' ? '/' : `/${item.toLowerCase()}`)}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{
@@ -281,7 +283,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                       >
                         {item}
                       </span>
-                    </motion.button>
+                    </MotionLink>
                   ))}
                 </div>
 
@@ -388,7 +390,8 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
           <div className="w-full max-w-[1600px] mx-auto">
             <div className="relative flex items-center justify-between py-8">
               <div className="flex items-center gap-12 pointer-events-auto">
-                <button
+                <Link
+                  to="/"
                   onClick={() => handleNavigate('home')}
                   className="cursor-pointer transition-opacity hover:opacity-80 flex-shrink-0 z-10"
                   aria-label="Home"
@@ -399,12 +402,13 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                     className="logo-shimmer"
                     style={{ height: "5rem" }}
                   />
-                </button>
+                </Link>
 
                 <div className={`flex items-center gap-8 transition-opacity duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                  {['Properties', 'About', 'Insights', 'Contact', 'Login'].map((item) => (
-                    <button
+                  {['Properties', 'About', 'Insights', 'Contact'].map((item) => (
+                    <Link
                       key={item}
+                      to={item.toLowerCase() === 'login' ? '/admin' : `/${item.toLowerCase()}`}
                       onClick={() => handleNavigate(item.toLowerCase())}
                       className={`${textColor} ${hoverColor} transition-colors cursor-pointer group`}
                       style={{
@@ -418,7 +422,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                       <span className="premium-hover relative" data-text={item}>
                         <span>{item}</span>
                       </span>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -475,7 +479,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                           }
                         }}
                       >
-                        {['Properties', 'About', 'Insights', 'Contact', 'Login'].map((item) => (
+                        {['Properties', 'About', 'Insights', 'Contact'].map((item) => (
                           <motion.div
                             key={item}
                             variants={{
@@ -490,9 +494,14 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                               size="default"
                               className="bg-white border border-[#1A2551] text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-colors justify-center"
                               premium={true}
-                              onClick={() => handleNavigate(item.toLowerCase())}
+                              asChild
                             >
-                              {item}
+                              <Link
+                                to={item.toLowerCase() === 'login' ? '/admin' : `/${item.toLowerCase()}`}
+                                onClick={() => handleNavigate(item.toLowerCase())}
+                              >
+                                {item}
+                              </Link>
                             </Button>
                           </motion.div>
                         ))}

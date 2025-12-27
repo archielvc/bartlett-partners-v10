@@ -22,6 +22,7 @@ import { useNavigate, useParams } from "react-router-dom";
 // import { useFavorites } from "../contexts/FavoritesContext"; // Unused in this file according to linter rules usually, but user included it. I'll keep it if they used it, but they didn't seem to use it in the snippet provided (except import). 
 // Actually, looking at the code: "const { slug } = useParams<{ slug: string }>();" - useFavorites is imported but NOT USED in the user snippet. I will remove it to be clean, or keep it to be safe. I'll keep it commented or remove it if unused.
 import { motion, AnimatePresence } from "motion/react";
+import { useSEO } from "../contexts/SEOContext";
 import { updateSEO, injectSchema, SchemaGenerator } from "../utils/seo";
 import type { PropertyWithDetails, Testimonial } from "../types/database";
 import type { Property as UIProperty } from "../types/property";
@@ -39,6 +40,17 @@ export default function PropertyDetail() {
     useScrollDepth();
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+    const [showMobileAction, setShowMobileAction] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollY = window.scrollY;
+            const threshold = 600; // Simplified threshold
+            setShowMobileAction(scrollY > threshold);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
     const [property, setProperty] = useState<PropertyWithDetails | null>(null);
     const [relatedProperties, setRelatedProperties] = useState<UIProperty[]>([]);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -46,6 +58,12 @@ export default function PropertyDetail() {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const { slug } = useParams<{ slug: string }>();
+    const { setSEOData } = useSEO();
+
+    // Cleanup SEO on unmount
+    useEffect(() => {
+        return () => setSEOData({});
+    }, [setSEOData]);
 
     // Convert Google Maps URL to embed URL
     const convertToEmbedUrl = (url: string): string => {
@@ -116,13 +134,19 @@ export default function PropertyDetail() {
                     const priceVal = parseFloat(propData.price.replace(/[^0-9.]/g, '')) || 0;
                     trackPropertyView(String(propData.id), propData.title, priceVal);
 
-                    updateSEO({
+                    const seoData = {
                         title: propData.meta_title || `${propData.title} - Bartlett & Partners`,
                         description: propData.meta_description || `${propData.beds} bed ${propData.property_type?.toLowerCase()} for sale in ${propData.location}.`,
                         ogImage: propData.hero_image || '',
-                        type: 'product',
+                        type: 'product' as const,
                         keywords: ['luxury property', propData.location || '', propData.property_type || '']
-                    });
+                    };
+
+                    // Update global SEO context (Fixes race condition)
+                    setSEOData(seoData);
+
+                    // Keep direct update as eager fallback
+                    updateSEO(seoData);
 
                     injectSchema(SchemaGenerator.realEstateListing({
                         title: propData.title,
@@ -174,9 +198,22 @@ export default function PropertyDetail() {
         );
     }
 
-    const displayImages = (property.gallery_images || []).filter(Boolean);
-    if (displayImages.length === 0 && property.hero_image) displayImages.push(property.hero_image);
-    if (displayImages.length === 0 && property.thumbnail_image) displayImages.push(property.thumbnail_image);
+    const galleryItems = (property.gallery_images || []).filter(Boolean);
+    const displayImages: string[] = [];
+
+    // 1. Hero image is always first if it exists
+    if (property.hero_image) {
+        displayImages.push(property.hero_image);
+    }
+
+    // 2. Add gallery images, avoiding duplicate of hero image
+    const otherImages = galleryItems.filter(img => img !== property.hero_image);
+    displayImages.push(...otherImages);
+
+    // 3. Fallback to thumbnail if still empty
+    if (displayImages.length === 0 && property.thumbnail_image) {
+        displayImages.push(property.thumbnail_image);
+    }
 
     const priceValue = parseFloat(property.price.replace(/[^0-9.]/g, '')) || 0;
     const formattedPrice = `£${priceValue.toLocaleString()}`;
@@ -260,10 +297,10 @@ export default function PropertyDetail() {
             {/* 2. Main Content Layout */}
             <section className="px-4 md:px-8 lg:px-12 xl:px-20">
                 <div className="max-w-[1600px] mx-auto">
-                    <div className="flex flex-col lg:flex-row gap-16 relative">
+                    <div className="flex flex-col lg:flex-row items-start gap-16 relative">
 
                         {/* LEFT COLUMN (Content) */}
-                        <div className="w-full lg:w-2/3">
+                        <div className="w-full lg:flex-1 min-w-0">
                             {/* Title */}
                             <h1
                                 className="text-[#1A2551] text-4xl md:text-5xl lg:text-6xl mb-6"
@@ -293,14 +330,33 @@ export default function PropertyDetail() {
                             {/* About this home */}
                             <div className="mb-12">
                                 <h2 className="text-[#1A2551] text-2xl mb-4 font-semibold" style={{ fontFamily: "'Figtree', sans-serif" }}>About this home</h2>
+                                <style>{`
+                                     .description-content p {
+                                         margin-bottom: 1.5rem !important;
+                                         display: block !important;
+                                     }
+                                     .description-content p:last-child {
+                                         margin-bottom: 0 !important;
+                                     }
+                                     .description-content ul {
+                                         list-style-type: disc !important;
+                                         margin-bottom: 1.5rem !important;
+                                         padding-left: 1.5rem !important;
+                                     }
+                                     .description-content ol {
+                                         list-style-type: decimal !important;
+                                         margin-bottom: 1.5rem !important;
+                                         padding-left: 1.5rem !important;
+                                     }
+                                     .description-content li {
+                                         margin-bottom: 0.5rem !important;
+                                     }
+                                 `}</style>
                                 <div
-                                    className="text-[#3A3A3A] leading-relaxed space-y-4 font-light text-base md:text-lg"
+                                    className="text-[#3A3A3A] leading-relaxed font-light text-base md:text-lg description-content"
                                     style={{ fontFamily: "'Figtree', sans-serif" }}
-                                >
-                                    {property.description?.split('\n').map((paragraph, i) => (
-                                        <p key={i}>{paragraph}</p>
-                                    ))}
-                                </div>
+                                    dangerouslySetInnerHTML={{ __html: property.description || '' }}
+                                />
                             </div>
 
                             {/* Key Features */}
@@ -330,7 +386,7 @@ export default function PropertyDetail() {
 
                             {/* Location & Floor Plan */}
                             {(property.google_maps_url || property.floor_plan_image) && (
-                                <div className="mb-12">
+                                <div className="mt-12">
                                     <h2 className="text-[#1A2551] text-2xl mb-6 font-semibold" style={{ fontFamily: "'Figtree', sans-serif" }}>Location & Floor Plan</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {/* Map */}
@@ -346,7 +402,7 @@ export default function PropertyDetail() {
                                                 ></iframe>
                                                 <div className="absolute inset-0 pointer-events-none border border-[#1A2551]/10 rounded-xl" />
                                             </div>
-                                        ) : (
+                                        ) : property.google_maps_url !== undefined && (
                                             <div className="w-full aspect-square bg-gray-50 flex items-center justify-center rounded-xl border border-[#1A2551]/10">
                                                 <span className="text-gray-400">Map unavailable</span>
                                             </div>
@@ -382,10 +438,64 @@ export default function PropertyDetail() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Video Section */}
+                            {property.video_url && (
+                                <div className="mt-12">
+                                    <h2 className="text-[#1A2551] text-2xl mb-6 font-semibold" style={{ fontFamily: "'Figtree', sans-serif" }}>Video Tour</h2>
+                                    <div className="w-full relative pt-[56.25%] md:pt-[calc(50%-1rem)] bg-white rounded-xl overflow-hidden border border-[#1A2551]/10">
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            src={(() => {
+                                                let url = property.video_url || '';
+
+                                                // Handle if user pasted full iframe code
+                                                if (url.includes('<iframe')) {
+                                                    const srcMatch = url.match(/src="([^"]+)"/);
+                                                    if (srcMatch) url = srcMatch[1];
+                                                }
+
+                                                url = url.replace(/&amp;/g, '&');
+
+                                                // Simple parser
+                                                let id = '';
+                                                let hash = '';
+
+                                                // Try to find the numeric video ID
+                                                const idMatch = url.match(/([0-9]{8,10})/);
+                                                if (idMatch) id = idMatch[1];
+
+                                                // Try to find the hash
+                                                if (url.includes(`/${id}/`)) {
+                                                    const parts = url.split(`/${id}/`);
+                                                    if (parts[1]) hash = parts[1].split(/[?&/]/)[0];
+                                                } else if (url.includes('h=')) {
+                                                    const match = url.match(/h=([a-zA-Z0-9]+)/);
+                                                    if (match) hash = match[1];
+                                                }
+
+                                                if (id) {
+                                                    let embedUrl = `https://player.vimeo.com/video/${id}?`;
+                                                    if (hash) embedUrl += `h=${hash}`;
+                                                    return embedUrl;
+                                                }
+
+                                                return url.includes('player.vimeo.com') ? url : '';
+                                            })()}
+                                            title="Property Video Tour"
+                                            frameBorder="0"
+                                            allow="autoplay; fullscreen; picture-in-picture"
+                                            allowFullScreen
+                                            className="absolute inset-0 w-full h-full"
+                                        ></iframe>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* RIGHT COLUMN (Sticky Sidebar) */}
-                        <div className="w-full lg:w-1/3 sticky top-32 h-fit z-10">
+                        <div className="w-full lg:w-1/3 lg:sticky lg:top-32 h-fit">
                             <Reveal width="100%" delay={0.2}>
                                 <div className="space-y-6">
 
@@ -521,6 +631,49 @@ export default function PropertyDetail() {
                     </div>
                 </div>
             </section>
+
+            {/* Mobile Sticky Action Bar */}
+            <div
+                className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#1A2551]/10 p-4 transition-all duration-500 lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.05)] ${showMobileAction ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'
+                    }`}
+            >
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col">
+                        <span className="text-[#1A2551]/60 text-[10px] uppercase tracking-widest font-bold">Guide Price</span>
+                        <span className="text-[#1A2551] text-lg font-serif">{formattedPrice}</span>
+                    </div>
+                    <div className="flex gap-2 flex-1 justify-end">
+                        <PropertyInquiryDialog
+                            property={{
+                                id: property.id,
+                                title: property.title,
+                                location: property.location || '',
+                                price: formattedPrice,
+                                priceValue: priceValue,
+                                image: property.hero_image || '',
+                                beds: property.beds || 0,
+                                baths: property.baths || 0,
+                                sqft: property.sqft?.toString() || '0',
+                                type: property.property_type || '',
+                                status: property.status as any,
+                                slug: property.slug
+                            }}
+                            trigger={
+                                <Button
+                                    premium
+                                    className="flex-1 h-11 text-white text-xs uppercase tracking-widest px-6"
+                                    style={{
+                                        backgroundColor: '#1A2551',
+                                        borderColor: '#1A2551'
+                                    }}
+                                >
+                                    Enquire
+                                </Button>
+                            }
+                        />
+                    </div>
+                </div>
+            </div>
 
         </main >
     );

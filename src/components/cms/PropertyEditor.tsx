@@ -13,6 +13,8 @@ import type { Property } from '../../types/database';
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
 
+import { generateSEOFromContent } from '../../utils/aiSEO';
+
 interface PropertyEditorProps {
   property: Partial<Property> | null;
   onSave: (data: Partial<Property>, isDraft: boolean) => Promise<void>;
@@ -127,22 +129,54 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
     }
   }, [formData.title, property?.slug]);
 
-  // Auto-generate meta fields if empty
+  // Auto-generate SEO fields using smart algorithms
   useEffect(() => {
-    if (formData.title && !formData.meta_title) {
-      setFormData(prev => ({
-        ...prev,
-        meta_title: `${formData.title} - Bartlett & Partners`
-      }));
-    }
-    if (formData.description && !formData.meta_description) {
-      const desc = formData.description.replace(/<[^>]*>/g, '').substring(0, 155);
-      setFormData(prev => ({
-        ...prev,
-        meta_description: desc
-      }));
-    }
-  }, [formData.title, formData.description]);
+    // Only proceed if we have at least a title or description
+    if (!formData.title && !formData.description) return;
+
+    // We only want to generate if fields are empty to avoid overwriting user updates
+    const needsTitle = !formData.meta_title;
+    const needsDescription = !formData.meta_description;
+    const needsKeywords = !formData.keywords || formData.keywords.length === 0;
+    const needsSlug = !formData.slug;
+
+    if (!needsTitle && !needsDescription && !needsKeywords && !needsSlug) return;
+
+    // Use our shared SEO utility
+    const generated = generateSEOFromContent(
+      formData.title || '',
+      formData.description || '',
+      formData.property_type || 'Property',
+      formData.slug
+    );
+
+    setFormData(prev => {
+      const next = { ...prev };
+
+      if (needsTitle && formData.title) {
+        next.meta_title = generated.metaTitle;
+      }
+
+      if (needsDescription && formData.description) {
+        next.meta_description = generated.metaDescription;
+      }
+
+      if (needsKeywords && formData.description) {
+        // Add property-specific keywords
+        const locationTerms = formData.location ? [formData.location, `${formData.location} property`] : [];
+        const typeTerms = formData.property_type ? [formData.property_type] : [];
+        const newKeywords = [...new Set([...generated.keywords.split(', '), ...locationTerms, ...typeTerms])];
+        next.keywords = newKeywords.filter(k => k);
+      }
+
+      if (needsSlug && formData.title) {
+        next.slug = generated.slug;
+      }
+
+      return next;
+    });
+
+  }, [formData.title, formData.description, formData.location, formData.property_type]);
 
   const validateForm = (): boolean => {
     const errors: string[] = [];
@@ -468,17 +502,6 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
 
                     </select>
 
-                    <div className="mt-4 flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <Switch
-                        id="is_featured"
-                        checked={formData.is_featured || false}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
-                      />
-                      <div>
-                        <Label htmlFor="is_featured" className="font-medium text-gray-900 block text-sm cursor-pointer">Featured Property</Label>
-                        <p className="text-xs text-gray-500">Display as the main hero property on home page</p>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Row 2: Price and Property Type */}
@@ -737,13 +760,13 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
                     Video URL
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.video_url || ''}
                     onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                    placeholder="https://vimeo.com/... or https://youtube.com/..."
+                    placeholder="Vimeo URL or Embed Code"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A2551] focus:border-transparent"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Vimeo or YouTube link</p>
+                  <p className="text-xs text-gray-500 mt-1">Paste the Vimeo link or the full embed code</p>
                 </div>
               </div>
             )}
