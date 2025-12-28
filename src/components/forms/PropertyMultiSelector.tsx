@@ -90,7 +90,7 @@ export function PropertyMultiSelector({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: "100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="absolute inset-0 z-[100] bg-white overflow-hidden flex flex-col rounded-md"
+                    className="fixed inset-0 z-[200] md:absolute md:inset-0 bg-white overflow-hidden flex flex-col md:rounded-md"
                 >
                     {/* Liquid Background Elements */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
