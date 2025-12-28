@@ -1,6 +1,6 @@
 import { PageHeader } from "../components/global/PageHeader";
-import { motion } from "motion/react";
-import { OptimizedImage } from "../components/OptimizedImage";
+
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { InsightsAreas } from "../components/insights/InsightsAreas";
 import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
@@ -20,11 +20,12 @@ export default function Insights() {
   const navigate = useNavigate();
   const blogGridRef = useRef<HTMLElement>(null);
 
-  const blogGridStaggerRef = useScrollReveal({
-    selector: ".blog-item",
-    stagger: 0.1,
-    delay: 0.2
-  });
+  // Animation Refs
+  const newsletterRef = useScrollReveal({ y: 20, delay: 0.1, duration: 0.6 });
+  const areasRef = useScrollReveal({ y: 20, delay: 0.1, duration: 0.6 });
+  const testimonialsRef = useScrollReveal({ y: 20, delay: 0.1, duration: 0.6 });
+
+
 
   useEffect(() => {
     applySEO('insights');
@@ -46,6 +47,14 @@ export default function Insights() {
   const startIndex = (currentPage - 1) * blogsPerPage;
   const endIndex = startIndex + blogsPerPage;
   const currentBlogs = blogPosts.slice(startIndex, endIndex);
+
+  const blogGridStaggerRef = useScrollReveal({
+    selector: ".blog-item",
+    stagger: 0.1,
+    delay: 0.2,
+    x: -20,
+    dependencies: [currentBlogs]
+  });
 
   // Helper function to change page and scroll to top
   const changePage = (newPage: number) => {
@@ -110,10 +119,11 @@ export default function Insights() {
                       {/* Image */}
                       <div className="relative overflow-hidden bg-gray-200 aspect-[4/3]">
                         {post.featured_image && (
-                          <OptimizedImage
+                          <ImageWithFallback
                             src={post.featured_image}
                             alt={post.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            loading="lazy"
                           />
                         )}
                         <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">
@@ -252,34 +262,21 @@ export default function Insights() {
 
 
       {/* 2. Newsletter Sign Up */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
+      <div ref={newsletterRef as any}>
         <InsightsNewsletter />
-      </motion.div>
+      </div>
 
       {/* 3. Explore our neighbourhoods section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
+      <div ref={areasRef as any}>
         <InsightsAreas />
-      </motion.div>
+      </div>
 
       {/* Testimonials (Kept at bottom) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
+      <div ref={testimonialsRef as any}>
         <div className="py-12 bg-white">
           <TestimonialsCarousel testimonials={testimonials} />
         </div>
-      </motion.div>
+      </div>
     </main >
   );
 }

@@ -17,7 +17,8 @@ export function Footer() {
     selector: ".footer-item",
     stagger: 0.05,
     threshold: 0.1,
-    y: 20
+    y: 20,
+    x: -20
   });
 
   const handleNavClick = (path: string) => {

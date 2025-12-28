@@ -1,6 +1,6 @@
 import { Navigation } from "../components/Navigation";
 import { motion } from "motion/react";
-import { OptimizedImage } from "../components/OptimizedImage";
+import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -181,7 +181,7 @@ export default function BlogPost() {
                 transition={{ duration: 0.8, delay: 0.5 }}
                 className="relative w-full mb-16 md:mb-24 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9]"
               >
-                <OptimizedImage
+                <ImageWithFallback
                   src={post.featured_image}
                   alt={post.title}
                   className="w-full h-full object-cover"
@@ -389,10 +389,11 @@ export default function BlogPost() {
                         {/* Image */}
                         <div className="relative overflow-hidden bg-gray-200 aspect-[4/3]">
                           {relatedPost.featured_image && (
-                            <OptimizedImage
+                            <ImageWithFallback
                               src={relatedPost.featured_image}
                               alt={relatedPost.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                              loading="lazy"
                             />
                           )}
                           <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">

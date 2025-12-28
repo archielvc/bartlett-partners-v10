@@ -15,7 +15,9 @@ export function HomeTeam() {
   const containerRef = useScrollReveal({
     selector: ".team-member-card",
     stagger: 0.15,
-    threshold: 0.1
+    threshold: 0.1,
+    x: -20,
+    dependencies: [team]
   });
 
   useEffect(() => {

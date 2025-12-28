@@ -13,8 +13,11 @@ export function HomeFeaturedProperties() {
 
   const containerRef = useScrollReveal({
     selector: ".featured-property-item",
-    stagger: 0.1,
-    threshold: 0.2
+    stagger: 0.05, // Faster stagger
+    threshold: 0.1, // Trigger earlier
+    x: -20,
+    duration: 0.6, // Faster animation
+    dependencies: [featuredProperties]
   });
 
   useEffect(() => {

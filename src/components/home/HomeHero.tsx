@@ -23,7 +23,12 @@ export function HomeHero() {
 
   // Animations
   const parallaxRef = useParallax(0.3);
-  const cardRef = useScrollReveal({ delay: 0.5, y: 50, duration: 1.2 });
+  const cardRef = useScrollReveal({
+    delay: 0.1,
+    y: 10,
+    duration: 0.5,
+    x: -10
+  });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);

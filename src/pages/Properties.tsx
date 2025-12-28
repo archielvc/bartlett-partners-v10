@@ -38,11 +38,99 @@ export default function Properties() {
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
 
+  const propertiesPerPage = 12;
+
+  // Check if property matches price range
+  const matchesPriceRange = (priceValue: number, range: string) => {
+    switch (range) {
+      case "Under £750K": return priceValue < 750000;
+      case "£750K - £1.5M": return priceValue >= 750000 && priceValue < 1500000;
+      case "£1.5M - £2.5M": return priceValue >= 1500000 && priceValue < 2500000;
+      case "Over £2.5M": return priceValue >= 2500000;
+      default: return false;
+    }
+  };
+
+  // Filter and sort properties
+  const filteredProperties = properties
+    .filter(property => {
+      const hasAvailabilityFilter = selectedAvailability.length > 0;
+      const hasPriceFilter = selectedPriceRanges.length > 0;
+      const hasSearchQuery = searchQuery.trim().length > 0;
+
+      // Check availability filter
+      const matchesAvailability = !hasAvailabilityFilter ||
+        selectedAvailability.some(label => {
+          const validStatuses = STATUS_MAPPING[label];
+          return validStatuses ? validStatuses.includes(property.status) : false;
+        });
+
+      // Check price range filter
+      const matchesPrice = !hasPriceFilter || selectedPriceRanges.some(range => matchesPriceRange(property.priceValue, range));
+
+      // Check search query - advanced parsing for beds/baths/price + general text
+      const queryLower = searchQuery.toLowerCase().trim();
+      let matchesSearch = !hasSearchQuery;
+
+      if (hasSearchQuery) {
+        // Parse "X beds" or "X baths"
+        const bedsMatch = queryLower.match(/(\d+)\s*(?:bed|beds|bedroom|bedrooms)/);
+        const bathsMatch = queryLower.match(/(\d+)\s*(?:bath|baths|bathroom|bathrooms)/);
+
+        let remainingQuery = queryLower;
+
+        // Check specific bed count if specified
+        if (bedsMatch) {
+          const minBeds = parseInt(bedsMatch[1]);
+          if (property.beds < minBeds) return false;
+          remainingQuery = remainingQuery.replace(bedsMatch[0], '').trim();
+        }
+
+        // Check specific bath count if specified
+        if (bathsMatch) {
+          const minBaths = parseInt(bathsMatch[1]);
+          if (property.baths < minBaths) return false;
+          remainingQuery = remainingQuery.replace(bathsMatch[0], '').trim();
+        }
+
+        // Check remaining text against general fields if there's anything left
+        if (remainingQuery.length > 0) {
+          const terms = remainingQuery.split(/\s+/);
+          const searchableText = `
+            ${property.title}
+            ${property.location}
+            ${property.price}
+            ${property.tags ? property.tags.join(' ') : ''}
+            ${property.type}
+            ${property.description || ''}
+          `.toLowerCase();
+
+          matchesSearch = terms.every(term => searchableText.includes(term));
+        } else {
+          matchesSearch = true;
+        }
+      }
+
+      return matchesAvailability && matchesPrice && matchesSearch;
+    });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
+  const startIndex = (currentPage - 1) * propertiesPerPage;
+  const endIndex = startIndex + propertiesPerPage;
+  const currentProperties = filteredProperties.slice(startIndex, endIndex);
+
+  const activeFilterCount = selectedAvailability.length + selectedPriceRanges.length;
+
+
+
   // Use scroll reveal for the grid
   const propertiesGridRef = useScrollReveal({
     selector: ".property-item",
     stagger: 0.1,
-    delay: 0.2
+    delay: 0.2,
+    x: -20,
+    dependencies: [currentProperties]
   });
 
   // Fetch properties from database
@@ -66,7 +154,7 @@ export default function Properties() {
     fetchProperties();
   }, []);
 
-  const propertiesPerPage = 12;
+
 
   // Helper function to change page and scroll to top
   const changePage = (newPage: number, shouldScroll = true) => {
@@ -123,89 +211,7 @@ export default function Properties() {
   };
 
   // Check if property matches price range
-  const matchesPriceRange = (priceValue: number, range: string) => {
-    switch (range) {
-      case "Under £750K": return priceValue < 750000;
-      case "£750K - £1.5M": return priceValue >= 750000 && priceValue < 1500000;
-      case "£1.5M - £2.5M": return priceValue >= 1500000 && priceValue < 2500000;
-      case "Over £2.5M": return priceValue >= 2500000;
-      default: return false;
-    }
-  };
 
-  // Filter and sort properties
-  const filteredProperties = properties
-    .filter(property => {
-      const hasAvailabilityFilter = selectedAvailability.length > 0;
-      const hasPriceFilter = selectedPriceRanges.length > 0;
-      const hasSearchQuery = searchQuery.trim().length > 0;
-
-      // Check availability filter
-      const matchesAvailability = !hasAvailabilityFilter ||
-        selectedAvailability.some(label => {
-          const validStatuses = STATUS_MAPPING[label];
-          return validStatuses ? validStatuses.includes(property.status) : false;
-        });
-
-      // Check price range filter
-      const matchesPrice = !hasPriceFilter || selectedPriceRanges.some(range => matchesPriceRange(property.priceValue, range));
-
-      // Check search query - searches title, location, price, beds, baths
-      // Check search query - advanced parsing for beds/baths/price + general text
-      const queryLower = searchQuery.toLowerCase().trim();
-      let matchesSearch = !hasSearchQuery;
-
-      if (hasSearchQuery) {
-        // Parse "X beds" or "X baths"
-        const bedsMatch = queryLower.match(/(\d+)\s*(?:bed|beds|bedroom|bedrooms)/);
-        const bathsMatch = queryLower.match(/(\d+)\s*(?:bath|baths|bathroom|bathrooms)/);
-
-        let remainingQuery = queryLower;
-
-        // Check specific bed count if specified
-        if (bedsMatch) {
-          const minBeds = parseInt(bedsMatch[1]);
-          if (property.beds < minBeds) return false;
-          remainingQuery = remainingQuery.replace(bedsMatch[0], '').trim();
-        }
-
-        // Check specific bath count if specified
-        if (bathsMatch) {
-          const minBaths = parseInt(bathsMatch[1]);
-          if (property.baths < minBaths) return false;
-          remainingQuery = remainingQuery.replace(bathsMatch[0], '').trim();
-        }
-
-        // Check remaining text against general fields if there's anything left
-        if (remainingQuery.length > 0) {
-          const terms = remainingQuery.split(/\s+/);
-          const searchableText = `
-            ${property.title}
-            ${property.location}
-            ${property.price}
-            ${property.tags ? property.tags.join(' ') : ''}
-            ${property.type}
-            ${property.description || ''}
-          `.toLowerCase();
-
-          matchesSearch = terms.every(term => searchableText.includes(term));
-        } else {
-          // If only specific filters were provided (e.g. "5 beds") and they matched, we're good
-          matchesSearch = true;
-        }
-      }
-
-      // AND logic: must match all active filters
-      return matchesAvailability && matchesPrice && matchesSearch;
-    });
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
-  const startIndex = (currentPage - 1) * propertiesPerPage;
-  const endIndex = startIndex + propertiesPerPage;
-  const currentProperties = filteredProperties.slice(startIndex, endIndex);
-
-  const activeFilterCount = selectedAvailability.length + selectedPriceRanges.length;
 
   useEffect(() => {
     applySEO('properties');
