@@ -1,18 +1,12 @@
+import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { ImageWithFallback } from "./ui/ImageWithFallback";
 import { useSiteSettings } from "../contexts/SiteContext";
-import { useScrollReveal } from "../hooks/animations/useScrollReveal";
 
 export function ExploreBoroughs() {
   const navigate = useNavigate();
   const { images } = useSiteSettings();
-
-  const containerRef = useScrollReveal({
-    selector: ".borough-card",
-    stagger: 0.2,
-    threshold: 0.1
-  });
 
   return (
     <section className="w-full bg-white px-6 md:px-12 lg:px-20 py-12 md:py-20 overflow-hidden">
@@ -29,14 +23,11 @@ export function ExploreBoroughs() {
           </h2>
         </div>
 
-        <div
-          ref={containerRef as any}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Twickenham */}
           <Link
             to="/twickenham"
-            className="borough-card opacity-0 group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
+            className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
           >
             <ImageWithFallback
               src={images.locations.l_twickenham}
@@ -64,7 +55,7 @@ export function ExploreBoroughs() {
           {/* Teddington */}
           <Link
             to="/teddington"
-            className="borough-card opacity-0 group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
+            className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
           >
             <ImageWithFallback
               src={images.locations.l_teddington}

@@ -4,6 +4,7 @@ import { PropertyInquiryDialog } from "../components/PropertyInquiryDialog";
 import { BookEvaluationDialog } from "../components/BookEvaluationDialog";
 import { PropertyCard } from "../components/PropertyCard";
 import { Button } from "../components/ui/button";
+
 import {
     Bed,
     Bath,
@@ -527,70 +528,64 @@ export default function PropertyDetail() {
 
                         {/* RIGHT COLUMN (Sticky Sidebar) */}
                         <div className="w-full lg:w-1/3 lg:sticky lg:top-32 h-fit">
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.2, duration: 0.5 }}
-                            >
-                                <div className="space-y-6">
+                            <div className="space-y-6">
 
-                                    {/* Main Action Card */}
-                                    <div className="bg-white rounded-2xl border-2 border-[#1A2551] p-6 shadow-xl shadow-[#1A2551]/5">
-                                        <div className="text-center mb-6">
-                                            <span className="text-[#1A2551]/60 text-xs font-semibold uppercase tracking-widest block mb-2" style={{ fontFamily: "'Figtree', sans-serif" }}>Guide Price</span>
-                                            <span className="text-[#1A2551] text-3xl md:text-4xl block" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                                {formattedPrice}
-                                            </span>
-                                        </div>
+                                {/* Main Action Card */}
+                                <div className="bg-white rounded-2xl border-2 border-[#1A2551] p-6 shadow-xl shadow-[#1A2551]/5">
+                                    <div className="text-center mb-6">
+                                        <span className="text-[#1A2551]/60 text-xs font-semibold uppercase tracking-widest block mb-2" style={{ fontFamily: "'Figtree', sans-serif" }}>Guide Price</span>
+                                        <span className="text-[#1A2551] text-3xl md:text-4xl block" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                            {formattedPrice}
+                                        </span>
+                                    </div>
 
-                                        <div className="space-y-3 mb-8">
-                                            <PropertyInquiryDialog
-                                                property={{
-                                                    id: property.id,
-                                                    title: property.title,
-                                                    location: property.location || '',
-                                                    price: formattedPrice,
-                                                    priceValue: priceValue,
-                                                    image: property.hero_image || '',
-                                                    beds: property.beds || 0,
-                                                    baths: property.baths || 0,
-                                                    sqft: property.sqft?.toString() || '0',
-                                                    type: property.property_type || '',
-                                                    status: property.status as any,
-                                                    slug: property.slug
-                                                }}
-                                                trigger={
-                                                    <Button
-                                                        premium
-                                                        className="w-full h-12 text-white"
-                                                        style={{
-                                                            backgroundColor: '#1A2551',
-                                                            borderColor: '#1A2551'
-                                                        }}
-                                                    >
-                                                        Enquire
-                                                    </Button>
-                                                }
-                                            />
+                                    <div className="space-y-3 mb-8">
+                                        <PropertyInquiryDialog
+                                            property={{
+                                                id: property.id,
+                                                title: property.title,
+                                                location: property.location || '',
+                                                price: formattedPrice,
+                                                priceValue: priceValue,
+                                                image: property.hero_image || '',
+                                                beds: property.beds || 0,
+                                                baths: property.baths || 0,
+                                                sqft: property.sqft?.toString() || '0',
+                                                type: property.property_type || '',
+                                                status: property.status as any,
+                                                slug: property.slug
+                                            }}
+                                            trigger={
+                                                <Button
+                                                    premium
+                                                    className="w-full h-12 text-white"
+                                                    style={{
+                                                        backgroundColor: '#1A2551',
+                                                        borderColor: '#1A2551'
+                                                    }}
+                                                >
+                                                    Enquire
+                                                </Button>
+                                            }
+                                        />
 
-                                            <BookEvaluationDialog
-                                                trigger={
-                                                    <Button
-                                                        premium
-                                                        className="w-full h-12 text-white"
-                                                        style={{
-                                                            backgroundColor: '#A89F81',
-                                                            borderColor: '#A89F81'
-                                                        }}
-                                                    >
-                                                        Sell with us
-                                                    </Button>
-                                                }
-                                            />
-                                        </div>
+                                        <BookEvaluationDialog
+                                            trigger={
+                                                <Button
+                                                    premium
+                                                    className="w-full h-12 text-white"
+                                                    style={{
+                                                        backgroundColor: '#A89F81',
+                                                        borderColor: '#A89F81'
+                                                    }}
+                                                >
+                                                    Sell with us
+                                                </Button>
+                                            }
+                                        />
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         </div>
                     </div>
                 </div>

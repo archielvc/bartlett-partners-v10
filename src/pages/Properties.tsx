@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+
 import { PropertyCard } from "../components/PropertyCard";
 import { PageHeader } from "../components/global/PageHeader";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
@@ -12,7 +12,6 @@ import { getPublishedProperties, getPublishedTestimonials, getStored, getGlobalS
 import { trackPropertyFilter, trackEvent } from "../utils/analytics";
 import type { Property } from "../types/property";
 import type { Testimonial } from "../types/database";
-import { useScrollReveal } from "../hooks/animations/useScrollReveal";
 
 const STATUS_MAPPING: Record<string, string[]> = {
   "Available": ["available"],
@@ -37,101 +36,7 @@ export default function Properties() {
 
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
-
-  const propertiesPerPage = 12;
-
-  // Check if property matches price range
-  const matchesPriceRange = (priceValue: number, range: string) => {
-    switch (range) {
-      case "Under £750K": return priceValue < 750000;
-      case "£750K - £1.5M": return priceValue >= 750000 && priceValue < 1500000;
-      case "£1.5M - £2.5M": return priceValue >= 1500000 && priceValue < 2500000;
-      case "Over £2.5M": return priceValue >= 2500000;
-      default: return false;
-    }
-  };
-
-  // Filter and sort properties
-  const filteredProperties = properties
-    .filter(property => {
-      const hasAvailabilityFilter = selectedAvailability.length > 0;
-      const hasPriceFilter = selectedPriceRanges.length > 0;
-      const hasSearchQuery = searchQuery.trim().length > 0;
-
-      // Check availability filter
-      const matchesAvailability = !hasAvailabilityFilter ||
-        selectedAvailability.some(label => {
-          const validStatuses = STATUS_MAPPING[label];
-          return validStatuses ? validStatuses.includes(property.status) : false;
-        });
-
-      // Check price range filter
-      const matchesPrice = !hasPriceFilter || selectedPriceRanges.some(range => matchesPriceRange(property.priceValue, range));
-
-      // Check search query - advanced parsing for beds/baths/price + general text
-      const queryLower = searchQuery.toLowerCase().trim();
-      let matchesSearch = !hasSearchQuery;
-
-      if (hasSearchQuery) {
-        // Parse "X beds" or "X baths"
-        const bedsMatch = queryLower.match(/(\d+)\s*(?:bed|beds|bedroom|bedrooms)/);
-        const bathsMatch = queryLower.match(/(\d+)\s*(?:bath|baths|bathroom|bathrooms)/);
-
-        let remainingQuery = queryLower;
-
-        // Check specific bed count if specified
-        if (bedsMatch) {
-          const minBeds = parseInt(bedsMatch[1]);
-          if (property.beds < minBeds) return false;
-          remainingQuery = remainingQuery.replace(bedsMatch[0], '').trim();
-        }
-
-        // Check specific bath count if specified
-        if (bathsMatch) {
-          const minBaths = parseInt(bathsMatch[1]);
-          if (property.baths < minBaths) return false;
-          remainingQuery = remainingQuery.replace(bathsMatch[0], '').trim();
-        }
-
-        // Check remaining text against general fields if there's anything left
-        if (remainingQuery.length > 0) {
-          const terms = remainingQuery.split(/\s+/);
-          const searchableText = `
-            ${property.title}
-            ${property.location}
-            ${property.price}
-            ${property.tags ? property.tags.join(' ') : ''}
-            ${property.type}
-            ${property.description || ''}
-          `.toLowerCase();
-
-          matchesSearch = terms.every(term => searchableText.includes(term));
-        } else {
-          matchesSearch = true;
-        }
-      }
-
-      return matchesAvailability && matchesPrice && matchesSearch;
-    });
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
-  const startIndex = (currentPage - 1) * propertiesPerPage;
-  const endIndex = startIndex + propertiesPerPage;
-  const currentProperties = filteredProperties.slice(startIndex, endIndex);
-
-  const activeFilterCount = selectedAvailability.length + selectedPriceRanges.length;
-
-
-
-  // Use scroll reveal for the grid
-  const propertiesGridRef = useScrollReveal({
-    selector: ".property-item",
-    stagger: 0.1,
-    delay: 0.2,
-    x: -20,
-    dependencies: [currentProperties]
-  });
+  const propertiesGridRef = useRef<HTMLElement>(null);
 
   // Fetch properties from database
   useEffect(() => {
@@ -154,7 +59,7 @@ export default function Properties() {
     fetchProperties();
   }, []);
 
-
+  const propertiesPerPage = 12;
 
   // Helper function to change page and scroll to top
   const changePage = (newPage: number, shouldScroll = true) => {
@@ -211,7 +116,89 @@ export default function Properties() {
   };
 
   // Check if property matches price range
+  const matchesPriceRange = (priceValue: number, range: string) => {
+    switch (range) {
+      case "Under £750K": return priceValue < 750000;
+      case "£750K - £1.5M": return priceValue >= 750000 && priceValue < 1500000;
+      case "£1.5M - £2.5M": return priceValue >= 1500000 && priceValue < 2500000;
+      case "Over £2.5M": return priceValue >= 2500000;
+      default: return false;
+    }
+  };
 
+  // Filter and sort properties
+  const filteredProperties = properties
+    .filter(property => {
+      const hasAvailabilityFilter = selectedAvailability.length > 0;
+      const hasPriceFilter = selectedPriceRanges.length > 0;
+      const hasSearchQuery = searchQuery.trim().length > 0;
+
+      // Check availability filter
+      const matchesAvailability = !hasAvailabilityFilter ||
+        selectedAvailability.some(label => {
+          const validStatuses = STATUS_MAPPING[label];
+          return validStatuses ? validStatuses.includes(property.status) : false;
+        });
+
+      // Check price range filter
+      const matchesPrice = !hasPriceFilter || selectedPriceRanges.some(range => matchesPriceRange(property.priceValue, range));
+
+      // Check search query - searches title, location, price, beds, baths
+      // Check search query - advanced parsing for beds/baths/price + general text
+      const queryLower = searchQuery.toLowerCase().trim();
+      let matchesSearch = !hasSearchQuery;
+
+      if (hasSearchQuery) {
+        // Parse "X beds" or "X baths"
+        const bedsMatch = queryLower.match(/(\d+)\s*(?:bed|beds|bedroom|bedrooms)/);
+        const bathsMatch = queryLower.match(/(\d+)\s*(?:bath|baths|bathroom|bathrooms)/);
+
+        let remainingQuery = queryLower;
+
+        // Check specific bed count if specified
+        if (bedsMatch) {
+          const minBeds = parseInt(bedsMatch[1]);
+          if (property.beds < minBeds) return false;
+          remainingQuery = remainingQuery.replace(bedsMatch[0], '').trim();
+        }
+
+        // Check specific bath count if specified
+        if (bathsMatch) {
+          const minBaths = parseInt(bathsMatch[1]);
+          if (property.baths < minBaths) return false;
+          remainingQuery = remainingQuery.replace(bathsMatch[0], '').trim();
+        }
+
+        // Check remaining text against general fields if there's anything left
+        if (remainingQuery.length > 0) {
+          const terms = remainingQuery.split(/\s+/);
+          const searchableText = `
+            ${property.title}
+            ${property.location}
+            ${property.price}
+            ${property.tags ? property.tags.join(' ') : ''}
+            ${property.type}
+            ${property.description || ''}
+          `.toLowerCase();
+
+          matchesSearch = terms.every(term => searchableText.includes(term));
+        } else {
+          // If only specific filters were provided (e.g. "5 beds") and they matched, we're good
+          matchesSearch = true;
+        }
+      }
+
+      // AND logic: must match all active filters
+      return matchesAvailability && matchesPrice && matchesSearch;
+    });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
+  const startIndex = (currentPage - 1) * propertiesPerPage;
+  const endIndex = startIndex + propertiesPerPage;
+  const currentProperties = filteredProperties.slice(startIndex, endIndex);
+
+  const activeFilterCount = selectedAvailability.length + selectedPriceRanges.length;
 
   useEffect(() => {
     applySEO('properties');
@@ -223,237 +210,224 @@ export default function Properties() {
       <PageHeader title="Our Collection" />
 
       {/* Filter Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <section className="w-full bg-white border-b border-gray-100 shadow-sm">
-          <div className="w-full px-6 md:px-12 lg:px-20 py-6">
-            <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
-              <div className="flex items-center gap-6 w-full sm:w-auto">
-                {/* Search Bar */}
-                <div className="group relative flex items-center gap-3 pl-4 pr-4 h-11 bg-white border border-gray-200 rounded-full hover:border-[#1A2551] transition-all shrink-0 cursor-text w-full sm:w-auto" onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="SEARCH"]')?.focus()}>
-                  <Search className="w-4 h-4 text-[#1A2551]" />
-                  <input
-                    type="text"
-                    placeholder="SEARCH"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      changePage(1, false);
-                    }}
-                    className="w-full sm:w-[60px] sm:focus:w-[150px] transition-all duration-300 bg-transparent border-none p-0 text-[0.75rem] tracking-[0.2em] font-semibold text-[#1A2551] placeholder:text-[#1A2551] focus:ring-0 outline-none uppercase"
-                    style={{
-                      fontFamily: "'Figtree', sans-serif"
-                    }}
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSearchQuery("");
-                        changePage(1, false);
-                      }}
-                      className="p-0.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#1A2551] transition-all"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
 
-                <p
-                  className="text-[#3A3A3A] whitespace-nowrap hidden md:block"
-                  style={{
-                    fontFamily: "'Figtree', sans-serif",
-                    fontSize: "0.875rem",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase"
+      <section className="w-full bg-white border-b border-gray-100 shadow-sm">
+        <div className="w-full px-6 md:px-12 lg:px-20 py-6">
+          <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
+            <div className="flex items-center gap-6 w-full sm:w-auto">
+              {/* Search Bar */}
+              <div className="group relative flex items-center gap-3 pl-4 pr-4 h-11 bg-white border border-gray-200 rounded-full hover:border-[#1A2551] transition-all shrink-0 cursor-text w-full sm:w-auto" onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="SEARCH"]')?.focus()}>
+                <Search className="w-4 h-4 text-[#1A2551]" />
+                <input
+                  type="text"
+                  placeholder="SEARCH"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    changePage(1, false);
                   }}
-                >
-                  Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'Residence' : 'Residences'}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-6">
-                {activeFilterCount > 0 && (
+                  className="w-full sm:w-[60px] sm:focus:w-[150px] transition-all duration-300 bg-transparent border-none p-0 text-[0.75rem] tracking-[0.2em] font-semibold text-[#1A2551] placeholder:text-[#1A2551] focus:ring-0 outline-none uppercase"
+                  style={{
+                    fontFamily: "'Figtree', sans-serif"
+                  }}
+                />
+                {searchQuery && (
                   <button
-                    onClick={() => {
-                      trackEvent('click', 'Filter', 'Clear All');
-                      setSelectedAvailability([]);
-                      setSelectedPriceRanges([]);
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSearchQuery("");
                       changePage(1, false);
                     }}
-                    className="text-[#1A2551] hover:opacity-70 transition-opacity text-xs uppercase tracking-widest font-medium group"
-                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                    className="p-0.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#1A2551] transition-all"
                   >
-                    <span className="premium-hover relative" data-text="Clear Filters">
-                      <span>Clear Filters</span>
-                    </span>
+                    <X className="w-3 h-3" />
                   </button>
                 )}
+              </div>
 
+              <p
+                className="text-[#3A3A3A] whitespace-nowrap hidden md:block"
+                style={{
+                  fontFamily: "'Figtree', sans-serif",
+                  fontSize: "0.875rem",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase"
+                }}
+              >
+                Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'Residence' : 'Residences'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-6">
+              {activeFilterCount > 0 && (
                 <button
                   onClick={() => {
-                    trackEvent('click', 'Filter', isFilterOpen ? 'Close' : 'Open');
-                    setIsFilterOpen(!isFilterOpen);
+                    trackEvent('click', 'Filter', 'Clear All');
+                    setSelectedAvailability([]);
+                    setSelectedPriceRanges([]);
+                    changePage(1, false);
                   }}
-                  className={`flex items-center gap-3 px-8 h-11 rounded-full transition-all relative cursor-pointer ${isFilterOpen ? 'bg-[#1A2551] text-white' : 'border border-gray-200 text-[#1A2551] hover:border-[#1A2551]'
-                    }`}
-                  style={{
-                    fontFamily: "'Figtree', sans-serif",
-                    fontSize: "0.75rem",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.2em",
-                    fontWeight: 600
-                  }}
+                  className="text-[#1A2551] hover:opacity-70 transition-opacity text-xs uppercase tracking-widest font-medium group"
+                  style={{ fontFamily: "'Figtree', sans-serif" }}
                 >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  <span>Filters</span>
-                  {activeFilterCount > 0 && (
-                    <span className="ml-2 w-5 h-5 bg-[#8E8567] text-white text-[10px] rounded-full flex items-center justify-center">
-                      {activeFilterCount}
-                    </span>
-                  )}
+                  <span className="premium-hover relative" data-text="Clear Filters">
+                    <span>Clear Filters</span>
+                  </span>
                 </button>
+              )}
+
+              <button
+                onClick={() => {
+                  trackEvent('click', 'Filter', isFilterOpen ? 'Close' : 'Open');
+                  setIsFilterOpen(!isFilterOpen);
+                }}
+                className={`flex items-center gap-3 px-8 h-11 rounded-full transition-all relative cursor-pointer ${isFilterOpen ? 'bg-[#1A2551] text-white' : 'border border-gray-200 text-[#1A2551] hover:border-[#1A2551]'
+                  }`}
+                style={{
+                  fontFamily: "'Figtree', sans-serif",
+                  fontSize: "0.75rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.2em",
+                  fontWeight: 600
+                }}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="ml-2 w-5 h-5 bg-[#8E8567] text-white text-[10px] rounded-full flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
 
 
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Panel Dropdown */}
+        {isFilterOpen && (
+          <div className="w-full border-t border-gray-100 bg-gray-50/50">
+            <div className="w-full px-6 md:px-12 lg:px-20 py-12">
+              <div className="max-w-[1600px] mx-auto">
+                <div className="grid md:grid-cols-2 gap-12 max-w-3xl">
+                  {/* Availability Filter */}
+                  <div>
+                    <h3
+                      className="text-[#1A2551] mb-6"
+                      style={{
+                        fontFamily: "'Figtree', sans-serif",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em"
+                      }}
+                    >
+                      Availability
+                    </h3>
+                    <div className="space-y-4">
+                      {["Available", "Sale Agreed", "Sold"].map((status) => (
+                        <label key={status} className="flex items-center gap-4 cursor-pointer group">
+                          <div className="relative flex items-center justify-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedAvailability.includes(status)}
+                              onChange={() => toggleAvailability(status)}
+                              className="w-5 h-5 border border-gray-300 rounded-none appearance-none checked:bg-[#1A2551] checked:border-[#1A2551] cursor-pointer transition-colors"
+                            />
+                            {selectedAvailability.includes(status) && (
+                              <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                          <span
+                            className="text-[#3A3A3A] group-hover:text-[#1A2551] transition-colors font-light"
+                            style={{ fontFamily: "'Figtree', sans-serif" }}
+                          >
+                            {status}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price Range Filter */}
+                  <div>
+                    <h3
+                      className="text-[#1A2551] mb-6"
+                      style={{
+                        fontFamily: "'Figtree', sans-serif",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em"
+                      }}
+                    >
+                      Price Range
+                    </h3>
+                    <div className="space-y-4">
+                      {["Under £750K", "£750K - £1.5M", "£1.5M - £2.5M", "Over £2.5M"].map((range) => (
+                        <label key={range} className="flex items-center gap-4 cursor-pointer group">
+                          <div className="relative flex items-center justify-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedPriceRanges.includes(range)}
+                              onChange={() => togglePriceRange(range)}
+                              className="w-5 h-5 border border-gray-300 rounded-none appearance-none checked:bg-[#1A2551] checked:border-[#1A2551] cursor-pointer transition-colors"
+                            />
+                            {selectedPriceRanges.includes(range) && (
+                              <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                          <span
+                            className="text-[#3A3A3A] group-hover:text-[#1A2551] transition-colors font-light"
+                            style={{ fontFamily: "'Figtree', sans-serif" }}
+                          >
+                            {range}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        )}
+      </section>
 
-          {/* Filter Panel Dropdown */}
-          {isFilterOpen && (
-            <div className="w-full border-t border-gray-100 bg-gray-50/50">
-              <div className="w-full px-6 md:px-12 lg:px-20 py-12">
-                <div className="max-w-[1600px] mx-auto">
-                  <div className="grid md:grid-cols-2 gap-12 max-w-3xl">
-                    {/* Availability Filter */}
-                    <div>
-                      <h3
-                        className="text-[#1A2551] mb-6"
-                        style={{
-                          fontFamily: "'Figtree', sans-serif",
-                          fontSize: "1rem",
-                          fontWeight: 600,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em"
-                        }}
-                      >
-                        Availability
-                      </h3>
-                      <div className="space-y-4">
-                        {["Available", "Sale Agreed", "Sold"].map((status) => (
-                          <label key={status} className="flex items-center gap-4 cursor-pointer group">
-                            <div className="relative flex items-center justify-center">
-                              <input
-                                type="checkbox"
-                                checked={selectedAvailability.includes(status)}
-                                onChange={() => toggleAvailability(status)}
-                                className="w-5 h-5 border border-gray-300 rounded-none appearance-none checked:bg-[#1A2551] checked:border-[#1A2551] cursor-pointer transition-colors"
-                              />
-                              {selectedAvailability.includes(status) && (
-                                <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </div>
-                            <span
-                              className="text-[#3A3A3A] group-hover:text-[#1A2551] transition-colors font-light"
-                              style={{ fontFamily: "'Figtree', sans-serif" }}
-                            >
-                              {status}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Price Range Filter */}
-                    <div>
-                      <h3
-                        className="text-[#1A2551] mb-6"
-                        style={{
-                          fontFamily: "'Figtree', sans-serif",
-                          fontSize: "1rem",
-                          fontWeight: 600,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em"
-                        }}
-                      >
-                        Price Range
-                      </h3>
-                      <div className="space-y-4">
-                        {["Under £750K", "£750K - £1.5M", "£1.5M - £2.5M", "Over £2.5M"].map((range) => (
-                          <label key={range} className="flex items-center gap-4 cursor-pointer group">
-                            <div className="relative flex items-center justify-center">
-                              <input
-                                type="checkbox"
-                                checked={selectedPriceRanges.includes(range)}
-                                onChange={() => togglePriceRange(range)}
-                                className="w-5 h-5 border border-gray-300 rounded-none appearance-none checked:bg-[#1A2551] checked:border-[#1A2551] cursor-pointer transition-colors"
-                              />
-                              {selectedPriceRanges.includes(range) && (
-                                <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </div>
-                            <span
-                              className="text-[#3A3A3A] group-hover:text-[#1A2551] transition-colors font-light"
-                              style={{ fontFamily: "'Figtree', sans-serif" }}
-                            >
-                              {range}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-      </motion.div>
 
       {/* Properties Grid */}
-      <section className="w-full bg-white py-12 md:py-20">
+      <section ref={propertiesGridRef} className="w-full bg-white py-12 md:py-20">
         <div className="w-full px-6 md:px-12 lg:px-20">
           <div className="max-w-[1600px] mx-auto">
             {currentProperties.length > 0 ? (
-              <div
-                ref={propertiesGridRef as any}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12"
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
                 {currentProperties.map((property, index) => (
-                  <div key={property.id} className="property-item h-full opacity-0">
-                    <PropertyCard property={property} />
-                  </div>
+                  <PropertyCard property={property} />
                 ))}
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-              >
-                <div className="flex flex-col items-center justify-center py-24 text-center">
-                  <h3 className="text-2xl text-[#1A2551] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>No properties found</h3>
-                  <p className="text-gray-500 mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>Try adjusting your filters to see more results.</p>
-                  <button
-                    onClick={() => {
-                      trackEvent('click', 'Filter', 'Clear All (Empty State)');
-                      setSelectedAvailability([]);
-                      setSelectedPriceRanges([]);
-                      changePage(1, false);
-                    }}
-                    className="px-8 h-11 flex items-center justify-center bg-[#1A2551] text-white rounded-full text-xs uppercase tracking-widest hover:bg-[#1A2551]/90 transition-colors"
-                  >
-                    Clear All Filters
-                  </button>
-                </div>
-              </motion.div>
+
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <h3 className="text-2xl text-[#1A2551] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>No properties found</h3>
+                <p className="text-gray-500 mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>Try adjusting your filters to see more results.</p>
+                <button
+                  onClick={() => {
+                    trackEvent('click', 'Filter', 'Clear All (Empty State)');
+                    setSelectedAvailability([]);
+                    setSelectedPriceRanges([]);
+                    changePage(1, false);
+                  }}
+                  className="px-8 h-11 flex items-center justify-center bg-[#1A2551] text-white rounded-full text-xs uppercase tracking-widest hover:bg-[#1A2551]/90 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+
             )}
 
             {/* Pagination */}
@@ -525,25 +499,13 @@ export default function Properties() {
       </section>
 
       {/* Newsletter Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <InsightsNewsletter
-          title="Unlock Exclusive Access"
-          description="Join our private register for off-market opportunities, market insights, and priority access to new collections."
-        />
-      </motion.div>
+      <InsightsNewsletter
+        title="Unlock Exclusive Access"
+        description="Join our private register for off-market opportunities, market insights, and priority access to new collections."
+      />
 
       {/* Testimonials Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <TestimonialsCarousel testimonials={testimonials} />
-      </motion.div>
+      <TestimonialsCarousel testimonials={testimonials} />
     </main>
   );
 }

@@ -89,16 +89,9 @@ export function AboutStory() {
 
             {/* Top: Conclusion - Full Width */}
             <div className="w-full">
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="text-[#1A2551] text-2xl md:text-3xl font-light italic leading-relaxed"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
+              <p className="text-[#1A2551] text-2xl md:text-3xl font-light italic leading-relaxed" style={{ fontFamily: "'Playfair Display', serif" }}>
                 The result? Homes that sell faster, for better prices, with far less stress.
-              </motion.p>
+              </p>
             </div>
 
 

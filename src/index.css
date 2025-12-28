@@ -520,7 +520,6 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: Figtree, sans-serif;
-    overflow-x: hidden;
     width: 100%;
     position: relative;
   }
@@ -7187,16 +7186,6 @@ a {
 
 .card-animate:nth-child(3).animate-in {
   animation-delay: .2s;
-}
-
-
-/* CSS Fallback removed in favor of optimized GSAP implementation */
-.featured-property-item,
-.team-member-card,
-.blog-item,
-.footer-item,
-.property-item {
-  will-change: transform, opacity;
 }
 
 .rich-text-editor .ql-container {

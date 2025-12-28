@@ -3,22 +3,13 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { getHomeFeaturedProperties } from "../../utils/database";
 import type { Property } from "../../types/property";
+import { motion } from "framer-motion";
 import { PropertyCard } from "../PropertyCard";
 import { Button } from "../ui/button";
-import { useScrollReveal } from "../../hooks/animations/useScrollReveal";
 
 export function HomeFeaturedProperties() {
   const navigate = useNavigate();
   const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
-
-  const containerRef = useScrollReveal({
-    selector: ".featured-property-item",
-    stagger: 0.05, // Faster stagger
-    threshold: 0.1, // Trigger earlier
-    x: -20,
-    duration: 0.6, // Faster animation
-    dependencies: [featuredProperties]
-  });
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -64,19 +55,20 @@ export function HomeFeaturedProperties() {
         {/* Desktop Grid / Mobile Carousel Wrapper */}
         <div className="relative">
           {/* Grid Layout - 3 Cols on Large Screens, Scroll on Mobile */}
-          <div
-            ref={containerRef as any}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {featuredProperties.map((property, index) => (
-              <div
+              <motion.div
                 key={property.id}
-                className={`featured-property-item opacity-0 ${index === 2 ? "md:hidden lg:block" : ""}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className={index === 2 ? "md:hidden lg:block" : ""}
               >
                 <PropertyCard
                   property={property}
                 />
-              </div>
+              </motion.div>
             ))}
           </div>
 

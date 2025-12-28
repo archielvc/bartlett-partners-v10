@@ -10,13 +10,26 @@ import { useLoading } from "../contexts/LoadingContext";
 import { useState, useEffect } from "react";
 import { BookEvaluationDialog } from "./BookEvaluationDialog";
 
+
+interface HeroSlide {
+  type: 'property' | 'area';
+  image: string;
+  title: string;
+  description?: string;
+  label?: string;
+  location?: string;
+  price?: string;
+  duration?: number;
+  ctaLink?: string;
+}
+
 export function Hero() {
   const navigate = useNavigate();
   const { isLoadingComplete } = useLoading();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [scrollY, setScrollY] = useState(0);
   const [featuredProperty, setFeaturedProperty] = useState<DBProperty | null>(null);
-  const [slides, setSlides] = useState<any[]>([]);
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
 
   // Fetch featured property from database
   useEffect(() => {
@@ -34,7 +47,7 @@ export function Hero() {
           image: featured.hero_image || featured.thumbnail_image || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1080',
           label: 'Featured Property',
           title: featured.title,
-          description: featured.description,
+          description: featured.description || undefined,
           location: featured.location || '',
           price: featured.price,
           duration: 10000, // 10 seconds for featured property

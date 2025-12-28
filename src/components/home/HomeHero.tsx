@@ -1,16 +1,20 @@
+import { motion } from "motion/react";
 import { Bed, Bath } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../ui/button";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { getFeaturedProperty, getStored } from "../../utils/database";
 import type { Property as DBProperty } from "../../types/database";
 import { getOptimizedUrl } from "../OptimizedImage";
+
 import { useSiteSettings } from "../../contexts/SiteContext";
-import { useParallax } from "../../hooks/animations/useParallax";
-import { useScrollReveal } from "../../hooks/animations/useScrollReveal";
+
+const MotionLink = motion(Link);
 
 export function HomeHero() {
   const navigate = useNavigate();
+  // MotionLink removed from here as it caused re-renders
+
 
   // Initialize from cache for instant loading
   const [featuredProperty, setFeaturedProperty] = useState<DBProperty | null>(() => {
@@ -20,15 +24,6 @@ export function HomeHero() {
   const [isMobile, setIsMobile] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { images } = useSiteSettings();
-
-  // Animations
-  const parallaxRef = useParallax(0.3);
-  const cardRef = useScrollReveal({
-    delay: 0.1,
-    y: 10,
-    duration: 0.5,
-    x: -10
-  });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -76,15 +71,16 @@ export function HomeHero() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/40 z-10" />
 
         {heroImage && (
-          <div ref={parallaxRef as any} className="w-full h-[120%] -mt-[10%]">
-            <img
-              key={featuredProperty ? featuredProperty.id : 'static-hero'}
-              src={heroImage}
-              alt={staticHeroContent.headline}
-              className={`w-full h-full object-cover transition-transform duration-[1500ms] ease-out ${isHovered ? 'scale-105' : 'scale-100'}`}
-              loading="eager"
-            />
-          </div>
+          <motion.img
+            key={featuredProperty ? featuredProperty.id : 'static-hero'}
+            initial={{ scale: 1.1 }}
+            animate={{ scale: isHovered ? 1.05 : 1 }}
+            transition={{ duration: isMobile ? 1.0 : 1.5, ease: "easeOut" }}
+            src={heroImage}
+            alt={staticHeroContent.headline}
+            className="w-full h-full object-cover"
+            loading="eager"
+          />
         )}
       </div>
 
@@ -93,10 +89,15 @@ export function HomeHero() {
         <div className="w-full max-w-[1600px] mx-auto">
 
           {/* Frosted Glass Property Card */}
-          <Link
-            ref={cardRef as any}
+          <MotionLink
             to={featuredProperty ? `/properties/${featuredProperty.slug}` : "/properties"}
-            className="max-w-sm w-full bg-white border border-[#1A2551] rounded-xl overflow-hidden shadow-2xl relative cursor-pointer group hover:shadow-xl transition-all duration-300 block opacity-0"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: featuredProperty ? 1 : 0,
+              y: featuredProperty ? 0 : 20
+            }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-sm w-full bg-white border border-[#1A2551] rounded-xl overflow-hidden shadow-2xl relative cursor-pointer group hover:shadow-xl transition-all duration-300 block"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -142,7 +143,7 @@ export function HomeHero() {
                 </div>
               </div>
             </div>
-          </Link>
+          </MotionLink>
 
         </div>
       </div>

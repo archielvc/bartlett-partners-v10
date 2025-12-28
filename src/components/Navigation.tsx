@@ -160,26 +160,19 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
   // Removed default hover:shadow-md to prevent sticky hover on mobile
   const buttonBaseStyles = "relative w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm lg:hover:shadow-md active:scale-95";
 
-  // Transparent White (Dark Backgrounds) - Now matches new card scheme (White Bg, Dark Text, Blue Border)
-  const transparentWhiteStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
-
-  // Transparent Blue (Light Backgrounds) - Matches new scheme
-  const transparentBlueStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
-
-  // Primary CTA Styles
-  const primaryWhiteStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
-  const primaryBlueStyles = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
+  // Common Style - Matches new card scheme (White Bg, Dark Text, Blue Border)
+  const commonButtonStyle = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
 
   const getButtonStyle = () => {
     // Mobile Menu Open: Force high visibility dark styling
     if (isMobile && isMenuOpen) {
-      return "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
+      return commonButtonStyle;
     }
-    return transparentBlueStyles; // Always use the new "Card Scheme" style
+    return commonButtonStyle; // Always use the new "Card Scheme" style
   };
 
   const getPrimaryButtonStyle = () => {
-    return primaryBlueStyles; // Always use the new "Card Scheme" style
+    return commonButtonStyle; // Always use the new "Card Scheme" style
   };
 
   const buttonStyle = getButtonStyle();

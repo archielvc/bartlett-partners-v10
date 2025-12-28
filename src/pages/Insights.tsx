@@ -1,6 +1,7 @@
+
 import { PageHeader } from "../components/global/PageHeader";
 
-import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+import { OptimizedImage } from "../components/OptimizedImage";
 import { InsightsAreas } from "../components/insights/InsightsAreas";
 import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
@@ -11,7 +12,6 @@ import { applySEO, PAGE_SEO } from "../utils/seo";
 import { getPublishedBlogPostsLight, getPublishedTestimonials, getGlobalSettings } from "../utils/database";
 import { trackEvent } from "../utils/analytics";
 import type { BlogPost, Testimonial } from "../types/database";
-import { useScrollReveal } from "../hooks/animations/useScrollReveal";
 
 export default function Insights() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,13 +19,6 @@ export default function Insights() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const navigate = useNavigate();
   const blogGridRef = useRef<HTMLElement>(null);
-
-  // Animation Refs
-  const newsletterRef = useScrollReveal({ y: 20, delay: 0.1, duration: 0.6 });
-  const areasRef = useScrollReveal({ y: 20, delay: 0.1, duration: 0.6 });
-  const testimonialsRef = useScrollReveal({ y: 20, delay: 0.1, duration: 0.6 });
-
-
 
   useEffect(() => {
     applySEO('insights');
@@ -47,14 +40,6 @@ export default function Insights() {
   const startIndex = (currentPage - 1) * blogsPerPage;
   const endIndex = startIndex + blogsPerPage;
   const currentBlogs = blogPosts.slice(startIndex, endIndex);
-
-  const blogGridStaggerRef = useScrollReveal({
-    selector: ".blog-item",
-    stagger: 0.1,
-    delay: 0.2,
-    x: -20,
-    dependencies: [currentBlogs]
-  });
 
   // Helper function to change page and scroll to top
   const changePage = (newPage: number) => {
@@ -84,7 +69,8 @@ export default function Insights() {
       <PageHeader title="Insights" />
 
       {/* 1. Latest Articles (Blog Grid) */}
-      <section className="w-full bg-gray-50 px-6 md:px-12 lg:px-20 py-12 md:py-20">
+
+      <section ref={blogGridRef} className="w-full bg-gray-50 px-6 md:px-12 lg:px-20 py-12 md:py-20">
         <div className="max-w-[1600px] mx-auto">
           <div className="flex justify-between items-end mb-8 md:mb-12">
             <div className="flex flex-col items-start gap-2">
@@ -103,10 +89,7 @@ export default function Insights() {
           <div>
             {currentBlogs.length > 0 ? (
               <>
-                <div
-                  ref={blogGridStaggerRef as any}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12"
-                >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
                   {currentBlogs.map((post) => (
                     <Link
                       key={post.id}
@@ -114,16 +97,15 @@ export default function Insights() {
                       onClick={() => {
                         trackEvent('select_content', 'Blog Post', post.title);
                       }}
-                      className="blog-item w-full cursor-pointer group bg-white transition-all duration-300 flex flex-col h-auto border border-gray-200 rounded-md overflow-hidden hover:shadow-xl hover:border-[#1A2551]/30 opacity-0"
+                      className="w-full cursor-pointer group bg-white transition-all duration-300 flex flex-col h-auto border border-gray-200 rounded-md overflow-hidden hover:shadow-xl hover:border-[#1A2551]/30"
                     >
                       {/* Image */}
                       <div className="relative overflow-hidden bg-gray-200 aspect-[4/3]">
                         {post.featured_image && (
-                          <ImageWithFallback
+                          <OptimizedImage
                             src={post.featured_image}
                             alt={post.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                            loading="lazy"
                           />
                         )}
                         <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">
@@ -262,21 +244,15 @@ export default function Insights() {
 
 
       {/* 2. Newsletter Sign Up */}
-      <div ref={newsletterRef as any}>
-        <InsightsNewsletter />
-      </div>
+      <InsightsNewsletter />
 
       {/* 3. Explore our neighbourhoods section */}
-      <div ref={areasRef as any}>
-        <InsightsAreas />
-      </div>
+      <InsightsAreas />
 
       {/* Testimonials (Kept at bottom) */}
-      <div ref={testimonialsRef as any}>
-        <div className="py-12 bg-white">
-          <TestimonialsCarousel testimonials={testimonials} />
-        </div>
+      <div className="py-12 bg-white">
+        <TestimonialsCarousel testimonials={testimonials} />
       </div>
-    </main >
+    </main>
   );
 }

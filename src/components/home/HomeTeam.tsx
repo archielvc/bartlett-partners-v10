@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { Linkedin, Mail, Phone } from "lucide-react";
 import { useSiteSettings } from "../../contexts/SiteContext";
@@ -5,20 +6,11 @@ import { trackPhoneClick, trackEmailClick } from "../../utils/analytics";
 import { useState, useEffect } from "react";
 import { getTeamMembers } from "../../utils/database";
 import type { TeamMember } from "../../types/database";
-import { useScrollReveal } from "../../hooks/animations/useScrollReveal";
 
 export function HomeTeam() {
   const { images } = useSiteSettings();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const containerRef = useScrollReveal({
-    selector: ".team-member-card",
-    stagger: 0.15,
-    threshold: 0.1,
-    x: -20,
-    dependencies: [team]
-  });
 
   useEffect(() => {
     async function loadTeam() {
@@ -60,14 +52,16 @@ export function HomeTeam() {
           </h2>
         </div>
 
-        <div
-          ref={containerRef as any}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {team.map((member, index) => (
-            <div
+            <motion.div
               key={member.id}
-              className="team-member-card opacity-0 group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -12 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.15, duration: 0.5, ease: "easeOut" }}
+              className="group"
             >
               {/* Card Image */}
               <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-6 shadow-sm">
@@ -131,7 +125,7 @@ export function HomeTeam() {
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

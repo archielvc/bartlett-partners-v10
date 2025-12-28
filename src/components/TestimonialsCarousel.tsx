@@ -71,53 +71,37 @@ export function TestimonialsCarousel({ testimonials }: TestimonialsCarouselProps
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16">
             <div className="max-w-2xl">
-              <motion.span
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="block text-[#8E8567] text-sm tracking-[0.2em] uppercase mb-4 font-bold"
-              >
+              <span className="block text-[#8E8567] text-sm tracking-[0.2em] uppercase mb-4 font-bold">
                 Client Experiences
-              </motion.span>
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
+              </span>
+              <h2
                 className="text-[#1A2551] text-4xl md:text-5xl leading-tight"
                 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
               >
                 Stories of Success
-              </motion.h2>
+              </h2>
             </div>
 
             {/* Navigation Buttons */}
             <div className="flex gap-4 mt-8 md:mt-0">
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="flex gap-4">
-                  <button
-                    onClick={prevPage}
-                    disabled={totalPages <= 1}
-                    className="w-12 h-12 border border-[#1A2551]/20 rounded-full flex items-center justify-center hover:bg-[#1A2551] hover:text-white hover:border-[#1A2551] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Previous page"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={nextPage}
-                    disabled={totalPages <= 1}
-                    className="w-12 h-12 border border-[#1A2551]/20 rounded-full flex items-center justify-center hover:bg-[#1A2551] hover:text-white hover:border-[#1A2551] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Next page"
-                  >
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </motion.div>
+              <div className="flex gap-4">
+                <button
+                  onClick={prevPage}
+                  disabled={totalPages <= 1}
+                  className="w-12 h-12 border border-[#1A2551]/20 rounded-full flex items-center justify-center hover:bg-[#1A2551] hover:text-white hover:border-[#1A2551] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Previous page"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextPage}
+                  disabled={totalPages <= 1}
+                  className="w-12 h-12 border border-[#1A2551]/20 rounded-full flex items-center justify-center hover:bg-[#1A2551] hover:text-white hover:border-[#1A2551] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Next page"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
 

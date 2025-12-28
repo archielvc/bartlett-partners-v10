@@ -65,24 +65,15 @@ export function HomeExperience() {
                     {/* Section Header */}
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-8 md:mb-16 gap-8">
                         <div>
-                            <motion.span
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                className="text-[#8E8567] text-sm uppercase tracking-widest font-medium mb-4 block"
-                            >
+                            <span className="text-[#8E8567] text-sm uppercase tracking-widest font-medium mb-4 block">
                                 The Difference
-                            </motion.span>
-                            <motion.h2
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: 0.1 }}
+                            </span>
+                            <h2
                                 className="text-[#1A2551] text-4xl md:text-5xl lg:text-7xl leading-none"
                                 style={{ fontFamily: "'Playfair Display', serif" }}
                             >
                                 The Bartlett Experience
-                            </motion.h2>
+                            </h2>
                         </div>
                     </div>
 

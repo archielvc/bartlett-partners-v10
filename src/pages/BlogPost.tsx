@@ -1,6 +1,6 @@
 import { Navigation } from "../components/Navigation";
-import { motion } from "motion/react";
-import { ImageWithFallback } from "../components/ui/ImageWithFallback";
+
+import { OptimizedImage } from "../components/OptimizedImage";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -85,41 +85,30 @@ export default function BlogPost() {
         <section className="w-full bg-white pt-24 md:pt-32 pb-12 md:pb-20 px-6 md:px-12 lg:px-20">
           <div className="max-w-[1600px] mx-auto">
             {/* Back Button */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
+            <Link
+              to="/insights"
+              onClick={() => {
+                trackEvent('navigation_click', 'Menu Click', `Insights (from ${slug})`);
+              }}
+              className="flex items-center gap-2 text-[#1A2551] mb-6 md:mb-10 hover:opacity-70 transition-opacity group cursor-pointer w-fit"
             >
-              <Link
-                to="/insights"
-                onClick={() => {
-                  trackEvent('navigation_click', 'Menu Click', `Insights (from ${slug})`);
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span
+                style={{
+                  fontFamily: "'Figtree', sans-serif",
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  fontWeight: 600
                 }}
-                className="flex items-center gap-2 text-[#1A2551] mb-6 md:mb-10 hover:opacity-70 transition-opacity group cursor-pointer w-fit"
               >
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                <span
-                  style={{
-                    fontFamily: "'Figtree', sans-serif",
-                    fontSize: "0.75rem",
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    fontWeight: 600
-                  }}
-                >
-                  Back to Insights
-                </span>
-              </Link>
-            </motion.div>
+                Back to Insights
+              </span>
+            </Link>
 
             <div className="max-w-5xl">
               {/* Date & Category */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4"
-              >
+              <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4">
                 {post.category && (
                   <span className="inline-block px-3 py-1 border border-[#1A2551]/20 text-[#1A2551] text-[10px] uppercase tracking-[0.2em] font-medium">
                     {post.category}
@@ -144,49 +133,38 @@ export default function BlogPost() {
                     {post.read_time} min read
                   </span>
                 )}
-              </motion.div>
+              </div>
 
               {/* Title */}
-              <motion.h1
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+              <h1
                 className="text-[#1A2551] mb-8 md:mb-10 text-4xl md:text-6xl leading-[1.1] font-light"
                 style={{
                   fontFamily: "'Playfair Display', serif"
                 }}
               >
                 {post.title}
-              </motion.h1>
+              </h1>
 
               {/* Excerpt */}
               {post.excerpt && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
+                <p
                   className="text-[#3A3A3A] mb-12 md:mb-16 text-lg md:text-xl font-light leading-relaxed max-w-3xl"
                   style={{ fontFamily: "'Figtree', sans-serif" }}
                 >
                   {post.excerpt}
-                </motion.p>
+                </p>
               )}
             </div>
 
             {/* Featured Image */}
             {post.featured_image && (
-              <motion.div
-                initial={{ opacity: 0, scale: 1.02 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-                className="relative w-full mb-16 md:mb-24 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9]"
-              >
-                <ImageWithFallback
+              <div className="relative w-full mb-16 md:mb-24 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9]">
+                <OptimizedImage
                   src={post.featured_image}
                   alt={post.title}
                   className="w-full h-full object-cover"
                 />
-              </motion.div>
+              </div>
             )}
           </div>
         </section>
@@ -196,13 +174,8 @@ export default function BlogPost() {
           <div className="max-w-[1600px] mx-auto">
             <div className="max-w-5xl mx-auto">
               {/* Main Content */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
-                <article className="prose max-w-none">
-                  <style>{`
+              <article className="prose max-w-none">
+                <style>{`
                       /* Blog Article Styles */
                       article.prose {
                         font-family: 'Figtree', sans-serif;
@@ -322,30 +295,29 @@ export default function BlogPost() {
                         article.prose p, article.prose li { font-size: 1.25rem !important; }
                       }
                     `}</style>
-                  {post.content ? (
-                    // Check if content contains HTML tags
-                    post.content.includes('<') ? (
-                      <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                    ) : (
-                      <ReactMarkdown
-                        components={{
-                          h1: ({ node, ...props }) => <h1 {...props} />,
-                          h2: ({ node, ...props }) => <h2 {...props} />,
-                          h3: ({ node, ...props }) => <h3 {...props} />,
-                          h4: ({ node, ...props }) => <h4 {...props} />,
-                          p: ({ node, ...props }) => <p {...props} />,
-                          li: ({ node, ...props }) => <li {...props} />,
-                          a: ({ node, ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
-                        }}
-                      >
-                        {post.content}
-                      </ReactMarkdown>
-                    )
+                {post.content ? (
+                  // Check if content contains HTML tags
+                  post.content.includes('<') ? (
+                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
                   ) : (
-                    <p className="text-gray-500 italic">No content available.</p>
-                  )}
-                </article>
-              </motion.div>
+                    <ReactMarkdown
+                      components={{
+                        h1: ({ node, ...props }) => <h1 {...props} />,
+                        h2: ({ node, ...props }) => <h2 {...props} />,
+                        h3: ({ node, ...props }) => <h3 {...props} />,
+                        h4: ({ node, ...props }) => <h4 {...props} />,
+                        p: ({ node, ...props }) => <p {...props} />,
+                        li: ({ node, ...props }) => <li {...props} />,
+                        a: ({ node, ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
+                      }}
+                    >
+                      {post.content}
+                    </ReactMarkdown>
+                  )
+                ) : (
+                  <p className="text-gray-500 italic">No content available.</p>
+                )}
+              </article>
             </div>
           </div>
         </section>
@@ -354,112 +326,96 @@ export default function BlogPost() {
         {relatedPosts.length > 0 && (
           <section className="w-full bg-gray-50 py-20 md:py-32 px-6 md:px-12 lg:px-20">
             <div className="max-w-[1600px] mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-              >
-                <div className="flex justify-between items-end mb-12">
-                  <h2
-                    className="text-[#1A2551] text-4xl md:text-5xl"
-                    style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
+              <div className="flex justify-between items-end mb-12">
+                <h2
+                  className="text-[#1A2551] text-4xl md:text-5xl"
+                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
+                >
+                  Related Articles
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {relatedPosts.map((relatedPost, index) => (
+                  <Link
+                    to={`/blog/${relatedPost.slug}`}
+                    onClick={() => {
+                      trackEvent('related_article_click', 'Related Article', relatedPost.title);
+                    }}
+                    className="flex flex-col h-full bg-white cursor-pointer group hover:shadow-md transition-shadow duration-300"
                   >
-                    Related Articles
-                  </h2>
-                </div>
+                    {/* Image */}
+                    <div className="relative overflow-hidden bg-gray-200 aspect-[4/3]">
+                      {relatedPost.featured_image && (
+                        <OptimizedImage
+                          src={relatedPost.featured_image}
+                          alt={relatedPost.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                      )}
+                      <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">
+                        <span
+                          className="text-[#8E8567] text-xs font-bold uppercase tracking-widest"
+                          style={{ fontFamily: "'Figtree', sans-serif" }}
+                        >
+                          {relatedPost.category || "Insight"}
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {relatedPosts.map((relatedPost, index) => (
-                    <motion.div
-                      key={relatedPost.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: 0.8 + (index * 0.1) }}
-                      className="h-full"
-                    >
-                      <Link
-                        to={`/blog/${relatedPost.slug}`}
-                        onClick={() => {
-                          trackEvent('related_article_click', 'Related Article', relatedPost.title);
-                        }}
-                        className="flex flex-col h-full bg-white cursor-pointer group hover:shadow-md transition-shadow duration-300"
-                      >
-                        {/* Image */}
-                        <div className="relative overflow-hidden bg-gray-200 aspect-[4/3]">
-                          {relatedPost.featured_image && (
-                            <ImageWithFallback
-                              src={relatedPost.featured_image}
-                              alt={relatedPost.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                              loading="lazy"
-                            />
-                          )}
-                          <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">
-                            <span
-                              className="text-[#8E8567] text-xs font-bold uppercase tracking-widest"
-                              style={{ fontFamily: "'Figtree', sans-serif" }}
-                            >
-                              {relatedPost.category || "Insight"}
+                    <div className="p-8 flex flex-col flex-grow border border-gray-100 border-t-0">
+                      {/* Date & Read Time */}
+                      <div className="mb-4 text-gray-400 text-xs uppercase tracking-wider font-medium flex items-center gap-2">
+                        {relatedPost.published_at
+                          ? new Date(relatedPost.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                          : new Date(relatedPost.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                        }
+                        {relatedPost.read_time && relatedPost.read_time > 0 && (
+                          <>
+                            <span className="text-gray-300">•</span>
+                            <span className="flex items-center gap-1.5 leading-none">
+                              <Clock className="w-3 h-3" />
+                              {relatedPost.read_time} min read
                             </span>
-                          </div>
-                        </div>
+                          </>
+                        )}
+                      </div>
 
-                        <div className="p-8 flex flex-col flex-grow border border-gray-100 border-t-0">
-                          {/* Date & Read Time */}
-                          <div className="mb-4 text-gray-400 text-xs uppercase tracking-wider font-medium flex items-center gap-2">
-                            {relatedPost.published_at
-                              ? new Date(relatedPost.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                              : new Date(relatedPost.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                            }
-                            {relatedPost.read_time && relatedPost.read_time > 0 && (
-                              <>
-                                <span className="text-gray-300">•</span>
-                                <span className="flex items-center gap-1.5 leading-none">
-                                  <Clock className="w-3 h-3" />
-                                  {relatedPost.read_time} min read
-                                </span>
-                              </>
-                            )}
-                          </div>
+                      {/* Title */}
+                      <h3
+                        className="text-[#1A2551] mb-4 group-hover:text-[#8E8567] transition-colors"
+                        style={{
+                          fontFamily: "'Playfair Display', serif",
+                          fontSize: "1.5rem",
+                          fontWeight: 400,
+                          lineHeight: "1.3"
+                        }}
+                      >
+                        {relatedPost.title}
+                      </h3>
 
-                          {/* Title */}
-                          <h3
-                            className="text-[#1A2551] mb-4 group-hover:text-[#8E8567] transition-colors"
-                            style={{
-                              fontFamily: "'Playfair Display', serif",
-                              fontSize: "1.5rem",
-                              fontWeight: 400,
-                              lineHeight: "1.3"
-                            }}
-                          >
-                            {relatedPost.title}
-                          </h3>
+                      {/* Excerpt */}
+                      {relatedPost.excerpt && (
+                        <p
+                          className="text-gray-500 line-clamp-3 font-light mb-6"
+                          style={{
+                            fontFamily: "'Figtree', sans-serif",
+                            fontSize: "0.9375rem",
+                            lineHeight: "1.6"
+                          }}
+                        >
+                          {relatedPost.excerpt}
+                        </p>
+                      )}
 
-                          {/* Excerpt */}
-                          {relatedPost.excerpt && (
-                            <p
-                              className="text-gray-500 line-clamp-3 font-light mb-6"
-                              style={{
-                                fontFamily: "'Figtree', sans-serif",
-                                fontSize: "0.9375rem",
-                                lineHeight: "1.6"
-                              }}
-                            >
-                              {relatedPost.excerpt}
-                            </p>
-                          )}
+                      <div className="mt-auto pt-6 border-t border-gray-100 flex items-center text-[#1A2551] font-medium text-sm group-hover:translate-x-2 transition-transform duration-300">
+                        Read Article <ArrowRight className="w-4 h-4 ml-2" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
 
-                          <div className="mt-auto pt-6 border-t border-gray-100 flex items-center text-[#1A2551] font-medium text-sm group-hover:translate-x-2 transition-transform duration-300">
-                            Read Article <ArrowRight className="w-4 h-4 ml-2" />
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
             </div>
           </section>
         )}
