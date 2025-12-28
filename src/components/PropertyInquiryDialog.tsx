@@ -79,35 +79,39 @@ export function PropertyInquiryDialog({
 
         <SheetContent
           side="right"
-          className="w-[100vw] sm:max-w-[500px] p-0 flex flex-col bg-white/95 backdrop-blur-xl border-l-2 border-[#1A2551] overflow-y-auto [&>button]:hidden"
+          className="w-[100vw] sm:max-w-[500px] p-0 flex flex-col bg-white/95 backdrop-blur-xl overflow-hidden [&>button]:hidden text-left"
         >
-          <SheetClose className="absolute top-6 right-6 z-50 p-2 bg-white/80 hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-full border border-[#1A2551]/10 shadow-sm transition-all">
-            <X className="w-5 h-5" />
-            <span className="sr-only">Close</span>
-          </SheetClose>
+          <div className="absolute top-6 right-6 z-50">
+            <SheetClose className="flex items-center justify-center w-10 h-10 bg-white border border-[#1A2551]/10 shadow-sm hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-full transition-all">
+              <X className="w-5 h-5" />
+              <span className="sr-only">Close</span>
+            </SheetClose>
+          </div>
           {liquidBackground}
 
           <SheetTitle className="sr-only">Property Inquiry</SheetTitle>
           <SheetDescription className="sr-only">Fill out the form below to enquire about the property</SheetDescription>
 
-          {!isSuccessView && (
-            <div className="px-6 py-6 border-b border-[#1A2551]/10 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-              <h2
-                className="text-[#1A2551] text-xl md:text-2xl"
-                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
-              >
-                How can we help?
-              </h2>
-            </div>
-          )}
+          <div className="h-full w-full overflow-y-auto">
+            {!isSuccessView && (
+              <div className="px-6 py-6 border-b border-[#1A2551]/10 bg-white/80 backdrop-blur-md sticky top-0 z-20">
+                <h2
+                  className="text-[#1A2551] text-xl md:text-2xl"
+                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
+                >
+                  How can we help?
+                </h2>
+              </div>
+            )}
 
-          <div className="flex-1 px-6 pb-12 overflow-y-auto">
-            <UnifiedContactForm
-              defaultIntent={(inquiryType || "buy") as any}
-              defaultProperties={defaultProperties}
-              onSuccess={handleSuccess}
-              onSubmitted={() => setIsSuccessView(true)}
-            />
+            <div className="px-6 pb-12">
+              <UnifiedContactForm
+                defaultIntent={(inquiryType || "buy") as any}
+                defaultProperties={defaultProperties}
+                onSuccess={handleSuccess}
+                onSubmitted={() => setIsSuccessView(true)}
+              />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
