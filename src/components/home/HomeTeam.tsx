@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { Linkedin, Mail, Phone } from "lucide-react";
 import { useSiteSettings } from "../../contexts/SiteContext";
@@ -6,11 +5,18 @@ import { trackPhoneClick, trackEmailClick } from "../../utils/analytics";
 import { useState, useEffect } from "react";
 import { getTeamMembers } from "../../utils/database";
 import type { TeamMember } from "../../types/database";
+import { useScrollReveal } from "../../hooks/animations/useScrollReveal";
 
 export function HomeTeam() {
   const { images } = useSiteSettings();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const containerRef = useScrollReveal({
+    selector: ".team-member-card",
+    stagger: 0.15,
+    threshold: 0.1
+  });
 
   useEffect(() => {
     async function loadTeam() {
@@ -38,10 +44,10 @@ export function HomeTeam() {
   if (loading) return null; // Or a skeleton loader if preferred
 
   return (
-    <section className="w-full bg-white py-12 md:py-20">
-      <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+    <section className="w-full bg-white py-12 md:py-20 px-6 md:px-12 lg:px-20">
+      <div className="max-w-[1600px] mx-auto">
         <div className="mb-8 md:mb-16">
-          <span className="block text-[#8E8567] text-sm tracking-[0.2em] font-medium uppercase mb-3" style={{ fontFamily: "'Figtree', sans-serif" }}>
+          <span className="block text-[#8E8567] text-sm tracking-[0.2em] font-bold uppercase mb-3" style={{ fontFamily: "'Figtree', sans-serif" }}>
             Dedicated to You
           </span>
           <h2
@@ -52,16 +58,14 @@ export function HomeTeam() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        <div
+          ref={containerRef as any}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12"
+        >
           {team.map((member, index) => (
-            <motion.div
+            <div
               key={member.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -12 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.15, duration: 0.5, ease: "easeOut" }}
-              className="group"
+              className="team-member-card opacity-0 group"
             >
               {/* Card Image */}
               <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-6 shadow-sm">
@@ -125,7 +129,7 @@ export function HomeTeam() {
                   )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

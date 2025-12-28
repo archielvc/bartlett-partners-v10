@@ -144,7 +144,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const hasDarkHero = ['home', 'properties', 'about', 'insights'].includes(actualCurrentPage);
+  const hasDarkHero = ['home'].includes(actualCurrentPage);
   const textColor = hasDarkHero ? 'text-white' : 'text-[#1A2551]';
   const hoverColor = hasDarkHero ? 'hover:text-white/70' : 'hover:text-[#1A2551]/70';
 
@@ -298,7 +298,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                       <BookEvaluationDialog
                         trigger={
                           <button
-                            className="w-full bg-white border border-[#1A2551] text-[#1A2551] py-3 rounded-2xl flex items-center justify-center px-6 group transition-all shadow-sm active:scale-95 hover:bg-[#1A2551] hover:text-white"
+                            className="w-full bg-[#1A2551] border border-[#1A2551] text-white py-3 rounded-2xl flex items-center justify-center px-6 group transition-all shadow-sm active:scale-95 hover:bg-[#1A2551]/90"
                             onClick={() => trackCTAClick('Book Valuation', 'mobile_menu')}
                           >
                             <span className="font-bold uppercase tracking-wider text-sm" style={{ fontFamily: "'Figtree', sans-serif" }}>
@@ -311,7 +311,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                       <PropertyInquiryDialog
                         trigger={
                           <button
-                            className="w-full bg-white border border-[#1A2551] text-[#1A2551] py-3 rounded-2xl flex items-center justify-center px-6 group transition-all active:scale-95 hover:bg-[#1A2551] hover:text-white"
+                            className="w-full bg-[#8E8567] border border-[#8E8567] text-white py-3 rounded-2xl flex items-center justify-center px-6 group transition-all active:scale-95 hover:bg-[#8E8567]/90"
                             onClick={() => trackCTAClick('Enquire', 'mobile_menu')}
                           >
                             <span className="font-bold uppercase tracking-wider text-sm" style={{ fontFamily: "'Figtree', sans-serif" }}>
@@ -443,7 +443,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                       trigger={
                         <Button
                           variant="ghost"
-                          className="bg-white border border-[#1A2551] text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-colors"
+                          className="bg-white border border-[#1A2551] text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-colors font-bold"
                           premium
                           onClick={() => trackCTAClick('Book Valuation', 'desktop_header')}
                         >

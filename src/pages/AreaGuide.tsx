@@ -6,7 +6,6 @@ import { PropertyCard } from '../components/PropertyCard';
 import { PropertyInquiryDialog } from '../components/PropertyInquiryDialog';
 import { useEffect, useState } from 'react';
 import { updateSEO, injectSchema } from '../utils/seo';
-import { Reveal } from '../components/animations/Reveal';
 import { Button } from "../components/ui/button";
 import { useSiteSettings } from "../contexts/SiteContext";
 import { trackEvent, trackCTAClick } from '../utils/analytics';
@@ -300,7 +299,7 @@ export default function AreaGuide() {
               className="flex items-center gap-3 mb-6"
             >
               <div className="h-[1px] w-12 bg-white/80"></div>
-              <span className="text-white/80 uppercase tracking-[0.2em] text-sm font-medium">Area Guide</span>
+              <span className="text-[#8E8567] uppercase tracking-[0.2em] text-sm font-bold">Area Guide</span>
             </motion.div>
 
             <motion.h1
@@ -341,15 +340,25 @@ export default function AreaGuide() {
 
           {/* Left Column: Description & Quote */}
           <div className="lg:col-span-7">
-            <Reveal width="100%">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
               <h2 className="text-[#1A2551] text-4xl font-serif mb-8">About {data.name}</h2>
               <p className="text-[#1A2551]/70 text-lg leading-relaxed mb-8">
                 {data.longDescription}
               </p>
-            </Reveal>
+            </motion.div>
             <div className="grid grid-cols-1 gap-8 mt-12">
               {data.detailedSections.map((section, idx) => (
-                <Reveal key={idx} delay={idx * 0.1} width="100%">
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                >
                   <div className="border-t border-[#1A2551]/10 pt-8">
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-full bg-[#F5F5F0] flex items-center justify-center text-[#1A2551] shrink-0">
@@ -361,41 +370,64 @@ export default function AreaGuide() {
                       </div>
                     </div>
                   </div>
-                </Reveal>
+                </motion.div>
               ))}
             </div>
           </div>
 
           {/* Right Column: Stats Sticky */}
           <div className="lg:col-span-5 lg:sticky lg:top-24 h-fit">
-            <Reveal width="100%" delay={0.2}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
               <blockquote className="border-l-4 border-[#8E8567] pl-6 py-4 italic text-[#1A2551]/80 text-xl font-serif mb-12 bg-[#F9F9F9] p-6 rounded-r-xl">
                 "{data.quote}"
                 <footer className="text-sm text-[#1A2551]/50 mt-3 font-sans not-italic uppercase tracking-widest">— {data.quoteAuthor}</footer>
               </blockquote>
-            </Reveal>
+            </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <Reveal width="100%" delay={0.3} className="h-full">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="h-full"
+              >
                 <div className="p-8 bg-[#1A2551] text-white rounded-2xl h-full">
-                  <p className="text-[#8E8567] text-xs uppercase tracking-widest mb-2">Average Price</p>
+                  <p className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold mb-2">Average Price</p>
                   <p className="text-white text-3xl font-serif">{data.stats.avgPrice}</p>
                   <p className="text-green-400 text-sm mt-2 font-medium">{data.stats.growth} <span className="text-white/40 font-normal text-xs">Past 12 Months</span></p>
                 </div>
-              </Reveal>
-              <Reveal width="100%" delay={0.4} className="h-full">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="h-full"
+              >
                 <div className="p-8 bg-[#F5F5F0] rounded-2xl h-full">
-                  <p className="text-[#8E8567] text-xs uppercase tracking-widest mb-2">Transport</p>
+                  <p className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold mb-2">Transport</p>
                   <p className="text-[#1A2551] text-3xl font-serif leading-tight">{data.stats.transport}</p>
                 </div>
-              </Reveal>
-              <Reveal width="100%" delay={0.5} className="sm:col-span-2">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 }}
+                className="sm:col-span-2"
+              >
                 <div className="p-8 bg-[#F5F5F0] rounded-2xl">
-                  <p className="text-[#8E8567] text-xs uppercase tracking-widest mb-2">Education</p>
+                  <p className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold mb-2">Education</p>
                   <p className="text-[#1A2551] text-3xl font-serif">{data.stats.schools}</p>
                   <p className="text-[#1A2551]/60 text-sm mt-2">Rated 'Outstanding' by Ofsted</p>
                 </div>
-              </Reveal>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -406,10 +438,13 @@ export default function AreaGuide() {
         <div className="max-w-[1600px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {data.highlights.map((highlight, idx) => (
-              <Reveal
+              <motion.div
                 key={idx}
-                delay={idx * 0.1}
-                width="100%"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="w-full"
               >
                 <div className="text-center md:text-left">
                   <div className="w-12 h-12 rounded-full bg-[#8E8567]/20 flex items-center justify-center text-[#8E8567] mb-6 mx-auto md:mx-0">
@@ -418,7 +453,7 @@ export default function AreaGuide() {
                   <h3 className="text-2xl font-serif mb-3">{highlight.title}</h3>
                   <p className="text-white/60 leading-relaxed">{highlight.desc}</p>
                 </div>
-              </Reveal>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -429,7 +464,7 @@ export default function AreaGuide() {
         <div className="max-w-[1600px] mx-auto">
           <div className="flex justify-between items-end mb-8 md:mb-12">
             <div>
-              <span className="block text-[#8E8567] text-sm tracking-widest uppercase mb-3 font-medium">Market Availability</span>
+              <span className="block text-[#8E8567] text-sm tracking-[0.2em] uppercase mb-3 font-bold">Market Availability</span>
               <h2 className="text-[#1A2551] text-4xl md:text-5xl font-serif">Homes in {data.name}</h2>
             </div>
             <Link
@@ -479,7 +514,7 @@ export default function AreaGuide() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
               >
-                <span className="block text-[#8E8567] text-xs uppercase tracking-[0.3em] mb-6 font-medium">Your Next Chapter</span>
+                <span className="block text-[#8E8567] text-sm font-bold uppercase tracking-[0.2em] mb-6">Your Next Chapter</span>
                 <h2 className="text-[#1A2551] text-4xl md:text-6xl font-serif mb-6">
                   Thinking of moving to {data.name}?
                 </h2>

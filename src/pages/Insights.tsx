@@ -1,112 +1,111 @@
-
-import { InsightsHero } from "../components/insights/InsightsHero";
-import { Reveal } from "../components/animations/Reveal";
+import { PageHeader } from "../components/global/PageHeader";
+import { motion } from "motion/react";
 import { OptimizedImage } from "../components/OptimizedImage";
 import { InsightsAreas } from "../components/insights/InsightsAreas";
 import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Clock } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { applySEO, PAGE_SEO } from "../utils/seo";
 import { getPublishedBlogPostsLight, getPublishedTestimonials, getGlobalSettings } from "../utils/database";
 import { trackEvent } from "../utils/analytics";
 import type { BlogPost, Testimonial } from "../types/database";
+import { useScrollReveal } from "../hooks/animations/useScrollReveal";
 
 export default function Insights() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [heroImage, setHeroImage] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
+  const blogGridRef = useRef<HTMLElement>(null);
+
+  const blogGridStaggerRef = useScrollReveal({
+    selector: ".blog-item",
+    stagger: 0.1,
+    delay: 0.2
+  });
 
   useEffect(() => {
     applySEO('insights');
 
     const fetchData = async () => {
-      const [blogData, testimonialData, globalSettings] = await Promise.all([
+      const [blogData, testimonialData] = await Promise.all([
         getPublishedBlogPostsLight(),
-        getPublishedTestimonials(),
-        getGlobalSettings<Record<string, string>>('page_hero_images').catch(() => ({}))
+        getPublishedTestimonials()
       ]);
       setBlogPosts(blogData as BlogPost[]);
       setTestimonials(testimonialData);
-
-      const images = globalSettings as Record<string, string> | null;
-      if (images && images.insights) {
-        setHeroImage(images.insights);
-      }
     };
 
     fetchData();
   }, []);
 
-  const nextSlide = () => {
-    if (currentIndex < blogPosts.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    }
-  };
+  const blogsPerPage = 6;
+  const totalPages = Math.ceil(blogPosts.length / blogsPerPage);
+  const startIndex = (currentPage - 1) * blogsPerPage;
+  const endIndex = startIndex + blogsPerPage;
+  const currentBlogs = blogPosts.slice(startIndex, endIndex);
 
-  const prevSlide = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+  // Helper function to change page and scroll to top
+  const changePage = (newPage: number) => {
+    trackEvent('click', 'Pagination', String(newPage));
+    setCurrentPage(newPage);
+
+    if (blogGridRef.current) {
+      setTimeout(() => {
+        if (blogGridRef.current) {
+          const element = blogGridRef.current;
+          const headerOffset = 100;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: 'smooth'
+          });
+        }
+      }, 50);
     }
   };
 
   return (
     <main id="main-content">
       {/* Hero Section */}
-      <InsightsHero image={heroImage} />
+      <PageHeader title="Insights" />
 
-      {/* 1. Latest Articles (Blog Carousel) */}
-      <Reveal width="100%">
-        <section className="w-full bg-gray-50 px-6 md:px-12 lg:px-20 py-12 md:py-20">
-          <div className="max-w-[1600px] mx-auto">
-            <div className="flex justify-between items-end mb-8 md:mb-12">
+      {/* 1. Latest Articles (Blog Grid) */}
+      <section className="w-full bg-gray-50 px-6 md:px-12 lg:px-20 py-12 md:py-20">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="flex justify-between items-end mb-8 md:mb-12">
+            <div className="flex flex-col items-start gap-2">
+              <span className="text-[#8E8567] text-sm tracking-[0.2em] font-bold uppercase" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                Our Insights
+              </span>
               <h2
                 className="text-[#1A2551] text-4xl md:text-5xl"
                 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
               >
                 Latest Articles
               </h2>
-
-              {/* Navigation Arrows */}
-              <div className="flex gap-3">
-                <button
-                  onClick={prevSlide}
-                  disabled={currentIndex === 0}
-                  className="w-12 h-12 border border-gray-300 rounded-full flex items-center justify-center hover:bg-[#1A2551] hover:border-[#1A2551] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#1A2551]"
-                  aria-label="Previous posts"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={nextSlide}
-                  disabled={currentIndex >= blogPosts.length - 1}
-                  className="w-12 h-12 border border-gray-300 rounded-full flex items-center justify-center hover:bg-[#1A2551] hover:border-[#1A2551] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[#1A2551]"
-                  aria-label="Next posts"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
             </div>
+          </div>
 
-            <div className="overflow-hidden">
-              {blogPosts.length > 0 ? (
+          <div>
+            {currentBlogs.length > 0 ? (
+              <>
                 <div
-                  className="flex gap-6 transition-transform duration-700 ease-out items-stretch"
-                  style={{
-                    transform: `translateX(calc(-${currentIndex * 100}% - ${currentIndex * 1.5}rem))`
-                  }}
+                  ref={blogGridStaggerRef as any}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12"
                 >
-                  {blogPosts.map((post) => (
+                  {currentBlogs.map((post) => (
                     <Link
                       key={post.id}
                       to={`/blog/${post.slug}`}
                       onClick={() => {
                         trackEvent('select_content', 'Blog Post', post.title);
                       }}
-                      className="flex-shrink-0 w-full md:w-[calc(33.33%-1rem)] cursor-pointer group bg-white transition-all duration-300 flex flex-col h-auto border border-gray-200 rounded-md overflow-hidden hover:shadow-xl hover:border-[#1A2551]/30"
+                      className="blog-item w-full cursor-pointer group bg-white transition-all duration-300 flex flex-col h-auto border border-gray-200 rounded-md overflow-hidden hover:shadow-xl hover:border-[#1A2551]/30 opacity-0"
                     >
                       {/* Image */}
                       <div className="relative overflow-hidden bg-gray-200 aspect-[4/3]">
@@ -117,9 +116,9 @@ export default function Insights() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                           />
                         )}
-                        <div className="absolute top-4 left-4 bg-white px-4 py-2">
+                        <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">
                           <span
-                            className="text-[#8E8567] text-xs font-bold uppercase tracking-widest"
+                            className="text-[#8E8567] text-sm font-bold uppercase tracking-[0.2em]"
                             style={{ fontFamily: "'Figtree', sans-serif" }}
                           >
                             {post.category || "Insight"}
@@ -128,12 +127,21 @@ export default function Insights() {
                       </div>
 
                       <div className="p-8 flex flex-col flex-grow">
-                        {/* Date */}
-                        <div className="mb-4 text-gray-400 text-xs uppercase tracking-wider font-medium">
+                        {/* Date & Read Time */}
+                        <div className="mb-4 text-gray-400 text-xs uppercase tracking-wider font-medium flex items-center gap-2">
                           {post.published_at
                             ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                             : new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                           }
+                          {post.read_time && post.read_time > 0 && (
+                            <>
+                              <span className="text-gray-300">•</span>
+                              <span className="flex items-center gap-1.5 leading-none">
+                                <Clock className="w-3 h-3" />
+                                {post.read_time} min read
+                              </span>
+                            </>
+                          )}
                         </div>
 
                         {/* Title */}
@@ -167,32 +175,111 @@ export default function Insights() {
                     </Link>
                   ))}
                 </div>
-              ) : (
-                <div className="text-center py-20 bg-gray-100">
-                  <p className="text-gray-500">No insights published yet.</p>
-                </div>
-              )}
-            </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-4 mt-20">
+                    <button
+                      onClick={() => changePage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className={`px-8 h-11 flex items-center justify-center rounded-full border transition-all duration-300 ${currentPage === 1
+                        ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                        : 'border-gray-300 text-[#1A2551] hover:border-[#1A2551] hover:bg-[#1A2551] hover:text-white cursor-pointer'
+                        }`}
+                      style={{
+                        fontFamily: "'Figtree', sans-serif",
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.2em",
+                        fontWeight: 600
+                      }}
+                    >
+                      <span className={currentPage !== 1 ? "premium-hover" : ""} data-text="Previous">
+                        <span>Previous</span>
+                      </span>
+                    </button>
+
+                    <div className="flex gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => changePage(page)}
+                          className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${currentPage === page
+                            ? 'bg-[#1A2551] text-white'
+                            : 'text-[#1A2551] hover:bg-gray-100'
+                            }`}
+                          style={{
+                            fontFamily: "'Figtree', sans-serif",
+                            fontSize: "0.875rem",
+                            fontWeight: 600
+                          }}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className={`px-8 h-11 flex items-center justify-center rounded-full border transition-all duration-300 ${currentPage === totalPages
+                        ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                        : 'border-gray-300 text-[#1A2551] hover:border-[#1A2551] hover:bg-[#1A2551] hover:text-white cursor-pointer'
+                        }`}
+                      style={{
+                        fontFamily: "'Figtree', sans-serif",
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.2em",
+                        fontWeight: 600
+                      }}
+                    >
+                      <span className={currentPage !== totalPages ? "premium-hover" : ""} data-text="Next">
+                        <span>Next</span>
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-20 bg-gray-100">
+                <p className="text-gray-500">No insights published yet.</p>
+              </div>
+            )}
           </div>
-        </section>
-      </Reveal>
+        </div>
+      </section>
+
 
       {/* 2. Newsletter Sign Up */}
-      <Reveal width="100%">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
         <InsightsNewsletter />
-      </Reveal>
+      </motion.div>
 
       {/* 3. Explore our neighbourhoods section */}
-      <Reveal width="100%" variant="fade-in">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
         <InsightsAreas />
-      </Reveal>
+      </motion.div>
 
       {/* Testimonials (Kept at bottom) */}
-      <Reveal width="100%">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
         <div className="py-12 bg-white">
           <TestimonialsCarousel testimonials={testimonials} />
         </div>
-      </Reveal>
-    </main>
+      </motion.div>
+    </main >
   );
 }

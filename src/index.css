@@ -512,10 +512,17 @@
     }
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: Figtree, sans-serif;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
   }
 
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) h1,
@@ -7180,6 +7187,62 @@ a {
 
 .card-animate:nth-child(3).animate-in {
   animation-delay: .2s;
+}
+
+/* CSS Fallback for GSAP scroll-reveal elements
+   These elements start with opacity-0 and rely on GSAP to animate them.
+   This fallback ensures they become visible after a delay if GSAP fails. */
+@keyframes gsapFallbackReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Featured properties, team cards, blog items, footer items, property items */
+.featured-property-item,
+.team-member-card,
+.blog-item,
+.footer-item,
+.property-item {
+  animation: gsapFallbackReveal 0.8s ease-out 0.5s forwards;
+}
+
+/* Stagger the fallback animations for a nicer effect */
+.featured-property-item:nth-child(1),
+.team-member-card:nth-child(1),
+.blog-item:nth-child(1),
+.property-item:nth-child(1) {
+  animation-delay: 0.3s;
+}
+
+.featured-property-item:nth-child(2),
+.team-member-card:nth-child(2),
+.blog-item:nth-child(2),
+.property-item:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.featured-property-item:nth-child(3),
+.team-member-card:nth-child(3),
+.blog-item:nth-child(3),
+.property-item:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+.blog-item:nth-child(4),
+.property-item:nth-child(4) {
+  animation-delay: 0.6s;
+}
+
+.blog-item:nth-child(5),
+.property-item:nth-child(5) {
+  animation-delay: 0.7s;
+}
+
+.blog-item:nth-child(6),
+.property-item:nth-child(6) {
+  animation-delay: 0.8s;
 }
 
 .rich-text-editor .ql-container {

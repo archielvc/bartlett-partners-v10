@@ -98,49 +98,51 @@ export function HomeServicesNew() {
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
     return (
-        <div
-            className="relative min-h-screen w-full flex flex-col items-center justify-center p-8 overflow-hidden font-sans"
+        <section
+            className="relative min-h-screen w-full flex flex-col items-center justify-center px-6 md:px-12 lg:px-20 py-20 overflow-hidden font-sans"
             style={{ backgroundColor: THEME.bg }}
         >
-            {/* Header Section */}
-            <div className="w-full max-w-7xl mb-12 text-left pl-2">
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-xs tracking-[0.2em] font-bold uppercase mb-4"
-                    style={{ color: THEME.accent }}
-                >
-                    The Difference
-                </motion.p>
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 }}
-                    className="text-5xl md:text-7xl text-white"
-                    style={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                    The Bartlett Experience
-                </motion.h1>
-            </div>
+            <div className="w-full max-w-[1600px] mx-auto">
+                {/* Header Section */}
+                <div className="w-full mb-12 text-left">
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-sm tracking-[0.2em] font-bold uppercase mb-4"
+                        style={{ color: '#8E8567' }}
+                    >
+                        The Difference
+                    </motion.p>
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-5xl md:text-7xl text-[#1A2551]"
+                        style={{ fontFamily: "'Playfair Display', serif" }}
+                    >
+                        The Bartlett Experience
+                    </motion.h1>
+                </div>
 
-            {/* Accordion Container */}
-            <div
-                className="flex flex-col md:flex-row w-full max-w-7xl gap-4"
-                style={{ height: isDesktop ? '600px' : 'auto' }}
-            >
-                {SERVICES.map((service) => (
-                    <ServiceCard
-                        key={service.id}
-                        service={service}
-                        isActive={activeId === service.id}
-                        onActivate={() => setActiveId(service.id)}
-                        isDesktop={isDesktop}
-                    />
-                ))}
+                {/* Accordion Container */}
+                <div
+                    className="flex flex-col md:flex-row w-full gap-4"
+                    style={{ height: isDesktop ? '600px' : 'auto' }}
+                >
+                    {SERVICES.map((service) => (
+                        <ServiceCard
+                            key={service.id}
+                            service={service}
+                            isActive={activeId === service.id}
+                            onActivate={() => setActiveId(service.id)}
+                            isDesktop={isDesktop}
+                        />
+                    ))}
+                </div>
             </div>
-        </div>
+        </section>
     );
 }
 
@@ -166,7 +168,8 @@ function ServiceCard({ service, isActive, onActivate, isDesktop }: ServiceCardPr
         }
         : {
             backgroundColor: THEME.cardBg,
-            height: '300px',
+            height: isActive ? '450px' : '80px',
+            flexShrink: 0,
         };
 
     return (
@@ -194,7 +197,7 @@ function ServiceCard({ service, isActive, onActivate, isDesktop }: ServiceCardPr
             {/* Note: Icon position is absolute to allow content to fade in/out underneath if needed, but fixed position is stable */}
             <div className="relative z-10 w-full h-full p-8 pointer-events-none">
 
-                <div className="absolute top-8 left-8 transition-colors duration-500">
+                <div className={`absolute left-8 transition-all duration-500 ${!isDesktop && !isActive ? 'top-1/2 -translate-y-1/2' : 'top-8'}`}>
                     <div
                         className={`p-3 rounded-full border border-white/10 ${isActive ? 'bg-white/5' : 'bg-transparent'} transition-colors duration-500`}
                     >
@@ -206,15 +209,16 @@ function ServiceCard({ service, isActive, onActivate, isDesktop }: ServiceCardPr
 
             {/* ACTIVE CONTENT - Absolutely positioned to decouple from layout flow */}
             <div
-                className={`absolute left-8 right-8 bottom-8 z-20 flex flex-col gap-6 transition-all duration-500 delay-100 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+                className={`absolute left-8 right-8 bottom-8 z-20 flex flex-col gap-6 transition-all duration-500 delay-100 
+                ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
             >
-                <h2 className="text-3xl md:text-4xl lg:text-5xl text-white leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <h2 className="text-2xl md:text-4xl lg:text-5xl text-white leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                     {service.title}
                 </h2>
 
                 <div className="w-12 h-[1px]" style={{ backgroundColor: THEME.accent }}></div>
 
-                <p className="text-lg leading-relaxed text-gray-300 font-light pr-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <p className="text-base md:text-lg leading-relaxed text-gray-300 font-light pr-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
                     {service.description}
                 </p>
 

@@ -1,6 +1,6 @@
 import { Navigation } from "../components/Navigation";
 import { Footer } from "../components/Footer";
-import { Reveal } from "../components/animations/Reveal";
+import { motion } from "motion/react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 
@@ -11,7 +11,11 @@ export default function NotFound() {
     <>
       <Navigation />
       <main className="min-h-screen bg-white pt-32 pb-20 flex flex-col items-center justify-center text-center px-6">
-        <Reveal>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
           <div className="space-y-6 max-w-lg">
             <h1
               className="text-[#1A2551] text-8xl font-light opacity-20"
@@ -39,7 +43,7 @@ export default function NotFound() {
               </Button>
             </div>
           </div>
-        </Reveal>
+        </motion.div>
       </main>
       <Footer />
     </>

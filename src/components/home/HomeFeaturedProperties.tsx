@@ -3,13 +3,19 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { getHomeFeaturedProperties } from "../../utils/database";
 import type { Property } from "../../types/property";
-import { motion } from "framer-motion";
 import { PropertyCard } from "../PropertyCard";
 import { Button } from "../ui/button";
+import { useScrollReveal } from "../../hooks/animations/useScrollReveal";
 
 export function HomeFeaturedProperties() {
   const navigate = useNavigate();
   const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
+
+  const containerRef = useScrollReveal({
+    selector: ".featured-property-item",
+    stagger: 0.1,
+    threshold: 0.2
+  });
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -30,7 +36,7 @@ export function HomeFeaturedProperties() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-16 gap-6 md:gap-0">
           <div className="flex flex-col items-start gap-2">
-            <span className="text-[#8E8567] text-sm tracking-[0.2em] font-medium uppercase" style={{ fontFamily: "'Figtree', sans-serif" }}>
+            <span className="text-[#8E8567] text-sm tracking-[0.2em] font-bold uppercase" style={{ fontFamily: "'Figtree', sans-serif" }}>
               Exclusive Portfolio
             </span>
             <h2
@@ -55,20 +61,19 @@ export function HomeFeaturedProperties() {
         {/* Desktop Grid / Mobile Carousel Wrapper */}
         <div className="relative">
           {/* Grid Layout - 3 Cols on Large Screens, Scroll on Mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div
+            ref={containerRef as any}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          >
             {featuredProperties.map((property, index) => (
-              <motion.div
+              <div
                 key={property.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={index === 2 ? "md:hidden lg:block" : ""}
+                className={`featured-property-item opacity-0 ${index === 2 ? "md:hidden lg:block" : ""}`}
               >
                 <PropertyCard
                   property={property}
                 />
-              </motion.div>
+              </div>
             ))}
           </div>
 

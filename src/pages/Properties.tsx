@@ -1,6 +1,6 @@
-import { Reveal } from "../components/animations/Reveal";
+import { motion } from "motion/react";
 import { PropertyCard } from "../components/PropertyCard";
-import { PropertiesHero } from "../components/properties/PropertiesHero";
+import { PageHeader } from "../components/global/PageHeader";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
 import { SlidersHorizontal, Search, X } from "lucide-react";
@@ -12,6 +12,7 @@ import { getPublishedProperties, getPublishedTestimonials, getStored, getGlobalS
 import { trackPropertyFilter, trackEvent } from "../utils/analytics";
 import type { Property } from "../types/property";
 import type { Testimonial } from "../types/database";
+import { useScrollReveal } from "../hooks/animations/useScrollReveal";
 
 const STATUS_MAPPING: Record<string, string[]> = {
   "Available": ["available"],
@@ -31,14 +32,18 @@ export default function Properties() {
     return getStored<Property[]>('properties_published') || [];
   });
 
-  const [heroImage, setHeroImage] = useState<string | undefined>(undefined);
-
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(() => properties.length === 0);
 
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const propertiesGridRef = useRef<HTMLElement>(null);
+
+  // Use scroll reveal for the grid
+  const propertiesGridRef = useScrollReveal({
+    selector: ".property-item",
+    stagger: 0.1,
+    delay: 0.2
+  });
 
   // Fetch properties from database
   useEffect(() => {
@@ -47,16 +52,10 @@ export default function Properties() {
       // Don't show loading spinner if we already have data
       if (properties.length === 0) setIsLoading(true);
 
-      const [propsData, testimonialData, globalSettings] = await Promise.all([
+      const [propsData, testimonialData] = await Promise.all([
         getPublishedProperties(),
-        getPublishedTestimonials(),
-        getGlobalSettings<Record<string, string>>('page_hero_images').catch(() => ({}))
+        getPublishedTestimonials()
       ]);
-
-      const images = globalSettings as Record<string, string> | null;
-      if (images && images.properties) {
-        setHeroImage(images.properties);
-      }
 
       // Update state (this will refresh the UI if data changed)
       setProperties(propsData);
@@ -152,14 +151,49 @@ export default function Properties() {
       const matchesPrice = !hasPriceFilter || selectedPriceRanges.some(range => matchesPriceRange(property.priceValue, range));
 
       // Check search query - searches title, location, price, beds, baths
-      const query = searchQuery.toLowerCase().trim();
-      const matchesSearch = !hasSearchQuery || (
-        property.title.toLowerCase().includes(query) ||
-        property.location.toLowerCase().includes(query) ||
-        property.price.toLowerCase().includes(query) ||
-        String(property.beds).includes(query) ||
-        String(property.baths).includes(query)
-      );
+      // Check search query - advanced parsing for beds/baths/price + general text
+      const queryLower = searchQuery.toLowerCase().trim();
+      let matchesSearch = !hasSearchQuery;
+
+      if (hasSearchQuery) {
+        // Parse "X beds" or "X baths"
+        const bedsMatch = queryLower.match(/(\d+)\s*(?:bed|beds|bedroom|bedrooms)/);
+        const bathsMatch = queryLower.match(/(\d+)\s*(?:bath|baths|bathroom|bathrooms)/);
+
+        let remainingQuery = queryLower;
+
+        // Check specific bed count if specified
+        if (bedsMatch) {
+          const minBeds = parseInt(bedsMatch[1]);
+          if (property.beds < minBeds) return false;
+          remainingQuery = remainingQuery.replace(bedsMatch[0], '').trim();
+        }
+
+        // Check specific bath count if specified
+        if (bathsMatch) {
+          const minBaths = parseInt(bathsMatch[1]);
+          if (property.baths < minBaths) return false;
+          remainingQuery = remainingQuery.replace(bathsMatch[0], '').trim();
+        }
+
+        // Check remaining text against general fields if there's anything left
+        if (remainingQuery.length > 0) {
+          const terms = remainingQuery.split(/\s+/);
+          const searchableText = `
+            ${property.title}
+            ${property.location}
+            ${property.price}
+            ${property.tags ? property.tags.join(' ') : ''}
+            ${property.type}
+            ${property.description || ''}
+          `.toLowerCase();
+
+          matchesSearch = terms.every(term => searchableText.includes(term));
+        } else {
+          // If only specific filters were provided (e.g. "5 beds") and they matched, we're good
+          matchesSearch = true;
+        }
+      }
 
       // AND logic: must match all active filters
       return matchesAvailability && matchesPrice && matchesSearch;
@@ -180,24 +214,60 @@ export default function Properties() {
   return (
     <main id="main-content">
       {/* Hero Section */}
-      <PropertiesHero image={heroImage} />
+      <PageHeader title="Our Collection" />
 
       {/* Filter Section */}
-      <Reveal width="100%" variant="fade-in">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <section className="w-full bg-white border-b border-gray-100 shadow-sm">
           <div className="w-full px-6 md:px-12 lg:px-20 py-6">
             <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
-              <p
-                className="text-[#3A3A3A]"
-                style={{
-                  fontFamily: "'Figtree', sans-serif",
-                  fontSize: "0.875rem",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase"
-                }}
-              >
-                Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'Residence' : 'Residences'}
-              </p>
+              <div className="flex items-center gap-6 w-full sm:w-auto">
+                {/* Search Bar */}
+                <div className="group relative flex items-center gap-3 pl-4 pr-4 h-11 bg-white border border-gray-200 rounded-full hover:border-[#1A2551] transition-all shrink-0 cursor-text w-full sm:w-auto" onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="SEARCH"]')?.focus()}>
+                  <Search className="w-4 h-4 text-[#1A2551]" />
+                  <input
+                    type="text"
+                    placeholder="SEARCH"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      changePage(1, false);
+                    }}
+                    className="w-full sm:w-[60px] sm:focus:w-[150px] transition-all duration-300 bg-transparent border-none p-0 text-[0.75rem] tracking-[0.2em] font-semibold text-[#1A2551] placeholder:text-[#1A2551] focus:ring-0 outline-none uppercase"
+                    style={{
+                      fontFamily: "'Figtree', sans-serif"
+                    }}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchQuery("");
+                        changePage(1, false);
+                      }}
+                      className="p-0.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#1A2551] transition-all"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                <p
+                  className="text-[#3A3A3A] whitespace-nowrap hidden md:block"
+                  style={{
+                    fontFamily: "'Figtree', sans-serif",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase"
+                  }}
+                >
+                  Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'Residence' : 'Residences'}
+                </p>
+              </div>
 
               <div className="flex items-center gap-6">
                 {activeFilterCount > 0 && (
@@ -241,31 +311,7 @@ export default function Properties() {
                   )}
                 </button>
 
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search properties..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      changePage(1, false);
-                    }}
-                    className="pl-14 pr-4 h-11 rounded-full border border-gray-200 focus:border-[#1A2551] focus:ring-1 focus:ring-[#1A2551] outline-none text-sm w-64 transition-all"
-                    style={{ fontFamily: "'Figtree', sans-serif" }}
-                  />
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  {searchQuery && (
-                    <button
-                      onClick={() => {
-                        setSearchQuery("");
-                        changePage(1, false);
-                      }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1A2551]"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
+
               </div>
             </div>
           </div>
@@ -363,22 +409,29 @@ export default function Properties() {
             </div>
           )}
         </section>
-      </Reveal>
+      </motion.div>
 
       {/* Properties Grid */}
-      <section ref={propertiesGridRef} className="w-full bg-white py-12 md:py-20">
+      <section className="w-full bg-white py-12 md:py-20">
         <div className="w-full px-6 md:px-12 lg:px-20">
           <div className="max-w-[1600px] mx-auto">
             {currentProperties.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+              <div
+                ref={propertiesGridRef as any}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12"
+              >
                 {currentProperties.map((property, index) => (
-                  <Reveal key={property.id} delay={index * 0.1} className="h-full" width="100%">
+                  <div key={property.id} className="property-item h-full opacity-0">
                     <PropertyCard property={property} />
-                  </Reveal>
+                  </div>
                 ))}
               </div>
             ) : (
-              <Reveal variant="fade-in">
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+              >
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <h3 className="text-2xl text-[#1A2551] mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>No properties found</h3>
                   <p className="text-gray-500 mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>Try adjusting your filters to see more results.</p>
@@ -394,7 +447,7 @@ export default function Properties() {
                     Clear All Filters
                   </button>
                 </div>
-              </Reveal>
+              </motion.div>
             )}
 
             {/* Pagination */}
@@ -466,17 +519,25 @@ export default function Properties() {
       </section>
 
       {/* Newsletter Section */}
-      <Reveal width="100%">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
         <InsightsNewsletter
           title="Unlock Exclusive Access"
           description="Join our private register for off-market opportunities, market insights, and priority access to new collections."
         />
-      </Reveal>
+      </motion.div>
 
       {/* Testimonials Section */}
-      <Reveal width="100%">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
         <TestimonialsCarousel testimonials={testimonials} />
-      </Reveal>
+      </motion.div>
     </main>
   );
 }

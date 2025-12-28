@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Armchair, Camera, Megaphone, Handshake, FileText, TrendingUp, ArrowRight, Plus } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { Reveal } from "../animations/Reveal";
+
 
 export function HomeExperience() {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -65,19 +65,24 @@ export function HomeExperience() {
                     {/* Section Header */}
                     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-8 md:mb-16 gap-8">
                         <div>
-                            <Reveal>
-                                <span className="text-[#8E8567] text-sm uppercase tracking-widest font-medium mb-4 block">
-                                    The Difference
-                                </span>
-                            </Reveal>
-                            <Reveal delay={0.1}>
-                                <h2
-                                    className="text-[#1A2551] text-4xl md:text-5xl lg:text-7xl leading-none"
-                                    style={{ fontFamily: "'Playfair Display', serif" }}
-                                >
-                                    The Bartlett Experience
-                                </h2>
-                            </Reveal>
+                            <motion.span
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="text-[#8E8567] text-sm uppercase tracking-widest font-medium mb-4 block"
+                            >
+                                The Difference
+                            </motion.span>
+                            <motion.h2
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.1 }}
+                                className="text-[#1A2551] text-4xl md:text-5xl lg:text-7xl leading-none"
+                                style={{ fontFamily: "'Playfair Display', serif" }}
+                            >
+                                The Bartlett Experience
+                            </motion.h2>
                         </div>
                     </div>
 

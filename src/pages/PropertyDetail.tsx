@@ -4,7 +4,6 @@ import { PropertyInquiryDialog } from "../components/PropertyInquiryDialog";
 import { BookEvaluationDialog } from "../components/BookEvaluationDialog";
 import { PropertyCard } from "../components/PropertyCard";
 import { Button } from "../components/ui/button";
-import { Reveal } from "../components/animations/Reveal";
 import {
     Bed,
     Bath,
@@ -17,7 +16,7 @@ import {
     Download,
     Camera
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // import { useFavorites } from "../contexts/FavoritesContext"; // Unused in this file according to linter rules usually, but user included it. I'll keep it if they used it, but they didn't seem to use it in the snippet provided (except import). 
 // Actually, looking at the code: "const { slug } = useParams<{ slug: string }>();" - useFavorites is imported but NOT USED in the user snippet. I will remove it to be clean, or keep it to be safe. I'll keep it commented or remove it if unused.
@@ -36,9 +35,12 @@ import {
     getPublishedTestimonials
 } from "../utils/database";
 
+import { FloorPlanViewer } from "../components/FloorPlanViewer"; // Add import
+
 export default function PropertyDetail() {
     useScrollDepth();
-    const [galleryOpen, setGalleryOpen] = useState(false);
+    // Refactor state to support different modal types
+    const [activeModal, setActiveModal] = useState<'gallery' | 'floorplan' | 'map' | null>(null);
     const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
     const [showMobileAction, setShowMobileAction] = useState(false);
 
@@ -60,38 +62,58 @@ export default function PropertyDetail() {
     const { slug } = useParams<{ slug: string }>();
     const { setSEOData } = useSEO();
 
+    const thumbnailContainerRef = useRef<HTMLDivElement>(null);
+    const thumbnailsRef = useRef<(HTMLButtonElement | null)[]>([]);
+
+    useEffect(() => {
+        if (selectedImageIndex !== null && thumbnailContainerRef.current && thumbnailsRef.current[selectedImageIndex]) {
+            const container = thumbnailContainerRef.current;
+            const thumbnail = thumbnailsRef.current[selectedImageIndex];
+            if (thumbnail) {
+                const scrollLeft = thumbnail.offsetLeft - (container.clientWidth / 2) + (thumbnail.clientWidth / 2);
+                container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+            }
+        }
+    }, [selectedImageIndex, activeModal]);
+
     // Cleanup SEO on unmount
     useEffect(() => {
         return () => setSEOData({});
     }, [setSEOData]);
 
     // Convert Google Maps URL to embed URL
-    const convertToEmbedUrl = (url: string): string => {
+    const convertToEmbedUrl = (url: string, interactive: boolean = false): string => {
         if (!url) return '';
         try {
+            let baseUrl = '';
             if (url.includes('/place/')) {
                 const placeMatch = url.match(/\/place\/([^/@]+)/);
                 if (placeMatch) {
                     const place = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
-                    return `https://maps.google.com/maps?q=${encodeURIComponent(place)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+                    baseUrl = `https://maps.google.com/maps?q=${encodeURIComponent(place)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
                 }
-            }
-            if (url.includes('query=')) {
+            } else if (url.includes('query=')) {
                 const queryMatch = url.match(/query=([^&]+)/);
                 if (queryMatch) {
                     const query = decodeURIComponent(queryMatch[1]);
-                    return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+                    baseUrl = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+                }
+            } else {
+                const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                if (coordMatch) {
+                    baseUrl = `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+                } else if (property?.full_address || property?.postcode) {
+                    const addr = `${property.full_address || ''} ${property.postcode || ''}`.trim();
+                    baseUrl = `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
                 }
             }
-            const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-            if (coordMatch) {
-                return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-            }
-            if (property?.full_address || property?.postcode) {
-                const addr = `${property.full_address || ''} ${property.postcode || ''}`.trim();
-                return `https://maps.google.com/maps?q=${encodeURIComponent(addr)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-            }
-            return '';
+
+            // Should be clean URL already, but ensuring no existing logic breaks
+            if (!baseUrl) return '';
+
+            // For interactive map, we might want slightly different parameters if needed, 
+            // but the embed iframe usually handles interactions if not blocked by overlays.
+            return baseUrl;
         } catch (e) {
             console.warn('Map URL conversion error:', e);
             return '';
@@ -107,7 +129,7 @@ export default function PropertyDetail() {
     };
 
     useEffect(() => {
-        if (galleryOpen) {
+        if (activeModal) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
@@ -115,7 +137,7 @@ export default function PropertyDetail() {
         return () => {
             document.body.style.overflow = '';
         };
-    }, [galleryOpen]);
+    }, [activeModal]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -244,7 +266,7 @@ export default function PropertyDetail() {
                         <div
                             className="relative h-full md:col-span-2 rounded-lg overflow-hidden cursor-pointer group"
                             onClick={() => {
-                                setGalleryOpen(true);
+                                setActiveModal('gallery');
                                 setSelectedImageIndex(0);
                             }}
                         >
@@ -264,7 +286,7 @@ export default function PropertyDetail() {
                                     key={idx}
                                     className="relative rounded-lg overflow-hidden cursor-pointer group"
                                     onClick={() => {
-                                        setGalleryOpen(true);
+                                        setActiveModal('gallery');
                                         setSelectedImageIndex(idx + 1);
                                     }}
                                 >
@@ -391,16 +413,25 @@ export default function PropertyDetail() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         {/* Map */}
                                         {property.google_maps_url ? (
-                                            <div className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden relative border border-[#1A2551]/10">
+                                            <div
+                                                className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden relative border border-[#1A2551]/10 cursor-pointer group"
+                                                onClick={() => setActiveModal('map')}
+                                            >
                                                 <iframe
                                                     width="100%"
                                                     height="100%"
                                                     frameBorder="0"
-                                                    style={{ border: 0, filter: 'grayscale(1) opacity(0.8)' }}
+                                                    style={{ border: 0, pointerEvents: 'none' }}
                                                     src={convertToEmbedUrl(property.google_maps_url)}
                                                     aria-label="Property Location"
                                                 ></iframe>
-                                                <div className="absolute inset-0 pointer-events-none border border-[#1A2551]/10 rounded-xl" />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-[#1A2551]/5 transition-colors duration-300 flex items-center justify-center">
+                                                    <div className="bg-white px-5 py-3 rounded-md shadow-lg border border-[#1A2551]/10 opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0">
+                                                        <span className="text-[#1A2551] text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                                            <Maximize className="w-4 h-4" /> Explore Map
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         ) : property.google_maps_url !== undefined && (
                                             <div className="w-full aspect-square bg-gray-50 flex items-center justify-center rounded-xl border border-[#1A2551]/10">
@@ -411,7 +442,7 @@ export default function PropertyDetail() {
                                         {/* Floor Plan */}
                                         <div
                                             className="w-full aspect-square bg-white rounded-xl overflow-hidden relative border border-[#1A2551]/10 flex items-center justify-center cursor-pointer group p-8"
-                                            onClick={() => property.floor_plan_image && window.open(property.floor_plan_image, '_blank')}
+                                            onClick={() => property.floor_plan_image && setActiveModal('floorplan')}
                                         >
                                             {property.floor_plan_image ? (
                                                 <>
@@ -496,7 +527,11 @@ export default function PropertyDetail() {
 
                         {/* RIGHT COLUMN (Sticky Sidebar) */}
                         <div className="w-full lg:w-1/3 lg:sticky lg:top-32 h-fit">
-                            <Reveal width="100%" delay={0.2}>
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2, duration: 0.5 }}
+                            >
                                 <div className="space-y-6">
 
                                     {/* Main Action Card */}
@@ -555,71 +590,202 @@ export default function PropertyDetail() {
                                         </div>
                                     </div>
                                 </div>
-                            </Reveal>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
             </section >
 
-            {/* Gallery Modal */}
+            {/* Modal Layer */}
             <AnimatePresence>
-                {
-                    galleryOpen && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
-                            onClick={() => setGalleryOpen(false)}
-                        >
+                {/* 1. Gallery Modal */}
+                {/* 1. Gallery Modal */}
+                {activeModal === 'gallery' && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-md"
+                        onClick={() => setActiveModal(null)}
+                    >
+                        {/* Top Bar with Close Button */}
+                        <div className="absolute top-0 left-0 right-0 p-6 z-[120] flex justify-end pointer-events-none">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setGalleryOpen(false);
+                                    setActiveModal(null);
                                 }}
-                                className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors"
+                                className="pointer-events-auto bg-white hover:bg-white/90 text-[#1A2551] p-3 rounded-full transition-all shadow-lg hover:scale-105"
                             >
-                                <X className="w-8 h-8" />
+                                <X className="w-6 h-6" />
                             </button>
+                        </div>
 
+                        {/* Main Image Container */}
+                        <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden">
+                            {/* Previous Button - Solid White High Contrast */}
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedImageIndex((selectedImageIndex - 1 + displayImages.length) % displayImages.length);
                                 }}
-                                className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm text-white transition-all hidden md:block"
+                                className="absolute left-6 z-[110] bg-white hover:bg-white/90 text-[#1A2551] p-4 rounded-full transition-all shadow-lg hover:scale-105 hidden md:flex items-center justify-center cursor-pointer"
                             >
                                 <ChevronLeft className="w-8 h-8" />
                             </button>
 
-                            <div className="w-full h-full p-4 md:p-20 flex items-center justify-center overflow-hidden">
-                                <AnimatePresence mode="wait">
-                                    <motion.img
-                                        key={selectedImageIndex}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        transition={{ duration: 0.3 }}
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={selectedImageIndex}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="w-full h-full p-4 md:p-20 flex items-center justify-center touch-pan-y"
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    dragElastic={0.1}
+                                    onDragEnd={(e, { offset }) => {
+                                        const swipe = offset.x;
+                                        if (swipe < -50) {
+                                            setSelectedImageIndex((selectedImageIndex + 1) % displayImages.length);
+                                        } else if (swipe > 50) {
+                                            setSelectedImageIndex((selectedImageIndex - 1 + displayImages.length) % displayImages.length);
+                                        }
+                                    }}
+                                // Removed onClick stopPropagation here so background clicks close modal
+                                >
+                                    <img
                                         src={displayImages[selectedImageIndex]}
                                         alt={getImageAlt(selectedImageIndex)}
-                                        className="max-w-full max-h-full object-contain shadow-2xl"
+                                        className="max-w-full max-h-full object-contain shadow-2xl select-none"
+                                        draggable="false"
+                                        onClick={(e) => e.stopPropagation()} // Stop propagation ONLY on the image
                                     />
-                                </AnimatePresence>
-                            </div>
+                                </motion.div>
+                            </AnimatePresence>
 
+                            {/* Next Button - Solid White High Contrast */}
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedImageIndex((selectedImageIndex + 1) % displayImages.length);
                                 }}
-                                className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm text-white transition-all hidden md:block"
+                                className="absolute right-6 z-[110] bg-white hover:bg-white/90 text-[#1A2551] p-4 rounded-full transition-all shadow-lg hover:scale-105 hidden md:flex items-center justify-center cursor-pointer"
                             >
                                 <ChevronRight className="w-8 h-8" />
                             </button>
-                        </motion.div>
-                    )
-                }
-            </AnimatePresence >
+                        </div>
+
+                        {/* Thumbnails Strip - Increased padding for scaling visual */}
+                        <div
+                            className="h-32 w-full bg-black/40 backdrop-blur-md border-t border-white/10 flex items-center z-[110]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div
+                                className="w-full max-w-[1600px] mx-auto overflow-x-auto flex items-center gap-4 px-8 py-4 no-scrollbar"
+                                ref={thumbnailContainerRef}
+                            >
+                                <style>{`
+                                    .no-scrollbar::-webkit-scrollbar {
+                                        display: none;
+                                    }
+                                    .no-scrollbar {
+                                        -ms-overflow-style: none;
+                                        scrollbar-width: none;
+                                    }
+                                `}</style>
+                                {displayImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        ref={(el) => { thumbnailsRef.current[idx] = el }}
+                                        onClick={() => setSelectedImageIndex(idx)}
+                                        className={`flex-shrink-0 relative h-20 w-32 rounded-lg overflow-hidden transition-all duration-300 ${selectedImageIndex === idx
+                                            ? 'ring-4 ring-white opacity-100 scale-105 z-10 shadow-xl'
+                                            : 'opacity-50 hover:opacity-100 scale-100 hover:scale-105'
+                                            }`}
+                                    >
+                                        <ImageWithFallback
+                                            src={img}
+                                            alt={`Thumbnail ${idx + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                    </motion.div>
+                )}
+
+                {/* 2. Floor Plan Modal */}
+                {activeModal === 'floorplan' && property?.floor_plan_image && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-12"
+                        onClick={() => setActiveModal(null)}
+                    >
+                        {/* Wrapper for the viewer to give it a nice frame */}
+                        <div
+                            className="relative w-full max-w-5xl h-full max-h-[85vh] bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col"
+                            onClick={(e) => e.stopPropagation()} // Prevent close on clicking invalid area
+                        >
+                            <div className="absolute top-4 right-4 z-50">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="bg-white/90 hover:bg-[#F3F4F6] p-2 rounded-full transition-colors border border-gray-200 shadow-sm"
+                                >
+                                    <X className="w-5 h-5 text-[#1A2551]" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-hidden">
+                                <FloorPlanViewer
+                                    src={property.floor_plan_image}
+                                    alt={`Floor plan for ${property.title}`}
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* 3. Map Modal */}
+                {activeModal === 'map' && property?.google_maps_url && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-12"
+                        onClick={() => setActiveModal(null)}
+                    >
+                        <div
+                            className="relative w-full max-w-5xl h-full max-h-[85vh] bg-white rounded-xl overflow-hidden shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="absolute top-4 right-4 z-50">
+                                <button
+                                    onClick={() => setActiveModal(null)}
+                                    className="bg-white/90 hover:bg-[#F3F4F6] p-2 rounded-full transition-colors border border-gray-200 shadow-sm"
+                                >
+                                    <X className="w-5 h-5 text-[#1A2551]" />
+                                </button>
+                            </div>
+
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                frameBorder="0"
+                                style={{ border: 0 }}
+                                // Use the same convert function
+                                src={convertToEmbedUrl(property.google_maps_url)}
+                                aria-label="Interactive Property Location"
+                            ></iframe>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <section className="px-4 md:px-8 lg:px-12 xl:px-20 mt-20">
                 <div className="max-w-[1600px] mx-auto">

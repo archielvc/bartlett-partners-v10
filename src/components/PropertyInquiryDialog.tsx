@@ -79,9 +79,9 @@ export function PropertyInquiryDialog({
 
         <SheetContent
           side="right"
-          className="w-full sm:max-w-[500px] p-0 flex flex-col bg-white/95 backdrop-blur-xl border-l-2 border-[#1A2551] overflow-y-auto [&>button]:hidden"
+          className="w-[100vw] sm:max-w-[500px] p-0 flex flex-col bg-white/95 backdrop-blur-xl border-l-2 border-[#1A2551] overflow-y-auto [&>button]:hidden"
         >
-          <SheetClose className="absolute top-6 right-6 z-50 p-2 bg-white/80 hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-md border border-[#1A2551]/10 shadow-sm transition-all">
+          <SheetClose className="absolute top-6 right-6 z-50 p-2 bg-white/80 hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-full border border-[#1A2551]/10 shadow-sm transition-all">
             <X className="w-5 h-5" />
             <span className="sr-only">Close</span>
           </SheetClose>
@@ -126,7 +126,7 @@ export function PropertyInquiryDialog({
         <DialogDescription className="sr-only">Fill out the form below to enquire about the property</DialogDescription>
 
         <div className="bg-white sm:rounded-3xl shadow-2x overflow-hidden flex flex-col max-h-[85vh] w-full mx-auto border-2 border-[#1A2551] relative">
-          <DialogClose className="absolute top-6 right-6 z-50 flex items-center justify-center w-10 h-10 bg-white border border-[#1A2551]/10 shadow-sm hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-md transition-all">
+          <DialogClose className="absolute top-6 right-6 z-50 flex items-center justify-center w-10 h-10 bg-white border border-[#1A2551]/10 shadow-sm hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-full transition-all">
             <X className="w-5 h-5" />
             <span className="sr-only">Close</span>
           </DialogClose>

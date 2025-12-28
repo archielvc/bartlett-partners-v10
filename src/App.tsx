@@ -74,6 +74,8 @@ function FrontendLayout() {
 
 import { cleanupSiteImages } from './utils/cleanupSiteImages';
 
+import { SmoothScroll } from './components/SmoothScroll';
+
 export default function App() {
   useEffect(() => {
     // Temporary cleanup for obsolete site images
@@ -82,47 +84,49 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <SEOProvider>
-        <SiteProvider>
-          <LoadingProvider>
-            <FavoritesProvider>
-              <CookieProvider>
-                <AnalyticsProvider>
-                  <ErrorBoundary>
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        {/* Admin Panel Route */}
-                        <Route path="/admin" element={<AdminPanel />} />
+      <SmoothScroll>
+        <SEOProvider>
+          <SiteProvider>
+            <LoadingProvider>
+              <FavoritesProvider>
+                <CookieProvider>
+                  <AnalyticsProvider>
+                    <ErrorBoundary>
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          {/* Admin Panel Route */}
+                          <Route path="/admin" element={<AdminPanel />} />
 
 
 
-                        {/* Frontend Website Routes */}
-                        <Route element={<FrontendLayout />}>
-                          <Route path="/" element={<Home />} />
-                          <Route path="/about" element={<AboutUs />} />
-                          <Route path="/properties" element={<Properties />} />
-                          <Route path="/properties/:slug" element={<PropertyDetail />} />
-                          <Route path="/insights" element={<Insights />} />
-                          <Route path="/blog/:slug" element={<BlogPost />} />
-                          <Route path="/contact" element={<Contact />} />
+                          {/* Frontend Website Routes */}
+                          <Route element={<FrontendLayout />}>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/about" element={<AboutUs />} />
+                            <Route path="/properties" element={<Properties />} />
+                            <Route path="/properties/:slug" element={<PropertyDetail />} />
+                            <Route path="/insights" element={<Insights />} />
+                            <Route path="/blog/:slug" element={<BlogPost />} />
+                            <Route path="/contact" element={<Contact />} />
 
-                          <Route path="/:slug" element={<AreaGuide />} />
-                          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                          <Route path="/cookie-policy" element={<CookiePolicy />} />
-                          {/* Catch-all route for preview_page.html and other unmatched routes */}
-                          <Route path="*" element={<NotFound />} />
-                        </Route>
-                      </Routes>
-                    </Suspense>
-                  </ErrorBoundary>
-                </AnalyticsProvider>
-              </CookieProvider>
-            </FavoritesProvider>
-          </LoadingProvider>
-        </SiteProvider>
-      </SEOProvider>
-      {/* Toaster for notifications */}
-      <Toaster />
+                            <Route path="/:slug" element={<AreaGuide />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                            <Route path="/cookie-policy" element={<CookiePolicy />} />
+                            {/* Catch-all route for preview_page.html and other unmatched routes */}
+                            <Route path="*" element={<NotFound />} />
+                          </Route>
+                        </Routes>
+                      </Suspense>
+                    </ErrorBoundary>
+                  </AnalyticsProvider>
+                </CookieProvider>
+              </FavoritesProvider>
+            </LoadingProvider>
+          </SiteProvider>
+        </SEOProvider>
+        {/* Toaster for notifications */}
+        <Toaster />
+      </SmoothScroll>
     </BrowserRouter>
   );
 }

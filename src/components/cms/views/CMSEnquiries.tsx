@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Mail, Phone, Home, FileText, Filter, Database, Download, Users, MessageSquare, Trash2, Calendar as CalendarIcon, X } from 'lucide-react';
+import { Mail, Phone, Home, FileText, Filter, Database, Download, Users, MessageSquare, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CMSPageLayout } from '../CMSPageLayout';
 import { Button } from '../../ui/button';
-import { Calendar } from '../../ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../../ui/popover';
 import { cn } from '../../ui/utils';
-import { format, differenceInDays } from 'date-fns';
-import { DateRange } from 'react-day-picker';
 import { getContactSubmissions, updateContactSubmissionStatus, deleteContactSubmission } from '../../../utils/database';
 import type { ContactSubmission, ContactSubmissionWithProperty } from '../../../types/database';
 import {
@@ -34,7 +30,7 @@ type TabType = 'enquiries' | 'newsletter';
 export function CMSEnquiries() {
   const [enquiries, setEnquiries] = useState<ContactSubmissionWithProperty[]>([]);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
-  const [dateFilter, setDateFilter] = useState<DateRange | undefined>(undefined);
+
   const [activeTab, setActiveTab] = useState<TabType>('enquiries');
   const [loading, setLoading] = useState(true);
   const [enquiryToDelete, setEnquiryToDelete] = useState<ContactSubmissionWithProperty | null>(null);
@@ -136,21 +132,7 @@ export function CMSEnquiries() {
       }
     }
 
-    if (dateFilter?.from) {
-      const enquiryDate = new Date(e.created_at);
-      enquiryDate.setHours(0, 0, 0, 0);
 
-      const fromDate = new Date(dateFilter.from);
-      fromDate.setHours(0, 0, 0, 0);
-
-      if (enquiryDate < fromDate) return false;
-
-      if (dateFilter.to) {
-        const toDate = new Date(dateFilter.to);
-        toDate.setHours(23, 59, 59, 999);
-        if (enquiryDate > toDate) return false;
-      }
-    }
 
     return true;
   });
@@ -254,69 +236,7 @@ export function CMSEnquiries() {
               </button>
             ))}
 
-            <div className="h-6 w-px bg-gray-200 mx-2" />
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className={cn(
-                    "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
-                    dateFilter
-                      ? "bg-[#1A2551] text-white shadow-sm"
-                      : "text-gray-600 hover:bg-gray-50"
-                  )}
-                >
-                  <CalendarIcon className="w-4 h-4" />
-                  {dateFilter?.from ? (
-                    dateFilter.to ? (
-                      <>
-                        {format(dateFilter.from, "LLL dd, y")} -{" "}
-                        {format(dateFilter.to, "LLL dd, y")}
-                      </>
-                    ) : (
-                      format(dateFilter.from, "LLL dd, y")
-                    )
-                  ) : (
-                    "Select Dates"
-                  )}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-[#1A2551] border border-[#1A2551] shadow-2xl rounded-xl overflow-hidden" align="start">
-                <div className="flex flex-col">
-                  <Calendar
-                    className="border-0 shadow-none rounded-b-none"
-                    mode="range"
-                    selected={dateFilter}
-                    onSelect={setDateFilter}
-                    initialFocus
-                    numberOfMonths={2}
-                  />
-                  <div className="border-t border-white/10 bg-[#1A2551] p-4 text-sm text-white font-medium text-center">
-                    {dateFilter?.from ? (
-                      dateFilter.to ? (
-                        <span className="font-semibold text-[#C5A059]">
-                          {differenceInDays(dateFilter.to, dateFilter.from) + 1} Days Selected
-                        </span>
-                      ) : (
-                        <span className="text-white/60">Select end date</span>
-                      )
-                    ) : (
-                      <span className="text-white/60">Select date range</span>
-                    )}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {dateFilter && (
-              <button
-                onClick={() => setDateFilter(undefined)}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                title="Clear date filter"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-500">

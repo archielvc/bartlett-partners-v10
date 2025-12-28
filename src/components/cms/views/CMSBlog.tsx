@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../../ui/alert-dialog';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export function CMSBlog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -352,9 +353,13 @@ export function CMSBlog() {
     }
   };
 
+  const { isAdmin } = useAuth();
+
   const actions = [
-    { label: "Import JSON", icon: Code, onClick: () => setShowJSONImport(true), variant: 'outline' as const },
-    { label: "Bulk Images", icon: Tag, onClick: () => setShowBulkUpload(true), variant: 'outline' as const },
+    ...(isAdmin ? [
+      { label: "Import JSON", icon: Code, onClick: () => setShowJSONImport(true), variant: 'outline' as const },
+      { label: "Bulk Images", icon: Tag, onClick: () => setShowBulkUpload(true), variant: 'outline' as const }
+    ] : []),
     { label: "New Article", icon: Plus, onClick: handleAdd },
   ];
 
@@ -379,7 +384,7 @@ export function CMSBlog() {
 
   return (
     <CMSPageLayout
-      title="Blog & Insights"
+      title="Insights"
       description="Manage articles, news, and market insights"
       actions={actions}
     >

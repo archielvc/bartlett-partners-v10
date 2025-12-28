@@ -69,24 +69,24 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
   return (
     <div className="relative w-full h-full flex flex-col overflow-hidden bg-white">
       {/* Controls */}
-      <div className="absolute top-4 right-4 z-20 flex gap-2">
+      <div className="absolute bottom-4 right-4 z-20 flex gap-2">
         <button
           onClick={zoomIn}
-          className="bg-white/90 hover:bg-white p-2 rounded shadow-lg transition-colors border border-gray-100"
+          className="bg-white/90 hover:bg-[#F3F4F6] p-2 rounded-full shadow-lg transition-colors border border-gray-200"
           style={{ fontFamily: "'Figtree', sans-serif" }}
         >
           <ZoomIn className="w-5 h-5 text-[#1A2551]" />
         </button>
         <button
           onClick={zoomOut}
-          className="bg-white/90 hover:bg-white p-2 rounded shadow-lg transition-colors border border-gray-100"
+          className="bg-white/90 hover:bg-[#F3F4F6] p-2 rounded-full shadow-lg transition-colors border border-gray-200"
           style={{ fontFamily: "'Figtree', sans-serif" }}
         >
           <ZoomOut className="w-5 h-5 text-[#1A2551]" />
         </button>
         <button
           onClick={resetZoom}
-          className="bg-white/90 hover:bg-white p-2 rounded shadow-lg transition-colors border border-gray-100"
+          className="bg-white/90 hover:bg-[#F3F4F6] p-2 rounded-full shadow-lg transition-colors border border-gray-200"
           style={{ fontFamily: "'Figtree', sans-serif" }}
         >
           <Maximize2 className="w-5 h-5 text-[#1A2551]" />

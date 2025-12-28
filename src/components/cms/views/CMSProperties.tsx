@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../../ui/alert-dialog';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export function CMSProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -416,8 +417,10 @@ export function CMSProperties() {
     );
   }
 
+  const { isAdmin } = useAuth();
+
   const actions = [
-    { label: 'Import JSON', icon: Code, onClick: () => setShowJSONImport(true), variant: 'outline' as const },
+    ...(isAdmin ? [{ label: 'Import JSON', icon: Code, onClick: () => setShowJSONImport(true), variant: 'outline' as const }] : []),
     { label: 'Add Property', icon: Plus, onClick: handleCreate },
   ];
 

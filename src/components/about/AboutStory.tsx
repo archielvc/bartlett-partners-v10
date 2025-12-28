@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { trackCTAClick } from "../../utils/analytics";
-import { Reveal } from "../animations/Reveal";
+
 import { motion } from "motion/react";
 import { ImageWithFallback } from "../ui/ImageWithFallback";
 import { useSiteSettings } from "../../contexts/SiteContext";
@@ -28,8 +28,7 @@ export function AboutStory() {
             className="w-full lg:w-5/12"
           >
             <div className="flex items-center gap-4 mb-8">
-              <div className="h-[1px] w-12 bg-[#8E8567]" />
-              <span className="text-[#8E8567] text-xs uppercase tracking-[0.2em] font-bold">Our Story</span>
+              <span className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold">Our Story</span>
             </div>
 
             <h2
@@ -90,11 +89,16 @@ export function AboutStory() {
 
             {/* Top: Conclusion - Full Width */}
             <div className="w-full">
-              <Reveal width="100%">
-                <p className="text-[#1A2551] text-2xl md:text-3xl font-light italic leading-relaxed" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  The result? Homes that sell faster, for better prices, with far less stress.
-                </p>
-              </Reveal>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="text-[#1A2551] text-2xl md:text-3xl font-light italic leading-relaxed"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                The result? Homes that sell faster, for better prices, with far less stress.
+              </motion.p>
             </div>
 
 

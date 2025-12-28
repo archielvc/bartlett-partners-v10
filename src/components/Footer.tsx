@@ -6,11 +6,19 @@ import { useSiteSettings } from "../contexts/SiteContext";
 import { trackEvent, trackNavigation, trackContactFormSubmit } from "../utils/analytics";
 import { useState } from "react";
 import { submitContactForm } from "../utils/database";
+import { useScrollReveal } from "../hooks/animations/useScrollReveal";
 
 export function Footer() {
   const navigate = useNavigate();
   const { images } = useSiteSettings();
   const whiteLogo = images.branding.brand_logo_white;
+
+  const footerRef = useScrollReveal({
+    selector: ".footer-item",
+    stagger: 0.05,
+    threshold: 0.1,
+    y: 20
+  });
 
   const handleNavClick = (path: string) => {
     trackNavigation(path);
@@ -39,18 +47,18 @@ export function Footer() {
   };
 
 
-
   return (
     <footer
       className="w-full bg-[#1A2551] text-white"
       role="contentinfo"
       aria-label="Site footer"
+      ref={footerRef as any}
     >
       <div className="w-full px-6 md:px-12 lg:px-20 pt-12 md:pt-20 lg:pt-24">
         <div className="max-w-[1600px] mx-auto">
 
           {/* Massive Branding Header - SVG for Perfect Width Fit */}
-          <div className="w-full mb-12 md:mb-16" aria-hidden="true">
+          <div className="w-full mb-12 md:mb-16 footer-item opacity-0" aria-hidden="true">
             <svg viewBox="0 0 112 14" className="w-full h-auto block opacity-90">
               <text
                 x="50%"
@@ -70,19 +78,19 @@ export function Footer() {
           {/* Main Content Layout - Full Width Links Only */}
           <div className="w-full mb-12 lg:mb-16">
 
-            {/* Navigation Links (Full Width - Flex Row) */}
-            <div className="w-full flex flex-row justify-between gap-2 md:gap-4 lg:gap-8">
+            {/* Navigation Links (Full Width - Flexible Grid) */}
+            <div className="w-full grid grid-cols-2 lg:flex lg:flex-row justify-between gap-8 md:gap-4 lg:gap-8">
 
               {/* Col 0: Newsletter */}
-              <div className="flex flex-col w-full md:w-[30%] max-w-sm">
-                <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+              <div className="flex flex-col col-span-2 md:col-span-1 w-full md:w-[30%] max-w-sm">
+                <h3 className="text-lg font-medium mb-6 md:mb-8 footer-item opacity-0" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Newsletter
                 </h3>
-                <p className="text-white/60 text-sm mb-6 font-light leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <p className="text-white/60 text-sm mb-6 font-light leading-relaxed footer-item opacity-0" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Join our exclusive mailing list for the latest property news, market analysis, and off-market opportunities.
                 </p>
                 {isSubmitted ? (
-                  <div className="w-full bg-[#8E8567]/10 border border-[#8E8567] p-6 rounded-md relative overflow-hidden">
+                  <div className="w-full bg-[#8E8567]/10 border border-[#8E8567] p-6 rounded-md relative overflow-hidden footer-item opacity-0">
                     <div className="relative z-10">
                       <h3
                         className="text-white text-lg mb-2"
@@ -99,7 +107,7 @@ export function Footer() {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-3">
+                  <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-3 footer-item opacity-0">
                     <input
                       type="text"
                       placeholder="Name"
@@ -131,31 +139,31 @@ export function Footer() {
 
               {/* Col 1: Company */}
               <div className="flex flex-col">
-                <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <h3 className="text-lg font-medium mb-6 md:mb-8 footer-item opacity-0" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Company
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/" onClick={() => handleNavClick('/')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Home
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Properties
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/about" onClick={() => handleNavClick('/about')} className="text-white/60 hover:text-white transition-colors text-sm">
                       About Us
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/insights" onClick={() => handleNavClick('/insights')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Insights
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Contact
                     </Link>
@@ -165,29 +173,29 @@ export function Footer() {
 
               {/* Col 2: Explore */}
               <div className="flex flex-col">
-                <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <h3 className="text-lg font-medium mb-6 md:mb-8 footer-item opacity-0" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Explore
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/twickenham" onClick={() => handleNavClick('/twickenham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Twickenham
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/teddington" onClick={() => handleNavClick('/teddington')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Teddington
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/kew" onClick={() => handleNavClick('/kew')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Kew
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/ham" onClick={() => handleNavClick('/ham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Ham
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
@@ -198,26 +206,26 @@ export function Footer() {
 
               {/* Col 3: Enquire */}
               <div className="flex flex-col">
-                <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <h3 className="text-lg font-medium mb-6 md:mb-8 footer-item opacity-0" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Enquire
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Buying
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Selling
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Both
                     </Link>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
                       Other
                     </Link>
@@ -227,11 +235,11 @@ export function Footer() {
 
               {/* Col 4: Social */}
               <div className="flex flex-col">
-                <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <h3 className="text-lg font-medium mb-6 md:mb-8 footer-item opacity-0" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Social
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
-                  <li>
+                  <li className="footer-item opacity-0">
                     <a
                       href="https://www.instagram.com/bartlettandpartners"
                       target="_blank"
@@ -243,7 +251,7 @@ export function Footer() {
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </a>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <a
                       href="https://www.facebook.com/bartlettandpartners"
                       target="_blank"
@@ -255,7 +263,7 @@ export function Footer() {
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </a>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <a
                       href="https://www.linkedin.com/company/bartlettandpartners/"
                       target="_blank"
@@ -272,11 +280,11 @@ export function Footer() {
 
               {/* Col 5: Find Us */}
               <div className="flex flex-col">
-                <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <h3 className="text-lg font-medium mb-6 md:mb-8 footer-item opacity-0" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Find Us
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
-                  <li>
+                  <li className="footer-item opacity-0">
                     <a
                       href="https://www.rightmove.co.uk/property-for-sale/find/Bartlett-and-Partners---Luxury-Real-Estate-Consultancy/Covering-Richmond-upon-Thames.html?locationIdentifier=BRANCH%5E239564&includeSSTC=true&_includeSSTC=on"
                       target="_blank"
@@ -288,7 +296,7 @@ export function Footer() {
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </a>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <a
                       href="https://www.zoopla.co.uk/find-agents/branch/bartlett-and-partners-richmond-126269/"
                       target="_blank"
@@ -300,7 +308,7 @@ export function Footer() {
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </a>
                   </li>
-                  <li>
+                  <li className="footer-item opacity-0">
                     <a
                       href="https://www.primelocation.com/find-agents/branch/bartlett-and-partners-richmond-126269/"
                       target="_blank"
@@ -321,7 +329,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Section */}
-      <div className="w-full px-6 md:px-12 lg:px-20 pb-12 md:pb-10 lg:pb-12">
+      <div className="w-full px-6 md:px-12 lg:px-20 pb-12 md:pb-10 lg:pb-12 footer-item opacity-0">
         <div className="max-w-[1600px] mx-auto border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-0">
 
@@ -342,7 +350,7 @@ export function Footer() {
         </div>
       </div>
       {/* Mobile Spacer to clear sticky CTA */}
-      <div className="h-20 md:hidden" aria-hidden="true" />
+      <div className="h-10 md:hidden" aria-hidden="true" />
     </footer >
   );
 }

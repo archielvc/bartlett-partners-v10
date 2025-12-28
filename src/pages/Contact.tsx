@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { applySEO } from "../utils/seo";
-import { Reveal } from "../components/animations/Reveal";
+import { motion } from "motion/react";
 import { Mail, Phone, MessageCircle, MapPin } from "lucide-react";
 import { useSiteSettings } from "../contexts/SiteContext";
 
@@ -20,7 +20,11 @@ export default function Contact() {
 
       <section className="w-full bg-white pt-32 md:pt-40 pb-20 px-6 md:px-12 lg:px-20">
         <div className="max-w-[1600px] mx-auto">
-          <Reveal width="100%" delay={0.3}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+          >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-0. rounded-[40px] overflow-hidden shadow-2xl border-2 border-[#1A2551]">
 
               {/* Left Column - Dark Navy Info Panel */}
@@ -141,7 +145,7 @@ export default function Contact() {
               </div>
 
             </div>
-          </Reveal>
+          </motion.div>
         </div>
       </section>
     </main>

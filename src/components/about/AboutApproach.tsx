@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
-import { Reveal } from "../animations/Reveal";
+
 import { trackCTAClick } from "../../utils/analytics";
 
 export function AboutApproach() {
@@ -20,7 +20,7 @@ export function AboutApproach() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="text-[#8E8567] text-xs uppercase tracking-widest font-bold mb-6 block">
+              <span className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold mb-6 block">
                 The Journey
               </span>
               <h2
@@ -36,12 +36,17 @@ export function AboutApproach() {
               <div className="w-full h-[1px] bg-white/10 mb-12" />
 
               <div className="hidden lg:block mt-8">
-                <Reveal width="100%" delay={0.2}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                >
                   <Button
                     variant="ghost"
                     premium
                     size="lg"
-                    className="bg-white border border-[#1A2551] text-[#1A2551] hover:bg-[#1A2551] hover:text-white transition-colors px-8 py-6 text-base w-full justify-center rounded-md"
+                    className="bg-white border border-[#1A2551] text-[#1A2551] transition-colors px-8 py-6 text-base w-full justify-center rounded-md"
                     asChild
                   >
                     <Link to="/contact" onClick={() => trackCTAClick('Start your journey', 'About Approach')}>
@@ -50,7 +55,7 @@ export function AboutApproach() {
                       </span>
                     </Link>
                   </Button>
-                </Reveal>
+                </motion.div>
               </div>
 
             </motion.div>

@@ -24,14 +24,15 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Sortable Item Component
-function SortableTestimonialCard({ 
-  testimonial, 
-  onEdit, 
-  onDelete, 
-  onTogglePublished 
-}: { 
+function SortableTestimonialCard({
+  testimonial,
+  onEdit,
+  onDelete,
+  onTogglePublished
+}: {
   testimonial: DBTestimonial;
   onEdit: (t: DBTestimonial) => void;
   onDelete: (id: number) => void;
@@ -84,11 +85,11 @@ function SortableTestimonialCard({
           </div>
         </div>
       </div>
-      
+
       <div className="mb-6 min-h-[80px] ml-8">
         <p className="text-gray-600 leading-relaxed text-sm line-clamp-4 italic">&ldquo;{testimonial.content}&rdquo;</p>
       </div>
-      
+
       <div className="flex items-center gap-2 pt-4 border-t border-gray-100 ml-8">
         <button
           onClick={() => onEdit(testimonial)}
@@ -97,20 +98,19 @@ function SortableTestimonialCard({
           <Edit className="w-3.5 h-3.5 group-hover/btn:text-[#1A2551]" />
           Edit
         </button>
-        
+
         <button
           onClick={() => onTogglePublished(testimonial)}
-          className={`px-3 py-2 text-sm border border-gray-200 rounded-lg transition-colors ${
-            testimonial.published 
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100' 
+          className={`px-3 py-2 text-sm border border-gray-200 rounded-lg transition-colors ${testimonial.published
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
               : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-          }`}
+            }`}
           title={testimonial.published ? "Published" : "Hidden"}
         >
           {testimonial.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </button>
 
-        <button 
+        <button
           onClick={() => onDelete(testimonial.id as number)}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-100 hover:text-red-600 text-gray-400 transition-colors"
         >
@@ -162,7 +162,7 @@ export function TestimonialsModule() {
 
       const reordered = arrayMove(testimonials, oldIndex, newIndex);
       setTestimonials(reordered);
-      
+
       // Save to database
       await reorderTestimonials(reordered);
       toast.success('Testimonials reordered!');
@@ -196,8 +196,8 @@ export function TestimonialsModule() {
       if (editingTestimonial) {
         // Update existing testimonial
         await updateTestimonial(editingTestimonial.id as number, formData);
-        setTestimonials(testimonials.map(t => 
-          t.id === editingTestimonial.id 
+        setTestimonials(testimonials.map(t =>
+          t.id === editingTestimonial.id
             ? { ...t, ...formData }
             : t
         ));
@@ -273,20 +273,22 @@ export function TestimonialsModule() {
     await fetchTestimonials();
   };
 
+  const { isAdmin } = useAuth();
+
   return (
-    <CMSPageLayout 
-      title="Testimonials" 
+    <CMSPageLayout
+      title="Testimonials"
       description="Manage client testimonials and reviews. Drag to reorder."
       actions={[
-        { label: "Import CSV", icon: Upload, onClick: () => setShowImport(true), variant: 'outline' },
+        ...(isAdmin ? [{ label: "Import CSV", icon: Upload, onClick: () => setShowImport(true), variant: 'outline' as const }] : []),
         { label: "Add Testimonial", icon: Plus, onClick: handleAdd },
       ]}
     >
-      <CSVImportModal 
-        isOpen={showImport} 
-        onClose={() => setShowImport(false)} 
-        onImport={handleBatchImport} 
-        type="testimonials" 
+      <CSVImportModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        onImport={handleBatchImport}
+        type="testimonials"
       />
 
       {/* Card List with Drag and Drop */}
@@ -304,12 +306,12 @@ export function TestimonialsModule() {
             </p>
           </div>
 
-          <DndContext 
+          <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
-            <SortableContext 
+            <SortableContext
               items={testimonials.map(t => t.id.toString())}
               strategy={rectSortingStrategy}
             >

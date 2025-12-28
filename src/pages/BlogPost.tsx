@@ -1,5 +1,5 @@
 import { Navigation } from "../components/Navigation";
-import { Reveal } from "../components/animations/Reveal";
+import { motion } from "motion/react";
 import { OptimizedImage } from "../components/OptimizedImage";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
@@ -31,7 +31,7 @@ export default function BlogPost() {
         updateSEO({
           title: `${postData.title} - Bartlett & Partners Insights`,
           description: postData.excerpt || postData.content.substring(0, 160),
-          ogImage: postData.featured_image,
+          ogImage: postData.featured_image || undefined,
           type: 'article',
           publishedTime: postData.published_at || postData.created_at,
           author: 'Bartlett & Partners'
@@ -40,7 +40,7 @@ export default function BlogPost() {
         // Inject Schema
         injectSchema(SchemaGenerator.article({
           headline: postData.title,
-          image: postData.featured_image,
+          image: postData.featured_image || undefined,
           datePublished: postData.published_at || postData.created_at,
           description: postData.excerpt || postData.content.substring(0, 160),
           author: 'Bartlett & Partners'
@@ -52,8 +52,8 @@ export default function BlogPost() {
       const related = allPosts
         .filter(p => p.id !== postData?.id)
         .sort((a, b) => {
-          const dateA = new Date(a.published_at || a.created_at).getTime();
-          const dateB = new Date(b.published_at || b.created_at).getTime();
+          const dateA = new Date(a.published_at || a.created_at || 0).getTime();
+          const dateB = new Date(b.published_at || b.created_at || 0).getTime();
           return dateB - dateA;
         })
         .slice(0, 3);
@@ -85,11 +85,15 @@ export default function BlogPost() {
         <section className="w-full bg-white pt-24 md:pt-32 pb-12 md:pb-20 px-6 md:px-12 lg:px-20">
           <div className="max-w-[1600px] mx-auto">
             {/* Back Button */}
-            <Reveal variant="fade-in" duration={0.5}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
               <Link
                 to="/insights"
                 onClick={() => {
-                  trackEvent('navigation_click', { destination: 'insights', location: 'blog_post_back' });
+                  trackEvent('navigation_click', 'Menu Click', `Insights (from ${slug})`);
                 }}
                 className="flex items-center gap-2 text-[#1A2551] mb-6 md:mb-10 hover:opacity-70 transition-opacity group cursor-pointer w-fit"
               >
@@ -106,75 +110,83 @@ export default function BlogPost() {
                   Back to Insights
                 </span>
               </Link>
-            </Reveal>
+            </motion.div>
 
             <div className="max-w-5xl">
               {/* Date & Category */}
-              <Reveal width="100%" delay={0.2}>
-                <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4">
-                  {post.category && (
-                    <span className="inline-block px-3 py-1 border border-[#1A2551]/20 text-[#1A2551] text-[10px] uppercase tracking-[0.2em] font-medium">
-                      {post.category}
-                    </span>
-                  )}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4"
+              >
+                {post.category && (
+                  <span className="inline-block px-3 py-1 border border-[#1A2551]/20 text-[#1A2551] text-[10px] uppercase tracking-[0.2em] font-medium">
+                    {post.category}
+                  </span>
+                )}
+                <span
+                  className="text-[#6B7280] flex items-center gap-2 uppercase tracking-wider text-xs font-medium"
+                  style={{ fontFamily: "'Figtree', sans-serif" }}
+                >
+                  {post.published_at
+                    ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                    : new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                  }
+                </span>
+                {post.read_time && post.read_time > 0 && (
                   <span
-                    className="text-[#6B7280] flex items-center gap-2 uppercase tracking-wider text-xs font-medium"
+                    className="text-[#6B7280] flex items-center gap-1.5 uppercase tracking-wider text-xs font-medium"
                     style={{ fontFamily: "'Figtree', sans-serif" }}
                   >
-                    {post.published_at
-                      ? new Date(post.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                      : new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                    }
+                    <span className="text-gray-300">•</span>
+                    <Clock className="w-3.5 h-3.5" />
+                    {post.read_time} min read
                   </span>
-                  {post.read_time && post.read_time > 0 && (
-                    <span
-                      className="text-[#6B7280] flex items-center gap-1.5 uppercase tracking-wider text-xs font-medium"
-                      style={{ fontFamily: "'Figtree', sans-serif" }}
-                    >
-                      <span className="text-gray-300">•</span>
-                      <Clock className="w-3.5 h-3.5" />
-                      {post.read_time} min read
-                    </span>
-                  )}
-                </div>
-              </Reveal>
+                )}
+              </motion.div>
 
               {/* Title */}
-              <Reveal width="100%" delay={0.3}>
-                <h1
-                  className="text-[#1A2551] mb-8 md:mb-10 text-4xl md:text-6xl leading-[1.1] font-light"
-                  style={{
-                    fontFamily: "'Playfair Display', serif"
-                  }}
-                >
-                  {post.title}
-                </h1>
-              </Reveal>
+              <motion.h1
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="text-[#1A2551] mb-8 md:mb-10 text-4xl md:text-6xl leading-[1.1] font-light"
+                style={{
+                  fontFamily: "'Playfair Display', serif"
+                }}
+              >
+                {post.title}
+              </motion.h1>
 
               {/* Excerpt */}
               {post.excerpt && (
-                <Reveal width="100%" delay={0.4}>
-                  <p
-                    className="text-[#3A3A3A] mb-12 md:mb-16 text-lg md:text-xl font-light leading-relaxed max-w-3xl"
-                    style={{ fontFamily: "'Figtree', sans-serif" }}
-                  >
-                    {post.excerpt}
-                  </p>
-                </Reveal>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="text-[#3A3A3A] mb-12 md:mb-16 text-lg md:text-xl font-light leading-relaxed max-w-3xl"
+                  style={{ fontFamily: "'Figtree', sans-serif" }}
+                >
+                  {post.excerpt}
+                </motion.p>
               )}
             </div>
 
             {/* Featured Image */}
             {post.featured_image && (
-              <Reveal width="100%" delay={0.5}>
-                <div className="relative w-full mb-16 md:mb-24 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9]">
-                  <OptimizedImage
-                    src={post.featured_image}
-                    alt={post.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </Reveal>
+              <motion.div
+                initial={{ opacity: 0, scale: 1.02 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                className="relative w-full mb-16 md:mb-24 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9]"
+              >
+                <OptimizedImage
+                  src={post.featured_image}
+                  alt={post.title}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
             )}
           </div>
         </section>
@@ -184,7 +196,11 @@ export default function BlogPost() {
           <div className="max-w-[1600px] mx-auto">
             <div className="max-w-5xl mx-auto">
               {/* Main Content */}
-              <Reveal width="100%" delay={0.6}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
                 <article className="prose max-w-none">
                   <style>{`
                       /* Blog Article Styles */
@@ -329,7 +345,7 @@ export default function BlogPost() {
                     <p className="text-gray-500 italic">No content available.</p>
                   )}
                 </article>
-              </Reveal>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -338,7 +354,12 @@ export default function BlogPost() {
         {relatedPosts.length > 0 && (
           <section className="w-full bg-gray-50 py-20 md:py-32 px-6 md:px-12 lg:px-20">
             <div className="max-w-[1600px] mx-auto">
-              <Reveal width="100%" delay={0.7}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+              >
                 <div className="flex justify-between items-end mb-12">
                   <h2
                     className="text-[#1A2551] text-4xl md:text-5xl"
@@ -350,14 +371,18 @@ export default function BlogPost() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {relatedPosts.map((relatedPost, index) => (
-                    <Reveal key={relatedPost.id} delay={0.8 + (index * 0.1)} width="100%" className="h-full">
+                    <motion.div
+                      key={relatedPost.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.8 + (index * 0.1) }}
+                      className="h-full"
+                    >
                       <Link
                         to={`/blog/${relatedPost.slug}`}
                         onClick={() => {
-                          trackEvent('related_article_click', {
-                            article_title: relatedPost.title,
-                            article_slug: relatedPost.slug
-                          });
+                          trackEvent('related_article_click', 'Related Article', relatedPost.title);
                         }}
                         className="flex flex-col h-full bg-white cursor-pointer group hover:shadow-md transition-shadow duration-300"
                       >
@@ -370,7 +395,7 @@ export default function BlogPost() {
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                           )}
-                          <div className="absolute top-4 left-4 bg-white px-4 py-2">
+                          <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">
                             <span
                               className="text-[#8E8567] text-xs font-bold uppercase tracking-widest"
                               style={{ fontFamily: "'Figtree', sans-serif" }}
@@ -381,12 +406,21 @@ export default function BlogPost() {
                         </div>
 
                         <div className="p-8 flex flex-col flex-grow border border-gray-100 border-t-0">
-                          {/* Date */}
-                          <div className="mb-4 text-gray-400 text-xs uppercase tracking-wider font-medium">
+                          {/* Date & Read Time */}
+                          <div className="mb-4 text-gray-400 text-xs uppercase tracking-wider font-medium flex items-center gap-2">
                             {relatedPost.published_at
                               ? new Date(relatedPost.published_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                               : new Date(relatedPost.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                             }
+                            {relatedPost.read_time && relatedPost.read_time > 0 && (
+                              <>
+                                <span className="text-gray-300">•</span>
+                                <span className="flex items-center gap-1.5 leading-none">
+                                  <Clock className="w-3 h-3" />
+                                  {relatedPost.read_time} min read
+                                </span>
+                              </>
+                            )}
                           </div>
 
                           {/* Title */}
@@ -421,10 +455,10 @@ export default function BlogPost() {
                           </div>
                         </div>
                       </Link>
-                    </Reveal>
+                    </motion.div>
                   ))}
                 </div>
-              </Reveal>
+              </motion.div>
             </div>
           </section>
         )}

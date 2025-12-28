@@ -1,7 +1,7 @@
 import { Star, ArrowLeft, ArrowRight, Quote } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Reveal } from "./animations/Reveal";
+
 import type { Testimonial as DBTestimonial } from "../types/database";
 
 interface TestimonialsCarouselProps {
@@ -71,24 +71,34 @@ export function TestimonialsCarousel({ testimonials }: TestimonialsCarouselProps
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-16">
             <div className="max-w-2xl">
-              <Reveal width="100%">
-                <span className="block text-[#8E8567] text-sm tracking-widest uppercase mb-4 font-medium">
-                  Client Experiences
-                </span>
-              </Reveal>
-              <Reveal width="100%" delay={0.1}>
-                <h2
-                  className="text-[#1A2551] text-4xl md:text-5xl leading-tight"
-                  style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
-                >
-                  Stories of Success
-                </h2>
-              </Reveal>
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="block text-[#8E8567] text-sm tracking-[0.2em] uppercase mb-4 font-bold"
+              >
+                Client Experiences
+              </motion.span>
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-[#1A2551] text-4xl md:text-5xl leading-tight"
+                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
+              >
+                Stories of Success
+              </motion.h2>
             </div>
 
             {/* Navigation Buttons */}
             <div className="flex gap-4 mt-8 md:mt-0">
-              <Reveal delay={0.2}>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
                 <div className="flex gap-4">
                   <button
                     onClick={prevPage}
@@ -107,7 +117,7 @@ export function TestimonialsCarousel({ testimonials }: TestimonialsCarouselProps
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
-              </Reveal>
+              </motion.div>
             </div>
           </div>
 

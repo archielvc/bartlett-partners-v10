@@ -49,7 +49,7 @@ export function AboutValues() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <span className="text-[#8E8567] text-xs font-bold uppercase tracking-widest mb-4 block">
+              <span className="text-[#8E8567] text-sm font-bold uppercase tracking-[0.2em] mb-4 block">
                 {value.title}
               </span>
               <h3
