@@ -18,7 +18,7 @@ import { get, set } from './kvStore';
 // SIMPLE QUERY CACHE
 // =====================================================
 
-const CACHE_PREFIX = 'bartlett_db_cache_';
+const CACHE_PREFIX = 'bartlett_db_cache_v2_'; // Bumped version to invalidate old cache
 const CACHE_TTL = 300000; // 5 minutes
 
 interface CacheEntry<T> {
@@ -36,8 +36,14 @@ function getPersistentCache<T>(key: string): T | null {
     // Check if it's the new format
     const parsed = JSON.parse(item) as CacheEntry<T>;
 
-    // If we have data, return it regardless of TTL (stale-while-revalidate strategy)
-    // The caller is responsible for triggering a background refresh if needed
+    // Enforce TTL
+    const age = Date.now() - parsed.timestamp;
+    if (age > CACHE_TTL) {
+      console.log(`Cache expired for ${key} (age: ${age}ms > TTL: ${CACHE_TTL}ms)`);
+      localStorage.removeItem(CACHE_PREFIX + key);
+      return null;
+    }
+
     return parsed.data;
   } catch (e) {
     console.warn('Cache parse error', e);
