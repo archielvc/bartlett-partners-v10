@@ -240,6 +240,7 @@ export function UnifiedContactForm({
                     onSelectionChange={setSelectedProperties}
                     showSelector={showPropertySelector}
                     onClose={handleClosePropertySelector}
+                    isStandalone={true}
                 />
             )}
 

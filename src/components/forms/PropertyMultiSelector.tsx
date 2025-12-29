@@ -12,6 +12,7 @@ interface PropertyMultiSelectorProps {
     onSelectionChange: (properties: Property[]) => void;
     showSelector: boolean;
     onClose: () => void;
+    isStandalone?: boolean;
 }
 
 export function PropertyMultiSelector({
@@ -19,6 +20,7 @@ export function PropertyMultiSelector({
     onSelectionChange,
     showSelector,
     onClose,
+    isStandalone = false,
 }: PropertyMultiSelectorProps) {
     const { isFavorite } = useFavorites();
     const [properties, setProperties] = useState<Property[]>([]);
@@ -90,7 +92,7 @@ export function PropertyMultiSelector({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: "100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="absolute inset-0 z-[60] bg-white overflow-hidden flex flex-col border-2 border-[#1A2551] rounded-xl"
+                    className={`absolute inset-0 z-[60] bg-white overflow-hidden flex flex-col ${isStandalone ? 'border-2 border-[#1A2551] rounded-xl' : ''}`}
                 >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-[#1A2551]/10 flex items-center justify-between gap-4 flex-shrink-0 bg-white z-10 sticky top-0 shadow-sm">
