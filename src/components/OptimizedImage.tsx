@@ -7,6 +7,7 @@ interface OptimizedImageProps {
   width?: number;
   height?: number;
   priority?: boolean;
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
 export function getOptimizedUrl(url: string, width: number, quality: number = 80, format: 'webp' | 'jpeg' = 'webp'): string {
@@ -35,7 +36,8 @@ export function OptimizedImage({
   className = '',
   width,
   height,
-  priority = false
+  priority = false,
+  fetchPriority = 'auto'
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
@@ -78,9 +80,10 @@ export function OptimizedImage({
       srcSet={isInView ? generateSrcSet(src) : undefined}
       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
       alt={alt}
-      width={width}
-      height={height}
+      width={width || 800}
+      height={height || 600}
       loading={priority ? 'eager' : 'lazy'}
+      fetchPriority={priority ? 'high' : fetchPriority}
       decoding="async"
       onLoad={() => setIsLoaded(true)}
       className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}

@@ -9,7 +9,7 @@ import { getOptimizedUrl } from "../OptimizedImage";
 
 import { useSiteSettings } from "../../contexts/SiteContext";
 
-const MotionLink = motion(Link);
+const MotionLink = motion.create(Link);
 
 export function HomeHero() {
   const navigate = useNavigate();
@@ -80,6 +80,11 @@ export function HomeHero() {
             alt={staticHeroContent.headline}
             className="w-full h-full object-cover"
             loading="eager"
+            // @ts-ignore
+            fetchpriority="high"
+            decoding="async"
+            width={1920}
+            height={1080}
           />
         )}
       </div>

@@ -90,61 +90,53 @@ export function PropertyMultiSelector({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: "100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="fixed inset-0 z-[200] md:absolute md:inset-0 bg-white overflow-hidden flex flex-col md:rounded-md"
+                    className="absolute inset-0 z-[60] bg-white overflow-hidden flex flex-col border-2 border-[#1A2551] rounded-xl"
                 >
-                    {/* Liquid Background Elements */}
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-                        <div className="absolute -top-[20%] -right-[10%] w-[70vw] h-[70vw] bg-[#8E8567]/10 rounded-full blur-[100px]" />
-                        <div className="absolute top-[40%] -left-[10%] w-[60vw] h-[60vw] bg-[#1A2551]/5 rounded-full blur-[80px]" />
-                    </div>
-
                     {/* Header */}
-                    <div className="px-6 md:px-12 py-6 border-b border-[#1A2551]/10 flex items-center justify-between gap-4 flex-shrink-0 bg-white/80 backdrop-blur-md z-10 sticky top-0">
+                    <div className="px-5 py-4 border-b border-[#1A2551]/10 flex items-center justify-between gap-4 flex-shrink-0 bg-white z-10 sticky top-0 shadow-sm">
                         <div className="flex-1 min-w-0">
                             <h3
-                                className="text-[#1A2551] mb-1 whitespace-nowrap"
+                                className="text-[#1A2551] mb-0.5 whitespace-nowrap"
                                 style={{
                                     fontFamily: "'Playfair Display', serif",
-                                    fontSize: "clamp(1.5rem, 4vw, 2rem)",
+                                    fontSize: "1.5rem",
                                     fontStyle: "italic",
                                     fontWeight: 400
                                 }}
                             >
                                 Select Properties
                             </h3>
-                            <p className="text-[#1A2551]/60 text-sm font-medium uppercase tracking-wider" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                            <p className="text-[#1A2551]/60 text-xs font-medium uppercase tracking-wider" style={{ fontFamily: "'Figtree', sans-serif" }}>
                                 {selectedProperties.length} Selected
                             </p>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                            <Button
-                                type="button"
-                                onClick={onClose}
-                                variant="default"
-                                size="sm"
-                                premium
-                                className="bg-[#1A2551] text-white hover:bg-[#1A2551]/90 shadow-lg px-6 md:px-8"
-                            >
-                                Done
-                            </Button>
-                        </div>
+                        <Button
+                            type="button"
+                            onClick={onClose}
+                            variant="default"
+                            size="sm"
+                            premium
+                            className="bg-[#1A2551] text-white hover:bg-[#1A2551]/90 shadow-md px-5 h-9"
+                        >
+                            Done
+                        </Button>
                     </div>
 
                     {/* Properties List */}
-                    <div className="flex-1 overflow-y-auto bg-transparent custom-scrollbar p-6 md:p-12">
-                        <div className="max-w-4xl mx-auto w-full">
+                    <div className="flex-1 overflow-y-auto bg-transparent custom-scrollbar p-0">
+                        <div className="w-full">
                             {isLoading ? (
-                                <div className="flex flex-col items-center justify-center py-12">
+                                <div className="flex flex-col items-center justify-center py-20">
                                     <Loader2 className="w-8 h-8 animate-spin text-[#1A2551]/40 mb-3" />
                                     <span className="text-sm text-gray-500">Loading properties...</span>
                                 </div>
                             ) : sortedProperties.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <div className="flex flex-col items-center justify-center py-20 text-center px-6">
                                     <MapPin className="w-10 h-10 text-gray-300 mb-3" />
                                     <span className="text-sm text-gray-500">No available properties at this time</span>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="divide-y divide-[#1A2551]/5">
                                     {sortedProperties.map((prop) => {
                                         const isSelected = selectedProperties.some(p => p.id === prop.id);
 
@@ -153,41 +145,38 @@ export function PropertyMultiSelector({
                                                 key={prop.id}
                                                 type="button"
                                                 onClick={() => toggleProperty(prop)}
-                                                className={`w-full p-4 flex items-start gap-4 hover:bg-white transition-all duration-300 text-left rounded-2xl border group ${isSelected
-                                                    ? 'bg-white border-[#1A2551] shadow-lg ring-1 ring-[#1A2551]/10 transform scale-[1.01]'
-                                                    : 'bg-white/60 border-transparent hover:border-[#1A2551]/20 hover:shadow-lg hover:-translate-y-0.5'
-                                                    }`}
+                                                className={`w-full px-5 py-3 flex items-center gap-4 hover:bg-[#1A2551]/[0.02] transition-all duration-200 text-left group ${isSelected ? 'bg-[#1A2551]/[0.03]' : ''}`}
                                             >
                                                 {/* Checkbox */}
-                                                <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all duration-300 flex-shrink-0 mt-1 ${isSelected
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 flex-shrink-0 ${isSelected
                                                     ? 'bg-[#1A2551] border-[#1A2551]'
                                                     : 'border-[#1A2551]/20 bg-white group-hover:border-[#1A2551]/40'
                                                     }`}>
-                                                    {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                                                    {isSelected && <Check className="w-3 h-3 text-white" />}
                                                 </div>
 
-                                                <div className="flex flex-col gap-4 flex-1 min-w-0">
-                                                    {/* Image */}
-                                                    <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-200 shadow-md group-hover:shadow-lg transition-all duration-300">
-                                                        <ImageWithFallback
-                                                            src={prop.image}
-                                                            alt={prop.title}
-                                                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                                                        />
-                                                        {isFavorite(prop.id) && (
-                                                            <div className="absolute top-2 right-2 bg-[#DC2626] rounded-full p-1.5 shadow-sm z-10">
-                                                                <Heart className="w-3 h-3 text-white fill-white" />
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                {/* Image */}
+                                                <div className="relative w-20 aspect-[4/3] rounded-md overflow-hidden bg-gray-200 shadow-sm flex-shrink-0 group-hover:shadow transition-all">
+                                                    <ImageWithFallback
+                                                        src={prop.image}
+                                                        alt={prop.title}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    {isFavorite(prop.id) && (
+                                                        <div className="absolute top-1 right-1 bg-[#DC2626] rounded-full p-1 shadow-sm z-10">
+                                                            <Heart className="w-2 h-2 text-white fill-white" />
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                                    {/* Content */}
-                                                    <div className="flex flex-col gap-1">
+                                                {/* Content */}
+                                                <div className="flex flex-col flex-1 min-w-0 py-0.5">
+                                                    <div className="flex flex-col gap-0.5 mb-0.5">
                                                         <h3
-                                                            className="text-[#1A2551] transition-colors"
+                                                            className="text-[#1A2551] transition-colors whitespace-nowrap"
                                                             style={{
                                                                 fontFamily: "'Playfair Display', serif",
-                                                                fontSize: "1.5rem",
+                                                                fontSize: "1.1rem",
                                                                 fontWeight: 400,
                                                                 lineHeight: "1.2"
                                                             }}
@@ -195,17 +184,18 @@ export function PropertyMultiSelector({
                                                             {formatPrice(prop.price)}
                                                         </h3>
                                                         <h4
-                                                            className="text-[#1A2551]/80 font-medium truncate pr-2 uppercase tracking-wide text-xs mt-1"
+                                                            className="text-[#1A2551]/80 font-medium truncate uppercase tracking-wide text-[0.65rem]"
                                                             style={{
                                                                 fontFamily: "'Figtree', sans-serif"
                                                             }}
                                                         >
                                                             {prop.title}
                                                         </h4>
-                                                        <div className="flex items-center gap-1.5 text-[#1A2551]/50 mt-1">
-                                                            <MapPin className="w-3.5 h-3.5" />
-                                                            <span className="text-sm truncate font-medium" style={{ fontFamily: "'Figtree', sans-serif" }}>{prop.location}</span>
-                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1 text-[#1A2551]/50">
+                                                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                                                        <span className="text-xs truncate font-medium" style={{ fontFamily: "'Figtree', sans-serif" }}>{prop.location}</span>
                                                     </div>
                                                 </div>
                                             </button>

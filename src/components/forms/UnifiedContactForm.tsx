@@ -2,7 +2,7 @@ import { useState } from "react";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { Button } from "../ui/button";
 import { PhoneInput } from "../ui/phone-input";
-import { Pencil, MapPin, Loader2, Check } from "lucide-react";
+import { Pencil, Loader2, Check } from "lucide-react";
 import { Property } from "../../types/property";
 import { PropertyMultiSelector } from "./PropertyMultiSelector";
 import { submitContactForm } from "../../utils/database";
@@ -28,6 +28,12 @@ interface UnifiedContactFormProps {
 
     // Variant for different contexts
     variant?: 'dialog' | 'inline';
+
+    // Controlled property selector (for dialog usage)
+    selectedProperties?: Property[];
+    onPropertySelectionChange?: (properties: Property[]) => void;
+    onPropertySelectorOpen?: () => void;
+    showPropertySelector?: boolean;
 }
 
 export function UnifiedContactForm({
@@ -37,13 +43,24 @@ export function UnifiedContactForm({
     defaultProperties = [],
     hideIntentSelector = false,
     variant = 'dialog',
+    selectedProperties: controlledSelectedProperties,
+    onPropertySelectionChange,
+    onPropertySelectorOpen,
+    showPropertySelector: controlledShowPropertySelector,
 }: UnifiedContactFormProps) {
     const [intent, setIntent] = useState<ContactIntent>(defaultIntent);
-    const [selectedProperties, setSelectedProperties] = useState<Property[]>(defaultProperties);
-    const [showPropertySelector, setShowPropertySelector] = useState(false);
+    const [internalSelectedProperties, setInternalSelectedProperties] = useState<Property[]>(defaultProperties);
+    const [internalShowPropertySelector, setInternalShowPropertySelector] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [phone, setPhone] = useState<string | undefined>("");
+
+    // Use controlled or internal state
+    const selectedProperties = controlledSelectedProperties ?? internalSelectedProperties;
+    const setSelectedProperties = onPropertySelectionChange ?? setInternalSelectedProperties;
+    const showPropertySelector = controlledShowPropertySelector ?? internalShowPropertySelector;
+    const handleOpenPropertySelector = onPropertySelectorOpen ?? (() => setInternalShowPropertySelector(true));
+    const handleClosePropertySelector = () => setInternalShowPropertySelector(false);
 
     const showPropertySelection = intent === 'buy' || intent === 'both';
 
@@ -211,15 +228,20 @@ export function UnifiedContactForm({
         );
     }
 
+    // Only render PropertyMultiSelector here if in standalone mode (not controlled by parent dialog)
+    const isStandaloneMode = controlledSelectedProperties === undefined;
+
     return (
-        <div className="relative">
-            {/* Property Selector Overlay */}
-            <PropertyMultiSelector
-                selectedProperties={selectedProperties}
-                onSelectionChange={setSelectedProperties}
-                showSelector={showPropertySelector}
-                onClose={() => setShowPropertySelector(false)}
-            />
+        <div className={isStandaloneMode ? "relative" : ""}>
+            {/* Property Selector - only in standalone mode */}
+            {isStandaloneMode && (
+                <PropertyMultiSelector
+                    selectedProperties={selectedProperties}
+                    onSelectionChange={setSelectedProperties}
+                    showSelector={showPropertySelector}
+                    onClose={handleClosePropertySelector}
+                />
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Intent Selector */}
@@ -255,7 +277,7 @@ export function UnifiedContactForm({
                         <label style={inputLabelStyle}>Properties of Interest</label>
                         <button
                             type="button"
-                            onClick={() => setShowPropertySelector(true)}
+                            onClick={handleOpenPropertySelector}
                             className="w-full bg-white border border-gray-200 rounded-xl p-4 text-left hover:border-[#1A2551] hover:ring-1 hover:ring-[#1A2551]/20 transition-all group flex items-center justify-between shadow-sm"
                         >
                             <div className="flex-1 min-w-0">

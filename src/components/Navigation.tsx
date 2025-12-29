@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { trackEvent, trackNavigation, trackCTAClick } from "../utils/analytics";
 
-const MotionLink = motion(Link);
+const MotionLink = motion.create(Link);
 
 interface NavigationProps {
   currentPage?: string;

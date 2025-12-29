@@ -238,6 +238,20 @@ function updateLinkTag(rel: string, href: string) {
   }
 
   element.href = href;
+
+  // Update type based on extension
+  if (href.endsWith('.svg')) {
+    element.setAttribute('type', 'image/svg+xml');
+  } else if (href.endsWith('.png')) {
+    element.setAttribute('type', 'image/png');
+  } else if (href.endsWith('.ico')) {
+    element.setAttribute('type', 'image/x-icon');
+  } else if (href.endsWith('.jpg') || href.endsWith('.jpeg')) {
+    element.setAttribute('type', 'image/jpeg');
+  } else {
+    // Remove type if unknown to let browser infer
+    element.removeAttribute('type');
+  }
 }
 
 /**

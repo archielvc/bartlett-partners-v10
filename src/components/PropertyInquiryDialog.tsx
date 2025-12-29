@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetTitle, SheetDescription, SheetClose } from ".
 import { X } from "lucide-react";
 import { Property } from "../types/property";
 import { UnifiedContactForm } from "./forms";
+import { PropertyMultiSelector } from "./forms/PropertyMultiSelector";
 
 interface PropertyInquiryDialogProps {
   trigger?: React.ReactNode;
@@ -54,6 +55,9 @@ export function PropertyInquiryDialog({
       ? [property]
       : [];
 
+  const [selectedProperties, setSelectedProperties] = useState<Property[]>(defaultProperties);
+  const [showPropertySelector, setShowPropertySelector] = useState(false);
+
   const handleSuccess = () => {
     setOpen(false);
     setTimeout(() => setIsSuccessView(false), 300);
@@ -79,22 +83,26 @@ export function PropertyInquiryDialog({
 
         <SheetContent
           side="right"
-          className="w-[100vw] sm:max-w-[500px] p-0 flex flex-col bg-white/95 backdrop-blur-xl overflow-hidden [&>button]:hidden text-left"
+          className="w-[100vw] sm:max-w-[500px] p-0 flex flex-col bg-white overflow-hidden [&>button]:hidden gap-0"
         >
-          <div className="absolute top-6 right-6 z-50">
-            <SheetClose className="flex items-center justify-center w-10 h-10 bg-white border border-[#1A2551]/10 shadow-sm hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-full transition-all">
+          <div className="relative flex flex-col h-full overflow-hidden">
+            <SheetClose className="absolute top-6 right-6 z-50 flex items-center justify-center w-10 h-10 bg-white border border-[#1A2551]/10 shadow-sm hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-full transition-all">
               <X className="w-5 h-5" />
               <span className="sr-only">Close</span>
             </SheetClose>
-          </div>
-          {liquidBackground}
 
-          <SheetTitle className="sr-only">Property Inquiry</SheetTitle>
-          <SheetDescription className="sr-only">Fill out the form below to enquire about the property</SheetDescription>
+            <SheetTitle className="sr-only">Property Inquiry</SheetTitle>
+            <SheetDescription className="sr-only">Fill out the form below to enquire about the property</SheetDescription>
 
-          <div className="h-full w-full overflow-y-auto">
+            <PropertyMultiSelector
+              selectedProperties={selectedProperties}
+              onSelectionChange={setSelectedProperties}
+              showSelector={showPropertySelector}
+              onClose={() => setShowPropertySelector(false)}
+            />
+
             {!isSuccessView && (
-              <div className="px-6 py-6 border-b border-[#1A2551]/10 bg-white/80 backdrop-blur-md sticky top-0 z-20">
+              <div className="px-6 py-6 border-b border-[#1A2551]/10 bg-white sticky top-0 z-20">
                 <h2
                   className="text-[#1A2551] text-xl md:text-2xl"
                   style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
@@ -104,10 +112,13 @@ export function PropertyInquiryDialog({
               </div>
             )}
 
-            <div className="px-6 pb-12">
+            <div className="flex-1 px-6 pb-12 overflow-y-auto">
               <UnifiedContactForm
                 defaultIntent={(inquiryType || "buy") as any}
-                defaultProperties={defaultProperties}
+                selectedProperties={selectedProperties}
+                onPropertySelectionChange={setSelectedProperties}
+                onPropertySelectorOpen={() => setShowPropertySelector(true)}
+                showPropertySelector={showPropertySelector}
                 onSuccess={handleSuccess}
                 onSubmitted={() => setIsSuccessView(true)}
               />
@@ -129,12 +140,19 @@ export function PropertyInquiryDialog({
         <DialogTitle className="sr-only">Property Inquiry</DialogTitle>
         <DialogDescription className="sr-only">Fill out the form below to enquire about the property</DialogDescription>
 
-        <div className="bg-white sm:rounded-3xl shadow-2x overflow-hidden flex flex-col max-h-[85vh] w-full mx-auto border-2 border-[#1A2551] relative">
+        <div className="bg-white sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] w-full mx-auto border-2 border-[#1A2551] relative">
           <DialogClose className="absolute top-6 right-6 z-50 flex items-center justify-center w-10 h-10 bg-white border border-[#1A2551]/10 shadow-sm hover:bg-[#1A2551] text-[#1A2551] hover:text-white rounded-full transition-all">
             <X className="w-5 h-5" />
             <span className="sr-only">Close</span>
           </DialogClose>
           {liquidBackground}
+
+          <PropertyMultiSelector
+            selectedProperties={selectedProperties}
+            onSelectionChange={setSelectedProperties}
+            showSelector={showPropertySelector}
+            onClose={() => setShowPropertySelector(false)}
+          />
 
           {!isSuccessView && (
             <div className="px-8 md:px-10 pt-10 pb-6 z-20">
@@ -150,7 +168,10 @@ export function PropertyInquiryDialog({
           <div className="flex-1 overflow-y-auto px-10 pb-10 custom-scrollbar">
             <UnifiedContactForm
               defaultIntent={(inquiryType || "buy") as any}
-              defaultProperties={defaultProperties}
+              selectedProperties={selectedProperties}
+              onPropertySelectionChange={setSelectedProperties}
+              onPropertySelectorOpen={() => setShowPropertySelector(true)}
+              showPropertySelector={showPropertySelector}
               onSuccess={handleSuccess}
               onSubmitted={() => setIsSuccessView(true)}
             />
