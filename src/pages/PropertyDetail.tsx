@@ -410,10 +410,12 @@ export default function PropertyDetail() {
                             {/* Location & Floor Plan */}
                             {(property.google_maps_url || property.floor_plan_image) && (
                                 <div className="mt-12">
-                                    <h2 className="text-[#1A2551] text-2xl mb-6 font-semibold" style={{ fontFamily: "'Figtree', sans-serif" }}>Location & Floor Plan</h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <h2 className="text-[#1A2551] text-2xl mb-6 font-semibold" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                                        {property.google_maps_url ? 'Location & Floor Plan' : 'Floor Plan'}
+                                    </h2>
+                                    <div className={`grid grid-cols-1 ${property.google_maps_url && property.floor_plan_image ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-8`}>
                                         {/* Map */}
-                                        {property.google_maps_url ? (
+                                        {property.google_maps_url && (
                                             <div
                                                 className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden relative border border-[#1A2551]/10 cursor-pointer group"
                                                 onClick={() => setActiveModal('map')}
@@ -434,39 +436,37 @@ export default function PropertyDetail() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        ) : property.google_maps_url !== undefined && (
-                                            <div className="w-full aspect-square bg-gray-50 flex items-center justify-center rounded-xl border border-[#1A2551]/10">
-                                                <span className="text-gray-400">Map unavailable</span>
-                                            </div>
                                         )}
 
                                         {/* Floor Plan */}
-                                        <div
-                                            className="w-full aspect-square bg-white rounded-xl overflow-hidden relative border border-[#1A2551]/10 flex items-center justify-center cursor-pointer group p-8"
-                                            onClick={() => property.floor_plan_image && setActiveModal('floorplan')}
-                                        >
-                                            {property.floor_plan_image ? (
-                                                <>
-                                                    <ImageWithFallback
-                                                        src={property.floor_plan_image}
-                                                        alt="Floor Plan"
-                                                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 opacity-90"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-[#1A2551]/5 transition-colors duration-300 flex items-center justify-center">
-                                                        <div className="bg-white px-5 py-3 rounded-md shadow-lg border border-[#1A2551]/10 opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0">
-                                                            <span className="text-[#1A2551] text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                                                                <Maximize className="w-4 h-4" /> View Large
-                                                            </span>
+                                        {property.floor_plan_image && (
+                                            <div
+                                                className={`w-full ${property.google_maps_url ? 'aspect-square' : 'aspect-[16/9]'} bg-white rounded-xl overflow-hidden relative border border-[#1A2551]/10 flex items-center justify-center cursor-pointer group p-8`}
+                                                onClick={() => property.floor_plan_image && setActiveModal('floorplan')}
+                                            >
+                                                {property.floor_plan_image ? (
+                                                    <>
+                                                        <ImageWithFallback
+                                                            src={property.floor_plan_image}
+                                                            alt="Floor Plan"
+                                                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 opacity-90"
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-[#1A2551]/5 transition-colors duration-300 flex items-center justify-center">
+                                                            <div className="bg-white px-5 py-3 rounded-md shadow-lg border border-[#1A2551]/10 opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0">
+                                                                <span className="text-[#1A2551] text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                                                    <Maximize className="w-4 h-4" /> View Large
+                                                                </span>
+                                                            </div>
                                                         </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center text-[#1A2551]/40">
+                                                        <Maximize className="w-12 h-12 mb-3 opacity-30" strokeWidth={1} />
+                                                        <span className="text-sm font-medium tracking-wider uppercase">Floor plan pending</span>
                                                     </div>
-                                                </>
-                                            ) : (
-                                                <div className="flex flex-col items-center justify-center text-[#1A2551]/40">
-                                                    <Maximize className="w-12 h-12 mb-3 opacity-30" strokeWidth={1} />
-                                                    <span className="text-sm font-medium tracking-wider uppercase">Floor plan pending</span>
-                                                </div>
-                                            )}
-                                        </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
