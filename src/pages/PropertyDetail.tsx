@@ -132,11 +132,14 @@ export default function PropertyDetail() {
     useEffect(() => {
         if (activeModal) {
             document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
         }
         return () => {
             document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
         };
     }, [activeModal]);
 
@@ -600,7 +603,7 @@ export default function PropertyDetail() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-md"
+                        className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-md overscroll-contain"
                         onClick={() => setActiveModal(null)}
                     >
                         {/* Top Bar with Close Button */}
@@ -719,7 +722,7 @@ export default function PropertyDetail() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-12"
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-12 overscroll-contain"
                         onClick={() => setActiveModal(null)}
                     >
                         {/* Wrapper for the viewer to give it a nice frame */}
@@ -752,7 +755,7 @@ export default function PropertyDetail() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-12"
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-12 overscroll-contain"
                         onClick={() => setActiveModal(null)}
                     >
                         <div

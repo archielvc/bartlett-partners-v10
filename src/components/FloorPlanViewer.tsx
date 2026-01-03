@@ -63,7 +63,28 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
   useEffect(() => {
     const handleMouseUpWindow = () => setIsDragging(false);
     window.addEventListener('mouseup', handleMouseUpWindow);
-    return () => window.removeEventListener('mouseup', handleMouseUpWindow);
+
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUpWindow);
+    };
+  }, []);
+
+  // Use native event listener for wheel to support non-passive behavior
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      setScale(prev => Math.min(Math.max(1, prev + delta), 5));
+    };
+
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', onWheel);
+    };
   }, []);
 
   return (
@@ -110,8 +131,8 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
 
       {/* Viewport */}
       <div
+        ref={containerRef}
         className="flex-1 w-full h-full overflow-hidden relative cursor-grab active:cursor-grabbing touch-none"
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

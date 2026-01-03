@@ -58,6 +58,13 @@ export function PropertyInquiryDialog({
   const [selectedProperties, setSelectedProperties] = useState<Property[]>(defaultProperties);
   const [showPropertySelector, setShowPropertySelector] = useState(false);
 
+  // Sync selected properties when dialog opens or properties change
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedProperties(defaultProperties);
+    }
+  }, [isOpen, properties, property, isMultiProperty]);
+
   const handleSuccess = () => {
     setOpen(false);
     setTimeout(() => setIsSuccessView(false), 300);
