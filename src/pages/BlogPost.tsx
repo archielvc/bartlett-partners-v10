@@ -1,9 +1,12 @@
 import { Navigation } from "../components/Navigation";
 
 import { OptimizedImage } from "../components/OptimizedImage";
+import { ReadingProgress } from "../components/blog/ReadingProgress";
+import { ArticleSummary } from "../components/blog/ArticleSummary";
+import { TableOfContents } from "../components/blog/TableOfContents";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from 'react-markdown';
 import { getBlogPostBySlug, getPublishedBlogPostsLight } from "../utils/database";
 import type { BlogPost as DBBlogPost } from "../types/database";
@@ -15,6 +18,7 @@ export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<DBBlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<DBBlogPost[]>([]);
+  const articleRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -79,6 +83,7 @@ export default function BlogPost() {
   return (
     <>
       <Navigation currentPage="blogPost" />
+      <ReadingProgress />
 
       <main id="main-content">
         {/* Hero Section */}
@@ -106,7 +111,7 @@ export default function BlogPost() {
               </span>
             </Link>
 
-            <div className="max-w-5xl">
+            <div className="max-w-3xl">
               {/* Date & Category */}
               <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4">
                 {post.category && (
@@ -137,28 +142,18 @@ export default function BlogPost() {
 
               {/* Title */}
               <h1
-                className="text-[#1A2551] mb-8 md:mb-10 text-4xl md:text-6xl leading-[1.1] font-light"
+                className="text-[#1A2551] text-3xl md:text-4xl lg:text-5xl leading-[1.15] font-light"
                 style={{
                   fontFamily: "'Playfair Display', serif"
                 }}
               >
                 {post.title}
               </h1>
-
-              {/* Excerpt */}
-              {post.excerpt && (
-                <p
-                  className="text-[#3A3A3A] mb-12 md:mb-16 text-lg md:text-xl font-light leading-relaxed max-w-3xl"
-                  style={{ fontFamily: "'Figtree', sans-serif" }}
-                >
-                  {post.excerpt}
-                </p>
-              )}
             </div>
 
             {/* Featured Image */}
             {post.featured_image && (
-              <div className="relative w-full mb-16 md:mb-24 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9]">
+              <div className="relative w-full mt-8 md:mt-12 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9] rounded-lg">
                 <OptimizedImage
                   src={post.featured_image}
                   alt={post.title}
@@ -172,127 +167,142 @@ export default function BlogPost() {
         {/* Article Content */}
         <section className="w-full bg-white pb-20 md:pb-32 px-6 md:px-12 lg:px-20">
           <div className="max-w-[1600px] mx-auto">
-            <div className="max-w-5xl mx-auto">
-              {/* Main Content */}
-              <article className="prose max-w-none">
+            {/* Flex container for TOC sidebar and content */}
+            <div className="flex gap-12 xl:gap-16 justify-center">
+              {/* Table of Contents - Desktop Sidebar */}
+              {post.content && (
+                <TableOfContents content={post.content} contentRef={articleRef} />
+              )}
+
+              {/* Main Content Column */}
+              <div className="max-w-[680px] w-full">
+                {/* TL;DR Summary Box */}
+                <ArticleSummary
+                  excerpt={post.excerpt}
+                  category={post.category}
+                  readTime={post.read_time}
+                />
+
+                {/* Main Content */}
+                <article ref={articleRef} className="prose max-w-none">
                 <style>{`
                       /* Blog Article Styles */
                       article.prose {
                         font-family: 'Figtree', sans-serif;
                         color: #3A3A3A;
-                        line-height: 1.8;
+                        line-height: 1.75;
                       }
-                      
-                      article.prose h1, 
-                      article.prose h2, 
-                      article.prose h3, 
-                      article.prose h4, 
-                      article.prose h5, 
+
+                      article.prose h1,
+                      article.prose h2,
+                      article.prose h3,
+                      article.prose h4,
+                      article.prose h5,
                       article.prose h6 {
                         font-family: 'Playfair Display', serif !important;
                         color: #1A2551 !important;
                         font-weight: 400 !important;
                         line-height: 1.3 !important;
                       }
-                      
+
                       article.prose h1 {
-                        font-size: 2.5rem !important;
+                        font-size: 1.75rem !important;
                         margin-top: 0 !important;
-                        margin-bottom: 1.5rem !important;
+                        margin-bottom: 1.25rem !important;
                       }
-                      
+
                       article.prose h2 {
-                        font-size: 2rem !important;
-                        margin-top: 3rem !important;
-                        margin-bottom: 1.5rem !important;
-                        padding-top: 1.5rem !important;
+                        font-size: 1.5rem !important;
+                        margin-top: 2.5rem !important;
+                        margin-bottom: 1rem !important;
+                        padding-top: 1.25rem !important;
                         border-top: 1px solid #e5e7eb !important;
                       }
-                      
+
                       article.prose h3 {
-                        font-size: 1.5rem !important;
-                        margin-top: 2rem !important;
-                        margin-bottom: 1rem !important;
-                      }
-                      
-                      article.prose h4 {
                         font-size: 1.25rem !important;
-                        margin-top: 1.5rem !important;
+                        margin-top: 1.75rem !important;
                         margin-bottom: 0.75rem !important;
                       }
-                      
-                      article.prose p {
+
+                      article.prose h4 {
                         font-size: 1.125rem !important;
-                        line-height: 1.8 !important;
-                        margin-bottom: 1.5rem !important;
+                        margin-top: 1.5rem !important;
+                        margin-bottom: 0.5rem !important;
+                      }
+
+                      article.prose p {
+                        font-size: 1rem !important;
+                        line-height: 1.75 !important;
+                        margin-bottom: 1.25rem !important;
                         color: #3A3A3A !important;
                       }
-                      
+
                       article.prose strong {
                         color: #1A2551 !important;
                         font-weight: 600 !important;
                       }
-                      
+
                       article.prose em {
                         font-style: italic !important;
                       }
-                      
+
                       article.prose a {
                         color: #8E8567 !important;
                         text-decoration: underline !important;
-                        text-underline-offset: 4px !important;
+                        text-underline-offset: 3px !important;
                         transition: color 0.2s ease !important;
                       }
-                      
+
                       article.prose a:hover {
                         color: #1A2551 !important;
                       }
-                      
+
                       article.prose ul {
                         list-style-type: disc !important;
-                        padding-left: 2rem !important;
-                        margin-top: 2rem !important;
-                        margin-bottom: 2rem !important;
+                        padding-left: 1.5rem !important;
+                        margin-top: 1.25rem !important;
+                        margin-bottom: 1.25rem !important;
                       }
-                      
+
                       article.prose ol {
                         list-style-type: decimal !important;
-                        padding-left: 2rem !important;
-                        margin-top: 2rem !important;
-                        margin-bottom: 2rem !important;
+                        padding-left: 1.5rem !important;
+                        margin-top: 1.25rem !important;
+                        margin-bottom: 1.25rem !important;
                       }
-                      
+
                       article.prose li {
                         display: list-item !important;
-                        font-size: 1.125rem !important;
-                        line-height: 1.8 !important;
-                        margin-bottom: 0.75rem !important;
+                        font-size: 1rem !important;
+                        line-height: 1.75 !important;
+                        margin-bottom: 0.5rem !important;
                         color: #3A3A3A !important;
                       }
-                      
+
                       article.prose blockquote {
-                        border-left: 4px solid #8E8567 !important;
-                        padding-left: 1.5rem !important;
-                        padding-top: 1rem !important;
-                        padding-bottom: 1rem !important;
-                        margin: 2rem 0 !important;
+                        border-left: 3px solid #8E8567 !important;
+                        padding-left: 1.25rem !important;
+                        padding-top: 0.75rem !important;
+                        padding-bottom: 0.75rem !important;
+                        margin: 1.5rem 0 !important;
                         font-style: italic !important;
                         color: #3A3A3A !important;
                         background-color: #f9fafb !important;
                         border-radius: 0 0.5rem 0.5rem 0 !important;
                       }
-                      
+
                       article.prose img {
-                        border-radius: 0.75rem !important;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-                        margin: 2rem 0 !important;
+                        border-radius: 0.5rem !important;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+                        margin: 1.5rem 0 !important;
                       }
-                      
+
                       @media (min-width: 768px) {
-                        article.prose h1 { font-size: 3rem !important; }
-                        article.prose h2 { font-size: 2.25rem !important; }
-                        article.prose h3 { font-size: 1.875rem !important; }
-                        article.prose p, article.prose li { font-size: 1.25rem !important; }
+                        article.prose h1 { font-size: 2rem !important; }
+                        article.prose h2 { font-size: 1.625rem !important; }
+                        article.prose h3 { font-size: 1.375rem !important; }
+                        article.prose p, article.prose li { font-size: 1.0625rem !important; }
                       }
                     `}</style>
                 {post.content ? (
@@ -318,6 +328,7 @@ export default function BlogPost() {
                   <p className="text-gray-500 italic">No content available.</p>
                 )}
               </article>
+              </div>
             </div>
           </div>
         </section>

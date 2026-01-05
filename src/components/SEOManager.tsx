@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { getGlobalSettings, getPropertyBySlug, getBlogPostBySlug, getStaticPageBySlug } from '../utils/database';
+import { getPropertyBySlug, getBlogPostBySlug, getStaticPageBySlug } from '../utils/database';
+import { get } from '../utils/kvStore';
 import { useSEO } from '../contexts/SEOContext';
 import { generateCanonicalURL } from '../utils/autoSEO';
 
@@ -65,9 +66,9 @@ export function SEOManager({
         // Load global settings, page-specific settings, AND static page data
         const currentPath = location.pathname;
         const [globalSettings, pageSettings, staticPage] = await Promise.all([
-          getGlobalSettings(SEO_GLOBAL_KEY) as Promise<GlobalSEOSettings | null>,
-          getGlobalSettings(SEO_KEY) as Promise<SEOSetting[] | null>,
-          getStaticPageBySlug(currentPath) // NEW: Load from static_pages table
+          get<GlobalSEOSettings>(SEO_GLOBAL_KEY),
+          get<SEOSetting[]>(SEO_KEY), // Also switch to kvStore here for consistency
+          getStaticPageBySlug(currentPath)
         ]);
 
         // Find settings for current route (legacy system)
@@ -178,18 +179,13 @@ export function SEOManager({
           updateMetaTag('property', 'fb:app_id', globalSettings.facebookAppId);
         }
 
-        // Inject analytics scripts if configured
-        if (globalSettings?.googleAnalyticsId && !document.querySelector(`script[data-ga-id="${globalSettings.googleAnalyticsId}"]`)) {
-          injectGoogleAnalytics(globalSettings.googleAnalyticsId);
-        }
-
-        if (globalSettings?.heatmapId && !document.querySelector(`script[data-clarity-id="${globalSettings.heatmapId}"]`)) {
-          injectMicrosoftClarity(globalSettings.heatmapId);
-        }
+        // Note: Analytics (GA4, Clarity) are now loaded via AnalyticsContext
+        // which respects cookie consent. See src/contexts/AnalyticsContext.tsx
 
         // Favicon Handling
         if (globalSettings?.site_favicon) {
           updateLinkTag('icon', globalSettings.site_favicon);
+          updateLinkTag('shortcut icon', globalSettings.site_favicon); // Add shortcut icon for better compatibility
           updateLinkTag('apple-touch-icon', globalSettings.site_favicon);
         }
 
@@ -229,66 +225,45 @@ function updateMetaTag(attribute: 'name' | 'property', attributeValue: string, c
 function updateLinkTag(rel: string, href: string) {
   if (!href) return;
 
-  let element = document.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement;
+  // Find all existing links with this rel to avoid duplicates
+  const existingElements = document.querySelectorAll(`link[rel="${rel}"]`);
+  let element: HTMLLinkElement;
 
-  if (!element) {
+  if (existingElements.length > 0) {
+    // Update the first one
+    element = existingElements[0] as HTMLLinkElement;
+    // Remove duplicates if any (cleanup)
+    for (let i = 1; i < existingElements.length; i++) {
+      existingElements[i].remove();
+    }
+  } else {
     element = document.createElement('link');
     element.setAttribute('rel', rel);
     document.head.appendChild(element);
   }
 
-  element.href = href;
+  // Only update if changed to prevent flickering/re-fetches
+  if (element.href !== href && !href.endsWith(element.getAttribute('href') || '')) {
+    element.href = href;
 
-  // Update type based on extension
-  if (href.endsWith('.svg')) {
-    element.setAttribute('type', 'image/svg+xml');
-  } else if (href.endsWith('.png')) {
-    element.setAttribute('type', 'image/png');
-  } else if (href.endsWith('.ico')) {
-    element.setAttribute('type', 'image/x-icon');
-  } else if (href.endsWith('.jpg') || href.endsWith('.jpeg')) {
-    element.setAttribute('type', 'image/jpeg');
-  } else {
-    // Remove type if unknown to let browser infer
-    element.removeAttribute('type');
+    // Update type based on extension
+    if (href.endsWith('.svg')) {
+      element.setAttribute('type', 'image/svg+xml');
+    } else if (href.endsWith('.png')) {
+      element.setAttribute('type', 'image/png');
+    } else if (href.endsWith('.ico')) {
+      element.setAttribute('type', 'image/x-icon');
+    } else if (href.endsWith('.jpg') || href.endsWith('.jpeg')) {
+      element.setAttribute('type', 'image/jpeg');
+    } else {
+      // Check for base64 or other formats
+      if (href.startsWith('data:image/svg+xml')) {
+        element.setAttribute('type', 'image/svg+xml');
+      } else if (href.startsWith('data:image/png')) {
+        element.setAttribute('type', 'image/png');
+      } else {
+        element.removeAttribute('type');
+      }
+    }
   }
-}
-
-/**
- * Inject Google Analytics 4
- */
-function injectGoogleAnalytics(measurementId: string) {
-  // Add the gtag script
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  script1.setAttribute('data-ga-id', measurementId);
-  document.head.appendChild(script1);
-
-  // Add the initialization script
-  const script2 = document.createElement('script');
-  script2.setAttribute('data-ga-id', measurementId);
-  script2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
-  document.head.appendChild(script2);
-}
-
-/**
- * Inject Microsoft Clarity
- */
-function injectMicrosoftClarity(projectId: string) {
-  const script = document.createElement('script');
-  script.setAttribute('data-clarity-id', projectId);
-  script.innerHTML = `
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "${projectId}");
-  `;
-  document.head.appendChild(script);
 }

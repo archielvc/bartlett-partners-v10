@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Mail, Phone, Home, FileText, Filter, Database, Download, Users, MessageSquare, Trash2 } from 'lucide-react';
+import { Mail, Phone, Home, FileText, Filter, Download, Users, MessageSquare, Trash2, MapPin, Banknote, BedDouble, Calendar, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { CMSPageLayout } from '../CMSPageLayout';
 import { Button } from '../../ui/button';
-import { cn } from '../../ui/utils';
 import { getContactSubmissions, updateContactSubmissionStatus, deleteContactSubmission } from '../../../utils/database';
 import type { ContactSubmission, ContactSubmissionWithProperty } from '../../../types/database';
 import {
@@ -88,11 +87,16 @@ export function CMSEnquiries() {
       return;
     }
 
-    // Create CSV content
-    const headers = ['Name', 'Email', 'Date', 'Time'];
+    // Create CSV content with new fields
+    const headers = ['Name', 'Email', 'Phone', 'Address', 'Price Range', 'Min Beds', 'Timeline', 'Date', 'Time'];
     const rows = newsletters.map(n => [
       n.name,
       n.email,
+      n.phone || '',
+      n.address || '',
+      n.price_range || '',
+      n.min_beds || '',
+      n.timeline || '',
       new Date(n.created_at).toLocaleDateString('en-GB'),
       new Date(n.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     ]);
@@ -131,9 +135,6 @@ export function CMSEnquiries() {
         if (e.status !== statusFilter) return false;
       }
     }
-
-
-
     return true;
   });
 
@@ -158,13 +159,21 @@ export function CMSEnquiries() {
 
     switch (resolvedType) {
       case 'property':
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200"><Home className="w-3 h-3" /> Property Inquiry</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200"><Home className="w-3 h-3" /> Property</span>;
       case 'valuation':
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200"><FileText className="w-3 h-3" /> Valuation Request</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200"><FileText className="w-3 h-3" /> Valuation</span>;
+      case 'newsletter':
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"><Mail className="w-3 h-3" /> Newsletter</span>;
       case 'general':
       default:
-        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200"><Mail className="w-3 h-3" /> General Inquiry</span>;
+        return <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200"><MessageSquare className="w-3 h-3" /> General</span>;
     }
+  };
+
+  // Check if newsletter subscriber has preferences (completed Step 2)
+  const hasPriorityAccess = (enquiry: ContactSubmissionWithProperty) => {
+    return enquiry.inquiry_type === 'newsletter' &&
+           (enquiry.price_range || enquiry.min_beds || enquiry.timeline || enquiry.address);
   };
 
   const newNewsletterCount = newsletters.filter(n => n.status === 'new').length;
@@ -235,8 +244,6 @@ export function CMSEnquiries() {
                 {f.replace('_', ' ')}
               </button>
             ))}
-
-
           </div>
 
           <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -262,49 +269,39 @@ export function CMSEnquiries() {
             </div>
           ) : (
             filteredEnquiries.map((enquiry) => (
-              <div key={enquiry.id} className={`bg-white p-6 rounded-xl border transition-all hover:shadow-md ${enquiry.status === 'new' ? 'border-l-4 border-l-[#C5A059] border-y-gray-100 border-r-gray-100' : 'border-gray-100'
-                }`}>
-                <div className="flex flex-col lg:flex-row justify-between items-start gap-6 mb-4">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0
-                    ${enquiry.status === 'new' ? 'bg-[#C5A059]/10 text-[#C5A059]' : 'bg-gray-100 text-gray-500'}`}>
-                      {enquiry.name.charAt(0).toUpperCase()}
-                    </div>
+              <div key={enquiry.id} className={`bg-white rounded-xl border overflow-hidden transition-all hover:shadow-md ${enquiry.status === 'new' ? 'border-l-4 border-l-[#C5A059] border-y-gray-100 border-r-gray-100' : 'border-gray-100'}`}>
 
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1 flex-wrap">
-                        <h3 className="font-semibold text-[#1A2551] text-lg">{enquiry.name}</h3>
-                        {getStatusBadge(enquiry.status)}
-                        {activeTab === 'enquiries' && getTypeBadge(enquiry.inquiry_type, enquiry.property_id?.toString())}
+                {/* Header Section */}
+                <div className="p-5 pb-4 border-b border-gray-50">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      {/* Avatar */}
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0
+                        ${enquiry.status === 'new' ? 'bg-[#C5A059]/10 text-[#C5A059]' : 'bg-gray-100 text-gray-500'}`}>
+                        {enquiry.name.charAt(0).toUpperCase()}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-2">
-                        <span title={new Date(enquiry.created_at).toLocaleString()}>
-                          {new Date(enquiry.created_at).toLocaleDateString()} • {new Date(enquiry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        <a href={`mailto:${enquiry.email}`} className="flex items-center gap-1 hover:text-[#1A2551]">
-                          <Mail className="w-3.5 h-3.5" /> {enquiry.email}
-                        </a>
-                        {enquiry.phone && (
-                          <a href={`tel:${enquiry.phone}`} className="flex items-center gap-1 hover:text-[#1A2551]">
-                            <Phone className="w-3.5 h-3.5" /> {enquiry.phone}
-                          </a>
-                        )}
-                      </div>
-
-                      {enquiry.property && (
-                        <div className="flex items-center gap-2 text-sm text-[#1A2551] bg-blue-50 px-3 py-1.5 rounded-md inline-block mt-1">
-                          <Home className="w-4 h-4" />
-                          <span className="font-medium">Property Inquiry:</span>
-                          <span className="underline decoration-blue-300 underline-offset-2">{enquiry.property.title}</span>
+                      {/* Name & Meta */}
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-[#1A2551] text-lg">{enquiry.name}</h3>
+                          {getStatusBadge(enquiry.status)}
+                          {hasPriorityAccess(enquiry) && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+                              <Star className="w-3 h-3" /> Priority
+                            </span>
+                          )}
                         </div>
-                      )}
+                        <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                          {getTypeBadge(enquiry.inquiry_type, enquiry.property_id?.toString())}
+                          <span className="text-gray-300">•</span>
+                          <span>{new Date(enquiry.created_at).toLocaleDateString('en-GB')} {new Date(enquiry.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="flex items-center gap-2">
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 shrink-0">
                       <Select
                         value={
                           ['read', 'replied'].includes(enquiry.status || '') ? 'in_progress' :
@@ -313,28 +310,13 @@ export function CMSEnquiries() {
                         }
                         onValueChange={(value) => handleStatusChange(enquiry.id, value as any)}
                       >
-                        <SelectTrigger className="w-[130px] h-8 bg-white border-gray-200 text-[#1A2551] rounded-md text-xs font-medium focus:ring-1 focus:ring-[#1A2551]/20 shadow-sm transition-all hover:bg-gray-50">
+                        <SelectTrigger className="w-[120px] h-8 bg-white border-gray-200 text-[#1A2551] rounded-md text-xs font-medium focus:ring-1 focus:ring-[#1A2551]/20 shadow-sm transition-all hover:bg-gray-50">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200 text-[#1A2551] min-w-[130px] p-1 shadow-xl rounded-lg">
-                          <SelectItem
-                            value="new"
-                            className="text-[#1A2551] hover:bg-gray-100 focus:bg-gray-100 focus:text-[#1A2551] rounded-md cursor-pointer transition-colors"
-                          >
-                            New
-                          </SelectItem>
-                          <SelectItem
-                            value="in_progress"
-                            className="data-[state=checked]:bg-[#76BC5F] data-[state=checked]:text-white hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 rounded-md cursor-pointer transition-colors"
-                          >
-                            In Progress
-                          </SelectItem>
-                          <SelectItem
-                            value="closed"
-                            className="text-[#1A2551] hover:bg-gray-100 focus:bg-gray-100 focus:text-[#1A2551] rounded-md cursor-pointer transition-colors"
-                          >
-                            Closed
-                          </SelectItem>
+                        <SelectContent className="bg-white border-gray-200 text-[#1A2551] min-w-[120px] p-1 shadow-xl rounded-lg">
+                          <SelectItem value="new" className="text-[#1A2551] hover:bg-gray-100 focus:bg-gray-100 rounded-md cursor-pointer">New</SelectItem>
+                          <SelectItem value="in_progress" className="hover:bg-gray-100 focus:bg-gray-100 rounded-md cursor-pointer">In Progress</SelectItem>
+                          <SelectItem value="closed" className="text-[#1A2551] hover:bg-gray-100 focus:bg-gray-100 rounded-md cursor-pointer">Closed</SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -349,11 +331,103 @@ export function CMSEnquiries() {
                   </div>
                 </div>
 
-                {activeTab === 'enquiries' && enquiry.message !== 'Newsletter subscription request.' && (
-                  <div className="bg-gray-50 p-5 rounded-lg border border-gray-100">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{enquiry.message}</p>
+                {/* Body Section - Two Column Layout */}
+                <div className="p-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    {/* Left Column: Contact Info */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Contact</h4>
+                      <div className="space-y-2">
+                        <a href={`mailto:${enquiry.email}`} className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#1A2551] transition-colors">
+                          <Mail className="w-4 h-4 text-gray-400" />
+                          <span>{enquiry.email}</span>
+                        </a>
+                        {enquiry.phone && (
+                          <a href={`tel:${enquiry.phone}`} className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#1A2551] transition-colors">
+                            <Phone className="w-4 h-4 text-gray-400" />
+                            <span>{enquiry.phone}</span>
+                          </a>
+                        )}
+                        {enquiry.address && (
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <MapPin className="w-4 h-4 text-gray-400" />
+                            <span>{enquiry.address}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column: Details/Preferences */}
+                    <div className="space-y-3">
+                      {activeTab === 'newsletter' ? (
+                        // Newsletter: Property Preferences
+                        <>
+                          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Property Preferences</h4>
+                          {hasPriorityAccess(enquiry) ? (
+                            <div className="space-y-2">
+                              {enquiry.price_range && (
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                  <Banknote className="w-4 h-4 text-gray-400" />
+                                  <span>{enquiry.price_range}</span>
+                                </div>
+                              )}
+                              {enquiry.min_beds && (
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                  <BedDouble className="w-4 h-4 text-gray-400" />
+                                  <span>{enquiry.min_beds}+ bedrooms</span>
+                                </div>
+                              )}
+                              {enquiry.timeline && (
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                  <Calendar className="w-4 h-4 text-gray-400" />
+                                  <span>{enquiry.timeline}</span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic">No preferences provided</p>
+                          )}
+                        </>
+                      ) : (
+                        // Enquiries: Interest & Property
+                        <>
+                          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Inquiry Details</h4>
+                          <div className="space-y-2">
+                            {enquiry.property && (
+                              <div className="flex items-start gap-2 text-sm">
+                                <Home className="w-4 h-4 text-gray-400 mt-0.5" />
+                                <div>
+                                  <span className="text-gray-500">Property: </span>
+                                  <span className="text-[#1A2551] font-medium">{enquiry.property.title}</span>
+                                </div>
+                              </div>
+                            )}
+                            {enquiry.inquiry_type && (
+                              <div className="flex items-center gap-2 text-sm text-gray-700">
+                                <FileText className="w-4 h-4 text-gray-400" />
+                                <span className="capitalize">{enquiry.inquiry_type.replace('_', ' ')} inquiry</span>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                )}
+
+                  {/* Message Section (Enquiries only, non-default messages) */}
+                  {activeTab === 'enquiries' && enquiry.message &&
+                   enquiry.message !== 'Newsletter subscription request.' &&
+                   enquiry.message !== 'Newsletter subscription from Two Step Popup' &&
+                   enquiry.message !== 'Newsletter subscription with Priority Access' && (
+                    <div className="mt-5 pt-5 border-t border-gray-100">
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Message</h4>
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{enquiry.message}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             ))
           )}

@@ -102,6 +102,11 @@ export interface ContactSubmission {
   inquiry_type?: 'general' | 'property' | 'valuation' | 'newsletter';
   status: string;
   notes: string | null;
+  // Newsletter preference fields
+  address: string | null;
+  price_range: string | null;
+  min_beds: string | null;
+  timeline: string | null;
   created_at: string;
   updated_at: string;
 }

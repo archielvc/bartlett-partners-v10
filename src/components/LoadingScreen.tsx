@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useEffect, useState } from "react";
 import { useSiteSettings } from "../contexts/SiteContext";
+import { prefetchCriticalData } from "../lib/prefetch";
 
 export function LoadingScreen() {
   const [isVisible, setIsVisible] = useState(true);
@@ -21,6 +22,10 @@ export function LoadingScreen() {
 
     // Prevent scrolling while loading
     document.body.style.overflow = "hidden";
+
+    // Prefetch critical data during the loading screen
+    // This runs in parallel with the timer, so data is ready when home page renders
+    prefetchCriticalData().catch(console.error);
 
     // Sequence:
     // 1. Show logo (0s)

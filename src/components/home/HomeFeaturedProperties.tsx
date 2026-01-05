@@ -1,25 +1,18 @@
-import { useState, useEffect } from 'react';
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getHomeFeaturedProperties } from "../../utils/database";
-import type { Property } from "../../types/property";
+import { useFeaturedProperties } from "../../hooks/useFeaturedProperties";
 import { PropertyCard } from "../PropertyCard";
 import { FeaturedPropertiesSkeleton } from "../ui/skeletons";
 import { motion } from "motion/react";
 
 export function HomeFeaturedProperties() {
-  const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: featuredProperties, isLoading, error } = useFeaturedProperties();
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      setIsLoading(true);
-      const properties = await getHomeFeaturedProperties();
-      setFeaturedProperties(properties);
-      setIsLoading(false);
-    };
-    fetchProperties();
-  }, []);
+  // Handle error state gracefully
+  if (error) {
+    console.error('Failed to load featured properties:', error);
+    return null;
+  }
 
   // Show skeleton while loading
   if (isLoading) {
@@ -32,7 +25,7 @@ export function HomeFeaturedProperties() {
     );
   }
 
-  if (!featuredProperties.length) return null;
+  if (!featuredProperties?.length) return null;
 
   return (
     <section className="w-full bg-[#F5F3EE] px-6 md:px-12 lg:px-20 py-20 md:py-32">
@@ -89,8 +82,7 @@ export function HomeFeaturedProperties() {
               <motion.div
                 key={property.id}
                 initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.6,
                   delay: index * 0.1,
@@ -101,6 +93,7 @@ export function HomeFeaturedProperties() {
                 <PropertyCard
                   property={property}
                   index={index}
+                  priority={true}
                 />
               </motion.div>
             ))}

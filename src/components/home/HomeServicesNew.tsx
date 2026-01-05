@@ -94,7 +94,7 @@ const THEME = {
 // --- Components ---
 
 export function HomeServicesNew() {
-    const [activeId, setActiveId] = useState('viewings');
+    const [activeId, setActiveId] = useState('staging');
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
     return (

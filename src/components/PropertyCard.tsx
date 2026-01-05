@@ -26,9 +26,11 @@ interface PropertyCardProps {
   className?: string;
   /** Index for stagger animations (set automatically by parent grid) */
   index?: number;
+  /** Force image priority loading */
+  priority?: boolean;
 }
 
-export function PropertyCard({ property, className, index = 0 }: PropertyCardProps) {
+export function PropertyCard({ property, className, index = 0, priority }: PropertyCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const isPropertyFavorite = isFavorite(property.id);
   const navigate = useNavigate();
@@ -86,10 +88,10 @@ export function PropertyCard({ property, className, index = 0 }: PropertyCardPro
           alt={property.title}
           className="transition-transform duration-700 ease-out group-hover:scale-105"
           src={property.image}
-          priority={index === 0}
+          priority={priority || index === 0}
           enableLQIP={true}
           aspectRatio="4/3"
-          fetchPriority={index < 3 ? 'high' : 'auto'}
+          fetchPriority={priority || index < 3 ? 'high' : 'auto'}
         />
 
         {/* Dark overlay on hover - Desktop only */}

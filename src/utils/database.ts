@@ -1010,8 +1010,8 @@ export async function getAllContactSubmissions(): Promise<ContactSubmissionWithP
 
 export const getContactSubmissions = getAllContactSubmissions;
 
-export async function createContactSubmission(submission: Partial<ContactSubmission>): Promise<boolean> {
-  const { error } = await supabase
+export async function createContactSubmission(submission: Partial<ContactSubmission>): Promise<number | null> {
+  const { data, error } = await supabase
     .from('enquiries')
     .insert({
       name: submission.name || '',
@@ -1022,13 +1022,15 @@ export async function createContactSubmission(submission: Partial<ContactSubmiss
       property_title: submission.property_title || null,
       inquiry_type: submission.inquiry_type || 'general',
       status: 'new'
-    });
+    })
+    .select('id')
+    .single();
 
   if (error) {
     console.error('Error creating contact submission:', error);
-    return false;
+    return null;
   }
-  return true;
+  return data?.id || null;
 }
 
 export async function submitContactForm(formData: {
@@ -1040,7 +1042,7 @@ export async function submitContactForm(formData: {
   propertyId?: number;
   propertyTitle?: string;
   inquiry_type?: 'general' | 'property' | 'valuation' | 'newsletter';
-}): Promise<boolean> {
+}): Promise<number | null> {
   // Handle both property_id and propertyId
   const propertyId = formData.property_id || formData.propertyId;
 
@@ -1053,6 +1055,29 @@ export async function submitContactForm(formData: {
     property_title: formData.propertyTitle || null,
     inquiry_type: formData.inquiry_type || 'general',
   });
+}
+
+export async function updateEnquiryById(id: number, updates: {
+  phone?: string;
+  message?: string;
+  address?: string;
+  price_range?: string;
+  min_beds?: string;
+  timeline?: string;
+}): Promise<boolean> {
+  const { error } = await supabase
+    .from('enquiries')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating enquiry:', error);
+    return false;
+  }
+  return true;
 }
 
 export async function updateContactSubmissionStatus(id: number, status: string): Promise<boolean> {

@@ -4,9 +4,11 @@ import { PageHeader } from "../components/global/PageHeader";
 import { OptimizedImage } from "../components/OptimizedImage";
 import { InsightsAreas } from "../components/insights/InsightsAreas";
 import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
+import { CategoryFilter } from "../components/insights/CategoryFilter";
+import { FeaturedPost } from "../components/insights/FeaturedPost";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { Clock } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { applySEO, PAGE_SEO } from "../utils/seo";
 import { getPublishedBlogPostsLight, getPublishedTestimonials, getGlobalSettings } from "../utils/database";
@@ -17,6 +19,7 @@ export default function Insights() {
   const [currentPage, setCurrentPage] = useState(1);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const navigate = useNavigate();
   const blogGridRef = useRef<HTMLElement>(null);
 
@@ -35,11 +38,42 @@ export default function Insights() {
     fetchData();
   }, []);
 
+  // Extract unique categories and count posts per category
+  const { categories, postCounts } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    blogPosts.forEach((post) => {
+      if (post.category) {
+        counts[post.category] = (counts[post.category] || 0) + 1;
+      }
+    });
+    return {
+      categories: Object.keys(counts).sort(),
+      postCounts: counts,
+    };
+  }, [blogPosts]);
+
+  // Filter posts by selected category
+  const filteredPosts = useMemo(() => {
+    if (!selectedCategory) return blogPosts;
+    return blogPosts.filter((post) => post.category === selectedCategory);
+  }, [blogPosts, selectedCategory]);
+
+  // Featured post (only when showing all posts)
+  const featuredPost = !selectedCategory && filteredPosts.length > 0 ? filteredPosts[0] : null;
+  const gridPosts = featuredPost ? filteredPosts.slice(1) : filteredPosts;
+
+  // Pagination
   const blogsPerPage = 6;
-  const totalPages = Math.ceil(blogPosts.length / blogsPerPage);
+  const totalPages = Math.ceil(gridPosts.length / blogsPerPage);
   const startIndex = (currentPage - 1) * blogsPerPage;
   const endIndex = startIndex + blogsPerPage;
-  const currentBlogs = blogPosts.slice(startIndex, endIndex);
+  const currentBlogs = gridPosts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when category changes
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category);
+    setCurrentPage(1);
+  };
 
   // Helper function to change page and scroll to top
   const changePage = (newPage: number) => {
@@ -72,7 +106,7 @@ export default function Insights() {
 
       <section ref={blogGridRef} className="w-full bg-gray-50 px-6 md:px-12 lg:px-20 py-12 md:py-20">
         <div className="max-w-[1600px] mx-auto">
-          <div className="flex justify-between items-end mb-8 md:mb-12">
+          <div className="flex justify-between items-end mb-8 md:mb-10">
             <div className="flex flex-col items-start gap-2">
               <span className="text-[#8E8567] text-sm tracking-[0.2em] font-bold uppercase" style={{ fontFamily: "'Figtree', sans-serif" }}>
                 Our Insights
@@ -85,6 +119,19 @@ export default function Insights() {
               </h2>
             </div>
           </div>
+
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <CategoryFilter
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              postCounts={postCounts}
+            />
+          )}
+
+          {/* Featured Post (when showing all) */}
+          {featuredPost && <FeaturedPost post={featuredPost} />}
 
           <div>
             {currentBlogs.length > 0 ? (

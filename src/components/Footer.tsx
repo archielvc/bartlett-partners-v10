@@ -79,7 +79,7 @@ export function Footer() {
                   Newsletter
                 </h3>
                 <p className="text-white/60 text-sm mb-6 font-light leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
-                  Join our exclusive mailing list for the latest property news, market analysis, and off-market opportunities.
+                  Get first-look access to new listings and off-market opportunities - often 2-3 days before they hit the portals.
                 </p>
                 {isSubmitted ? (
                   <div className="w-full bg-[#8E8567]/10 border border-[#8E8567] p-6 rounded-md relative overflow-hidden">
@@ -123,7 +123,7 @@ export function Footer() {
                       className="w-full bg-[#8E8567] text-white border-none rounded-md py-2 text-sm font-medium hover:bg-[#7d755a] transition-colors"
                       style={{ fontFamily: "'Figtree', sans-serif" }}
                     >
-                      Subscribe
+                      Get Early Access
                     </button>
                   </form>
                 )}

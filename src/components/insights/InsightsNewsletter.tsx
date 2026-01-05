@@ -10,8 +10,8 @@ interface InsightsNewsletterProps {
 }
 
 export function InsightsNewsletter({
-  title = "Market Insights",
-  description = "Join our exclusive mailing list for the latest property news, market analysis, and off-market opportunities in Richmond."
+  title = "See Properties Before Rightmove",
+  description = "Get first-look access to new listings and off-market opportunities in Richmond - often 2-3 days before they hit the portals."
 }: InsightsNewsletterProps) {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -70,13 +70,13 @@ export function InsightsNewsletter({
                     className="text-white text-2xl mb-3"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
-                    Thank you for subscribing
+                    Welcome to the Inner Circle
                   </h3>
                   <p
                     className="text-white/80 font-light mb-6"
                     style={{ fontFamily: "'Figtree', sans-serif" }}
                   >
-                    You have successfully joined our mailing list. Look out for our latest market insights and exclusive property updates in your inbox.
+                    You're now part of our exclusive network. Look out for early-access listings and insider market insights in your inbox.
                   </p>
                   <Button
                     onClick={() => setIsSubmitted(false)}
@@ -114,7 +114,7 @@ export function InsightsNewsletter({
                   premium
                   className="w-full lg:w-auto bg-[#8E8567] text-white border-none rounded-md px-8 py-3 flex items-center justify-center gap-2 transition-colors duration-300 hover:bg-[#8E8567] whitespace-nowrap"
                 >
-                  <span>Subscribe</span>
+                  <span>Get Early Access</span>
                 </Button>
               </form>
             )}

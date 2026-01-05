@@ -133,9 +133,6 @@ export function OptimizedImage({
       const lqipImg = new Image();
       lqipImg.src = lqipUrl;
       lqipImg.onload = () => setLoadState('lqip');
-    } else if (!hasLQIP && loadState === 'idle') {
-      // No LQIP, go directly to loading full image
-      setLoadState('lqip');
     }
   }, [isInView, src, hasLQIP, lqipUrl, loadState]);
 
@@ -170,9 +167,8 @@ export function OptimizedImage({
       {/* Skeleton placeholder (shown when no LQIP or before LQIP loads) */}
       {!isFullyLoaded && (
         <div
-          className={`absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 transition-opacity duration-500 ${
-            loadState !== 'idle' ? 'opacity-0' : 'opacity-100'
-          }`}
+          className={`absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 transition-opacity duration-500 ${loadState !== 'idle' ? 'opacity-0' : 'opacity-100'
+            }`}
           aria-hidden="true"
         >
           {/* Animated shimmer effect */}
@@ -205,11 +201,10 @@ export function OptimizedImage({
           fetchPriority={priority ? 'high' : fetchPriority}
           decoding="async"
           onLoad={handleFullImageLoad}
-          className={`w-full h-full object-cover transition-all duration-700 ease-out ${
-            isFullyLoaded
-              ? 'opacity-100 blur-0 scale-100'
-              : 'opacity-0 blur-sm scale-[1.02]'
-          }`}
+          className={`w-full h-full object-cover transition-all duration-700 ease-out ${isFullyLoaded
+            ? 'opacity-100 blur-0 scale-100'
+            : 'opacity-0 blur-sm scale-[1.02]'
+            }`}
         />
       )}
     </div>
