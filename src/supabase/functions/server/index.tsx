@@ -188,7 +188,7 @@ app.post(`${routePrefix}/send-email`, async (c) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`
       },
       body: JSON.stringify({
-        from: 'Bartlett & Partners <onboarding@resend.dev>', // Update this to your verified domain
+        from: 'Bartlett & Partners <noreply@bartlettandpartners.com>', // Requires domain verification in Resend
         to,
         subject,
         html,
