@@ -201,15 +201,20 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
             className="cursor-pointer transition-opacity hover:opacity-80"
             aria-label="Home"
           >
-            <motion.img
+            <motion.div
               key={showBlueLogo ? "blue" : "white"}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
-              src={showBlueLogo ? blueLogo : whiteLogo}
-              alt="Bartlett & Partners"
-              style={{ height: "clamp(3.75rem, 11vw, 5.5rem)", width: "auto" }}
-            />
+            >
+              <img
+                src={showBlueLogo ? blueLogo : whiteLogo}
+                alt="Bartlett & Partners"
+                width={180}
+                height={60}
+                style={{ height: "clamp(3.75rem, 11vw, 5.5rem)", width: "auto" }}
+              />
+            </motion.div>
           </Link>
         </nav>
 
@@ -402,8 +407,10 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                   <img
                     src={hasDarkHero && !isPastHero ? whiteLogo : blueLogo}
                     alt="Bartlett & Partners"
+                    width={180}
+                    height={60}
                     className="logo-shimmer"
-                    style={{ height: "5rem" }}
+                    style={{ height: "5rem", width: "auto" }}
                   />
                 </Link>
 

@@ -1,11 +1,9 @@
 import { motion } from "motion/react";
 import { Bed, Bath } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
-import { Button } from "../ui/button";
+import { Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { getFeaturedProperty, getStored } from "../../utils/database";
 import type { Property as DBProperty } from "../../types/database";
-import { getOptimizedUrl } from "../OptimizedImage";
 
 import { useSiteSettings } from "../../contexts/SiteContext";
 
@@ -60,18 +58,26 @@ export function HomeHero() {
   };
 
   // Use CMS image if available, otherwise featured property or empty
-  // Use property image or empty
   const rawImage = featuredProperty?.hero_image || "";
-  // Optimized: Reduced from 2000x85 to 1600x75 for better PageSpeed performance
-  const heroImage = getOptimizedUrl(rawImage, 1600, 75, 'webp');
 
-  // Generate responsive srcset for mobile performance optimization
-  // Mobile gets 640px image (~80-100KB), tablet 1024px, desktop 1600px
+  // Helper to generate optimized Supabase image URLs
+  const getHeroImageUrl = (width: number, quality: number) => {
+    if (!rawImage || !rawImage.includes('supabase.co')) return rawImage;
+    if (!rawImage.includes('/storage/v1/object/public/')) return rawImage;
+    const base = rawImage.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+    return `${base}?width=${width}&quality=${quality}&resize=contain`;
+  };
+
+  // Mobile-first: src is 640px for mobile, srcset provides larger variants for desktop
+  // This ensures mobile downloads ~80KB instead of 175KB+
+  const heroImage = getHeroImageUrl(640, 70);
+
+  // Generate responsive srcset for larger screens
   const heroSrcSet = useMemo(() => {
     if (!rawImage || !rawImage.includes('supabase.co')) return undefined;
     if (!rawImage.includes('/storage/v1/object/public/')) return undefined;
     const base = rawImage.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-    return `${base}?width=640&quality=70&resize=contain 640w, ${base}?width=1024&quality=75&resize=contain 1024w, ${base}?width=1600&quality=75&resize=contain 1600w`;
+    return `${base}?width=640&quality=70&resize=contain 640w, ${base}?width=1024&quality=75&resize=contain 1024w, ${base}?width=1600&quality=80&resize=contain 1600w`;
   }, [rawImage]);
 
   return (
@@ -81,23 +87,26 @@ export function HomeHero() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/40 z-10" />
 
         {heroImage && (
-          <motion.img
+          <motion.div
             key={featuredProperty ? featuredProperty.id : 'static-hero'}
             initial={{ scale: 1.1 }}
             animate={{ scale: isHovered ? 1.05 : 1 }}
             transition={{ duration: isMobile ? 1.0 : 1.5, ease: "easeOut" }}
-            src={heroImage}
-            srcSet={heroSrcSet}
-            sizes="100vw"
-            alt={staticHeroContent.headline}
-            className="w-full h-full object-cover"
-            loading="eager"
-            // @ts-ignore
-            fetchpriority="high"
-            decoding="async"
-            width={1920}
-            height={1080}
-          />
+            className="w-full h-full"
+          >
+            <img
+              src={heroImage}
+              srcSet={heroSrcSet}
+              sizes="100vw"
+              alt={staticHeroContent.headline}
+              className="w-full h-full object-cover"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              width={1920}
+              height={1080}
+            />
+          </motion.div>
         )}
       </div>
 
