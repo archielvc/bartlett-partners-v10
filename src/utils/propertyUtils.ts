@@ -2,7 +2,7 @@ export const getPropertyStatusStyles = (status: string) => {
     const s = status.toLowerCase();
     switch (s) {
         case "available":
-            return "bg-[#8E8567] text-white";
+            return "bg-[#6B6548] text-white";
         case "sale agreed":
         case "under_offer":
             return "bg-[#1A2551] text-white";

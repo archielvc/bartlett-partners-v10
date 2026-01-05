@@ -62,7 +62,8 @@ export function HomeHero() {
   // Use CMS image if available, otherwise featured property or empty
   // Use property image or empty
   const rawImage = featuredProperty?.hero_image || "";
-  const heroImage = getOptimizedUrl(rawImage, 2000, 85, 'webp');
+  // Optimized: Reduced from 2000x85 to 1600x75 for better PageSpeed performance
+  const heroImage = getOptimizedUrl(rawImage, 1600, 75, 'webp');
 
   return (
     <section className="relative w-full h-screen min-h-[800px] bg-[#F5F3EE] overflow-hidden">

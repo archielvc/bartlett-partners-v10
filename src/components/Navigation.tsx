@@ -9,6 +9,7 @@ import { PropertyInquiryDialog } from "./PropertyInquiryDialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { trackEvent, trackNavigation, trackCTAClick } from "../utils/analytics";
+import { getOptimizedUrl } from "./OptimizedImage";
 
 const MotionLink = motion.create(Link);
 
@@ -29,9 +30,17 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
   const { favorites } = useFavorites();
   const { images } = useSiteSettings();
 
+  // Helper to optimize logo URL for Supabase images (displayed at ~80px height)
+  const getLogoUrl = (url: string) => {
+    if (url && url.includes('supabase.co')) {
+      return getOptimizedUrl(url, 200, 80, 'webp');
+    }
+    return url;
+  };
+
   // Use CMS logos if available, otherwise fallback to local logos for instant loading
-  const blueLogo = images.branding.brand_logo_dark || '/logo-dark.png';
-  const whiteLogo = images.branding.brand_logo_white || '/logo-white.png';
+  const blueLogo = getLogoUrl(images.branding.brand_logo_dark) || '/logo-dark.png';
+  const whiteLogo = getLogoUrl(images.branding.brand_logo_white) || '/logo-white.png';
 
   // Detect current page from URL
   const getCurrentPage = () => {

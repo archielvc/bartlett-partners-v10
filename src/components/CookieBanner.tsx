@@ -40,6 +40,7 @@ export function CookieBanner() {
                   </h3>
                   <button
                     onClick={() => setBannerVisible(false)}
+                    aria-label="Close cookie banner"
                     className="text-white/40 hover:text-white transition-colors p-1 -mr-2 -mt-2 rounded-full hover:bg-white/10"
                   >
                     <X className="w-5 h-5" />

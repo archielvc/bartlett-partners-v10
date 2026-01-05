@@ -146,15 +146,16 @@ export function OptimizedImage({
 
     // Supabase Storage: Generate responsive srcset with render/image endpoint
     // Using width-only to maintain aspect ratio (no cropping)
+    // Capped at 1200w for better PageSpeed performance (most displays don't need 1600w)
     if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
       const transformedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-      return `${transformedUrl}?width=400&quality=70&resize=contain 400w, ${transformedUrl}?width=800&quality=75&resize=contain 800w, ${transformedUrl}?width=1200&quality=75&resize=contain 1200w, ${transformedUrl}?width=1600&quality=80&resize=contain 1600w`;
+      return `${transformedUrl}?width=400&quality=70&resize=contain 400w, ${transformedUrl}?width=800&quality=75&resize=contain 800w, ${transformedUrl}?width=1200&quality=75&resize=contain 1200w`;
     }
 
-    // Unsplash
+    // Unsplash - capped at 1200w for better PageSpeed performance
     if (url.includes('unsplash')) {
       const baseUrl = url.split('?')[0];
-      return `${baseUrl}?w=400&q=70&fm=webp&fit=crop&auto=format 400w, ${baseUrl}?w=800&q=75&fm=webp&fit=crop&auto=format 800w, ${baseUrl}?w=1200&q=75&fm=webp&fit=crop&auto=format 1200w, ${baseUrl}?w=1600&q=80&fm=webp&fit=crop&auto=format 1600w`;
+      return `${baseUrl}?w=400&q=70&fm=webp&fit=crop&auto=format 400w, ${baseUrl}?w=800&q=75&fm=webp&fit=crop&auto=format 800w, ${baseUrl}?w=1200&q=75&fm=webp&fit=crop&auto=format 1200w`;
     }
 
     return undefined;

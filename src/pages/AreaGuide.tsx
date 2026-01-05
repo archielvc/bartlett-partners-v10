@@ -379,7 +379,7 @@ export default function AreaGuide() {
                 <p className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold mb-2">Transport</p>
                 <p className="text-[#1A2551] text-3xl font-serif leading-tight">{data.stats.transport}</p>
               </div>
-              <div className="p-8 bg-[#F5F5F0] rounded-2xl">
+              <div className="p-8 bg-[#F5F5F0] rounded-2xl sm:col-span-2">
                 <p className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold mb-2">Education</p>
                 <p className="text-[#1A2551] text-3xl font-serif">{data.stats.schools}</p>
                 <p className="text-[#1A2551]/60 text-sm mt-2">Rated 'Outstanding' by Ofsted</p>
