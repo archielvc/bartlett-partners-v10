@@ -2,12 +2,18 @@
  * PropertyCard Component
  * Reusable property card used in Featured Properties (home) and Properties page
  * Maintains consistent layout, styling, and interactions across the site
+ *
+ * Features:
+ * - CSS-based magnetic effect on View button
+ * - Smooth hover animations with OptimizedImage lazy loading
+ * - LQIP blur-up effect for premium feel
+ * - Optimized for stagger animations in grids
  */
 
+import { useRef, useState } from "react";
 import { Property } from "../types/property";
-import { motion } from "motion/react";
-import { ImageWithFallback } from "./ui/ImageWithFallback";
-import { Heart, Bed, Bath, Square, MapPin } from "lucide-react";
+import { OptimizedImage } from "./OptimizedImage";
+import { Heart, Bed, Bath } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { cn } from "./ui/utils";
@@ -18,12 +24,39 @@ import { getPropertyStatusStyles } from "../utils/propertyUtils";
 interface PropertyCardProps {
   property: Property;
   className?: string;
+  /** Index for stagger animations (set automatically by parent grid) */
+  index?: number;
 }
 
-export function PropertyCard({ property, className }: PropertyCardProps) {
+export function PropertyCard({ property, className, index = 0 }: PropertyCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const isPropertyFavorite = isFavorite(property.id);
   const navigate = useNavigate();
+
+  // Refs
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const viewButtonRef = useRef<HTMLDivElement>(null);
+
+  // Magnetic effect state for View button (CSS-based)
+  const [magnetOffset, setMagnetOffset] = useState({ x: 0, y: 0 });
+
+  const handleButtonMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!viewButtonRef.current) return;
+
+    const button = viewButtonRef.current;
+    const rect = button.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const deltaX = ((e.clientX - centerX) / rect.width) * 8;
+    const deltaY = ((e.clientY - centerY) / rect.height) * 8;
+
+    setMagnetOffset({ x: deltaX, y: deltaY });
+  };
+
+  const handleButtonMouseLeave = () => {
+    setMagnetOffset({ x: 0, y: 0 });
+  };
 
   // Get status badge styling
   const getStatusStyle = (status: string) => {
@@ -36,23 +69,27 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
 
   return (
     <PredictiveLink
+      ref={cardRef}
       to={`/properties/${property.slug}`}
       imageToPreload={property.image}
       onClick={() => trackEvent('select_content', 'Property Card', property.title)}
       className={cn(
-        "group flex flex-col bg-white cursor-pointer h-full overflow-hidden transition-all duration-300",
+        "property-card group flex flex-col bg-white cursor-pointer h-full overflow-hidden transition-all duration-300",
         "border border-[#1A2551] rounded-xl hover:shadow-xl hover:border-[#1A2551]/30",
         className
       )}
+      data-index={index}
     >
       {/* Image Container */}
       <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100">
-        {/* Image fills container */}
-        <ImageWithFallback
+        <OptimizedImage
           alt={property.title}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out lg:group-hover:scale-105"
+          className="transition-transform duration-700 ease-out group-hover:scale-105"
           src={property.image}
-          loading="lazy"
+          priority={index === 0}
+          enableLQIP={true}
+          aspectRatio="4/3"
+          fetchPriority={index < 3 ? 'high' : 'auto'}
         />
 
         {/* Dark overlay on hover - Desktop only */}
@@ -137,8 +174,17 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
             </div>
           </div>
 
-          {/* View Button */}
-          <div className="px-5 py-1.5 rounded-full border border-[#1A2551]/20 text-[#1A2551] text-[10px] font-bold uppercase tracking-widest hover:bg-[#1A2551] hover:text-white transition-all duration-300">
+          {/* View Button - with magnetic effect */}
+          <div
+            ref={viewButtonRef}
+            onMouseMove={handleButtonMouseMove}
+            onMouseLeave={handleButtonMouseLeave}
+            style={{
+              transform: `translate(${magnetOffset.x}px, ${magnetOffset.y}px)`,
+              transition: magnetOffset.x === 0 ? 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'transform 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+            }}
+            className="px-5 py-1.5 rounded-full border border-[#1A2551]/20 text-[#1A2551] text-[10px] font-bold uppercase tracking-widest hover:bg-[#1A2551] hover:text-white transition-colors duration-300"
+          >
             View
           </div>
         </div>

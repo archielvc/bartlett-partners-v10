@@ -1,5 +1,5 @@
 import { BookEvaluationDialog } from "../BookEvaluationDialog";
-import { ImageWithFallback } from "../ui/ImageWithFallback";
+import { OptimizedImage } from "../OptimizedImage";
 
 export function HomeCTA() {
   return (
@@ -23,10 +23,11 @@ export function HomeCTA() {
       </div>
 
       <div className="w-full max-w-[1600px] mx-auto h-[500px] lg:h-[700px] relative rounded-none overflow-hidden group">
-        <ImageWithFallback
+        <OptimizedImage
           src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=80"
           alt="Luxury Interior"
-          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+          className="transition-transform duration-1000 group-hover:scale-105"
+          enableLQIP={true}
         />
         <div className="absolute bottom-8 right-8 bg-white/20 backdrop-blur-md px-6 py-3 text-white text-sm font-medium tracking-wider uppercase border border-white/30">
           Interior Design Showcase

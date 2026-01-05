@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -8,9 +8,16 @@ interface OptimizedImageProps {
   height?: number;
   priority?: boolean;
   fetchPriority?: 'high' | 'low' | 'auto';
+  /** Enable LQIP blur-up effect */
+  enableLQIP?: boolean;
+  /** Aspect ratio for placeholder (e.g., "4/3", "16/9") */
+  aspectRatio?: string;
 }
 
-export function getOptimizedUrl(url: string, width: number, quality: number = 80, format: 'webp' | 'jpeg' = 'webp'): string {
+/**
+ * Generate optimized URL for different image providers
+ */
+export function getOptimizedUrl(url: string, width: number, quality: number = 75, format: 'webp' | 'jpeg' = 'webp'): string {
   if (!url) return '';
 
   // Handle Supabase Storage URLs
@@ -24,12 +31,51 @@ export function getOptimizedUrl(url: string, width: number, quality: number = 80
   // Handle Unsplash URLs (existing logic)
   if (url.includes('unsplash')) {
     const baseUrl = url.split('?')[0];
-    return `${baseUrl}?w=${width}&q=${quality}&fm=${format}`;
+    return `${baseUrl}?w=${width}&q=${quality}&fm=${format}&fit=crop&auto=format`;
   }
 
   return url;
 }
 
+/**
+ * Generate LQIP (Low Quality Image Placeholder) URL
+ * Returns a tiny, heavily compressed version for blur-up effect
+ */
+function getLQIPUrl(url: string): string | undefined {
+  if (!url) return undefined;
+
+  // Unsplash: Use tiny width with blur
+  if (url.includes('unsplash')) {
+    const baseUrl = url.split('?')[0];
+    return `${baseUrl}?w=20&q=20&blur=10&fm=webp`;
+  }
+
+  // Supabase: No transformation available on free tier
+  // Return undefined to use CSS skeleton instead
+  if (url.includes('supabase.co')) {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+/**
+ * Check if URL supports LQIP generation
+ */
+function supportsLQIP(url: string): boolean {
+  return url.includes('unsplash');
+}
+
+/**
+ * OptimizedImage Component
+ *
+ * Features:
+ * - Lazy loading with IntersectionObserver
+ * - LQIP (Low Quality Image Placeholder) blur-up effect
+ * - Responsive srcset for optimal loading
+ * - Smooth fade transitions
+ * - Skeleton placeholder for non-LQIP images
+ */
 export function OptimizedImage({
   src,
   alt,
@@ -37,14 +83,29 @@ export function OptimizedImage({
   width,
   height,
   priority = false,
-  fetchPriority = 'auto'
+  fetchPriority = 'auto',
+  enableLQIP = true,
+  aspectRatio,
 }: OptimizedImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [loadState, setLoadState] = useState<'idle' | 'lqip' | 'loaded'>('idle');
   const [isInView, setIsInView] = useState(priority);
+  const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  // Memoize LQIP URL
+  const lqipUrl = useMemo(() => {
+    if (!enableLQIP || !src) return undefined;
+    return getLQIPUrl(src);
+  }, [src, enableLQIP]);
+
+  const hasLQIP = Boolean(lqipUrl);
+
+  // Intersection Observer for lazy loading
   useEffect(() => {
-    if (priority) return;
+    if (priority) {
+      setIsInView(true);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -53,40 +114,104 @@ export function OptimizedImage({
           observer.disconnect();
         }
       },
-      { rootMargin: '50px' }
+      { rootMargin: '100px' } // Start loading 100px before visible
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => observer.disconnect();
   }, [priority]);
 
+  // Load LQIP first, then full image
+  useEffect(() => {
+    if (!isInView || !src) return;
+
+    // If we have LQIP, load it first
+    if (hasLQIP && lqipUrl && loadState === 'idle') {
+      const lqipImg = new Image();
+      lqipImg.src = lqipUrl;
+      lqipImg.onload = () => setLoadState('lqip');
+    } else if (!hasLQIP && loadState === 'idle') {
+      // No LQIP, go directly to loading full image
+      setLoadState('lqip');
+    }
+  }, [isInView, src, hasLQIP, lqipUrl, loadState]);
+
   // Generate srcset for responsive images
   const generateSrcSet = (url: string) => {
-    if (!url || url.includes('unsplash')) {
-      // Unsplash supports dynamic sizing
+    if (!url) return undefined;
+
+    if (url.includes('unsplash')) {
       const baseUrl = url.split('?')[0];
-      return `${baseUrl}?w=400&q=75 400w, ${baseUrl}?w=800&q=80 800w, ${baseUrl}?w=1200&q=80 1200w, ${baseUrl}?w=1600&q=85 1600w`;
+      return `${baseUrl}?w=400&q=70&fm=webp&fit=crop&auto=format 400w, ${baseUrl}?w=800&q=75&fm=webp&fit=crop&auto=format 800w, ${baseUrl}?w=1200&q=75&fm=webp&fit=crop&auto=format 1200w, ${baseUrl}?w=1600&q=80&fm=webp&fit=crop&auto=format 1600w`;
     }
+
     return undefined;
   };
 
+  const handleFullImageLoad = () => {
+    setLoadState('loaded');
+  };
+
+  const isFullyLoaded = loadState === 'loaded';
+  const showLQIP = hasLQIP && loadState !== 'loaded' && isInView;
+
+  // Calculate aspect ratio style
+  const aspectStyle = aspectRatio ? { aspectRatio } : undefined;
+
   return (
-    <img
-      ref={imgRef}
-      src={isInView ? src : undefined}
-      srcSet={isInView ? generateSrcSet(src) : undefined}
-      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      alt={alt}
-      width={width || 800}
-      height={height || 600}
-      loading={priority ? 'eager' : 'lazy'}
-      fetchPriority={priority ? 'high' : fetchPriority}
-      decoding="async"
-      onLoad={() => setIsLoaded(true)}
-      className={`transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
-    />
+    <div
+      ref={containerRef}
+      className={`relative overflow-hidden ${className}`}
+      style={aspectStyle}
+    >
+      {/* Skeleton placeholder (shown when no LQIP or before LQIP loads) */}
+      {!isFullyLoaded && (
+        <div
+          className={`absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 transition-opacity duration-500 ${
+            loadState !== 'idle' ? 'opacity-0' : 'opacity-100'
+          }`}
+          aria-hidden="true"
+        >
+          {/* Animated shimmer effect */}
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+        </div>
+      )}
+
+      {/* LQIP blur placeholder */}
+      {showLQIP && lqipUrl && (
+        <img
+          src={lqipUrl}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover blur-lg scale-105 transition-opacity duration-500"
+          style={{ opacity: loadState === 'lqip' && !isFullyLoaded ? 1 : 0 }}
+        />
+      )}
+
+      {/* Full resolution image */}
+      {isInView && (
+        <img
+          ref={imgRef}
+          src={src}
+          srcSet={generateSrcSet(src)}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          alt={alt}
+          width={width || 800}
+          height={height || 600}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : fetchPriority}
+          decoding="async"
+          onLoad={handleFullImageLoad}
+          className={`w-full h-full object-cover transition-all duration-700 ease-out ${
+            isFullyLoaded
+              ? 'opacity-100 blur-0 scale-100'
+              : 'opacity-0 blur-sm scale-[1.02]'
+          }`}
+        />
+      )}
+    </div>
   );
 }

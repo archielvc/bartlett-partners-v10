@@ -1,5 +1,5 @@
 // Analytics Configuration for Google Analytics 4, Microsoft Clarity, and PostHog
-import posthog from 'posthog-js';
+// PostHog is lazy-loaded to reduce initial bundle size (162KB saved)
 
 // ============================================
 // CONFIGURATION - Replace with your IDs
@@ -9,6 +9,11 @@ export const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // Replace with your GA4 Measur
 export const CLARITY_PROJECT_ID = 'xxxxxxxxxx'; // Replace with your Clarity Project ID
 export const POSTHOG_API_KEY = 'phc_jd9q0sygkrnsvnrcUl6WV5erGkWBigAW3DsxUQM0gP7'; // Your PostHog Project API Key
 export const POSTHOG_HOST = 'https://eu.i.posthog.com'; // EU region (as per your PostHog account)
+
+// Lazy-loaded PostHog instance
+let posthog: typeof import('posthog-js').default | null = null;
+let isPostHogInitialized = false;
+let postHogLoadPromise: Promise<void> | null = null;
 
 // ============================================
 // GOOGLE ANALYTICS 4
@@ -219,60 +224,101 @@ export const clarityEvent = (eventName: string): void => {
   }
 };
 // ============================================
-// POSTHOG (using official posthog-js package)
+// POSTHOG (lazy-loaded for performance)
 // ============================================
 
 // Check if PostHog is initialized
 export const isPostHogLoaded = (): boolean => {
-  return posthog.__loaded === true;
+  return isPostHogInitialized && posthog !== null;
 };
 
-// Initialize PostHog
-export const initPostHog = (): void => {
+// Load PostHog library dynamically
+const loadPostHog = async (): Promise<void> => {
+  if (posthog) return;
+
+  if (postHogLoadPromise) {
+    return postHogLoadPromise;
+  }
+
+  postHogLoadPromise = (async () => {
+    const { default: PostHog } = await import('posthog-js');
+    posthog = PostHog;
+  })();
+
+  return postHogLoadPromise;
+};
+
+// Initialize PostHog (lazy loads the library first)
+export const initPostHog = async (): Promise<void> => {
   if (typeof window === 'undefined') return;
   if (!POSTHOG_API_KEY) return;
-  if (posthog.__loaded) return; // Already initialized
+  if (isPostHogInitialized) return;
 
-  posthog.init(POSTHOG_API_KEY, {
-    api_host: POSTHOG_HOST,
-    person_profiles: 'identified_only',
-    capture_pageview: true,
-    capture_pageleave: true,
-    autocapture: true,
-    opt_out_capturing_by_default: false, // Start opted-in since we only call this after consent
-    loaded: () => {
-      console.log('✅ PostHog initialized and ready for tracking');
-    }
-  });
+  try {
+    await loadPostHog();
+
+    if (!posthog) return;
+
+    posthog.init(POSTHOG_API_KEY, {
+      api_host: POSTHOG_HOST,
+      person_profiles: 'identified_only',
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: true,
+      opt_out_capturing_by_default: false,
+      loaded: () => {
+        console.log('✅ PostHog lazy-loaded and initialized');
+        isPostHogInitialized = true;
+      }
+    });
+  } catch (error) {
+    console.error('Failed to load PostHog:', error);
+  }
 };
 
-// Capture custom event
-export const posthogCapture = (event: string, properties?: Record<string, any>): void => {
-  if (!isPostHogLoaded()) return;
-  posthog.capture(event, properties);
+// Capture custom event (auto-initializes if needed)
+export const posthogCapture = async (event: string, properties?: Record<string, any>): Promise<void> => {
+  if (!isPostHogLoaded()) {
+    await initPostHog();
+  }
+  if (posthog && isPostHogInitialized) {
+    posthog.capture(event, properties);
+  }
 };
 
 // Identify user
-export const posthogIdentify = (userId: string, properties?: Record<string, any>): void => {
-  if (!isPostHogLoaded()) return;
-  posthog.identify(userId, properties);
+export const posthogIdentify = async (userId: string, properties?: Record<string, any>): Promise<void> => {
+  if (!isPostHogLoaded()) {
+    await initPostHog();
+  }
+  if (posthog && isPostHogInitialized) {
+    posthog.identify(userId, properties);
+  }
 };
 
 // Opt in/out (for consent management)
-export const posthogOptIn = (): void => {
-  if (!isPostHogLoaded()) return;
-  posthog.opt_in_capturing();
+export const posthogOptIn = async (): Promise<void> => {
+  if (!isPostHogLoaded()) {
+    await initPostHog();
+  }
+  if (posthog && isPostHogInitialized) {
+    posthog.opt_in_capturing();
+  }
 };
 
-export const posthogOptOut = (): void => {
-  if (!isPostHogLoaded()) return;
-  posthog.opt_out_capturing();
+export const posthogOptOut = async (): Promise<void> => {
+  if (!isPostHogLoaded()) return; // Don't load just to opt out
+  if (posthog) {
+    posthog.opt_out_capturing();
+  }
 };
 
 // Reset user (on logout)
 export const posthogReset = (): void => {
   if (!isPostHogLoaded()) return;
-  posthog.reset();
+  if (posthog) {
+    posthog.reset();
+  }
 };
 
 // ============================================

@@ -32,7 +32,7 @@ import { useScrollDepth } from '../hooks/useScrollDepth';
 // Database imports
 import {
     getPropertyBySlug,
-    getPublishedProperties,
+    getRelatedProperties,
     getPublishedTestimonials
 } from "../utils/database";
 
@@ -183,13 +183,12 @@ export default function PropertyDetail() {
                         beds: propData.beds || 0
                     }));
 
-                    const [allProps, allTestimonials] = await Promise.all([
-                        getPublishedProperties(),
+                    const [relatedProps, allTestimonials] = await Promise.all([
+                        getRelatedProperties(propData.id, 3),
                         getPublishedTestimonials()
                     ]);
 
-                    const related = allProps.filter(p => p.id !== propData.id).slice(0, 3);
-                    setRelatedProperties(related);
+                    setRelatedProperties(relatedProps);
                     setTestimonials(allTestimonials);
                 }
             } catch (error) {

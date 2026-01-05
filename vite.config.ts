@@ -30,12 +30,20 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2,
+      },
+      mangle: {
+        safari10: true,
       },
     },
     rollupOptions: {
       output: {
         manualChunks: {
+          // Core React - always loaded
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+
+          // UI components - loaded with main app
           'vendor-radix': [
             '@radix-ui/react-dialog',
             '@radix-ui/react-dropdown-menu',
@@ -44,14 +52,33 @@ export default defineConfig({
             '@radix-ui/react-popover',
             '@radix-ui/react-select',
           ],
-          'vendor-motion': ['motion', 'gsap'],
+
+          // Animation library - Motion for performant animations
+          'vendor-motion': ['motion'],
+
+          // Database client
           'vendor-supabase': ['@supabase/supabase-js'],
+
+          // PostHog analytics is lazy loaded via dynamic import
+          // No need for vendor chunk - Vite automatically splits it
+
+          // Charts (only needed on admin/insights pages)
+          'vendor-charts': ['recharts'],
         },
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
       },
+      treeshake: {
+        moduleSideEffects: 'no-external',
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
+      },
     },
+    // Chunk size warnings
+    chunkSizeWarningLimit: 500,
+    // Source maps in production for debugging
+    sourcemap: false,
   },
   server: {
     port: 3000,

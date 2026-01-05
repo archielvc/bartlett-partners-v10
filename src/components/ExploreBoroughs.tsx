@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { ImageWithFallback } from "./ui/ImageWithFallback";
+import { OptimizedImage } from "./OptimizedImage";
 import { useSiteSettings } from "../contexts/SiteContext";
 
 export function ExploreBoroughs() {
@@ -29,10 +29,12 @@ export function ExploreBoroughs() {
             to="/twickenham"
             className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
           >
-            <ImageWithFallback
+            <OptimizedImage
               src={images.locations.l_twickenham}
               alt="Luxury Homes in Twickenham"
-              className="w-full h-full object-cover transition-transform duration-700 lg:group-hover:scale-105 will-change-transform"
+              className="transition-transform duration-700 lg:group-hover:scale-105"
+              aspectRatio="4/3"
+              enableLQIP={true}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity lg:group-hover:opacity-90" />
 
@@ -57,10 +59,12 @@ export function ExploreBoroughs() {
             to="/teddington"
             className="group relative aspect-[4/3] cursor-pointer overflow-hidden rounded-md block"
           >
-            <ImageWithFallback
+            <OptimizedImage
               src={images.locations.l_teddington}
               alt="Luxury Homes in Teddington"
-              className="w-full h-full object-cover transition-transform duration-700 lg:group-hover:scale-105 will-change-transform"
+              className="transition-transform duration-700 lg:group-hover:scale-105"
+              aspectRatio="4/3"
+              enableLQIP={true}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity lg:group-hover:opacity-90" />
 

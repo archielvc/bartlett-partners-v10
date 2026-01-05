@@ -2,7 +2,7 @@ import { useState } from "react";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { Button } from "../ui/button";
 import { PhoneInput } from "../ui/phone-input";
-import { Pencil, Loader2, Check } from "lucide-react";
+import { Pencil, Check } from "lucide-react";
 import { Property } from "../../types/property";
 import { PropertyMultiSelector } from "./PropertyMultiSelector";
 import { submitContactForm } from "../../utils/database";
@@ -51,7 +51,6 @@ export function UnifiedContactForm({
     const [intent, setIntent] = useState<ContactIntent>(defaultIntent);
     const [internalSelectedProperties, setInternalSelectedProperties] = useState<Property[]>(defaultProperties);
     const [internalShowPropertySelector, setInternalShowPropertySelector] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [phone, setPhone] = useState<string | undefined>("");
 
@@ -106,27 +105,33 @@ export function UnifiedContactForm({
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
         // Basic validation for phone
         if (!phone) {
             toast.error("Please enter a phone number");
-            setIsSubmitting(false);
             return;
         }
 
         if (!isValidPhoneNumber(phone)) {
             toast.error("Please enter a valid phone number");
-            setIsSubmitting(false);
             return;
         }
 
-
-        const formData = new FormData(e.currentTarget);
+        const formElement = e.currentTarget;
+        const formData = new FormData(formElement);
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
-        // Phone is handled via state
         const message = formData.get('message') as string;
+
+        // Capture form state for potential rollback
+        const formSnapshot = {
+            name,
+            email,
+            phone,
+            message,
+            intent,
+            selectedProperties: [...selectedProperties],
+        };
 
         // Determine inquiry type for database
         let inquiryType: 'general' | 'property' | 'valuation' = 'general';
@@ -141,6 +146,19 @@ export function UnifiedContactForm({
         }
         const fullMessage = `${contextParts.join('\n')}\n\n${message || ''}`.trim();
 
+        // OPTIMISTIC UI: Show success immediately
+        setIsSubmitted(true);
+        onSubmitted?.();
+
+        // Reset form state
+        formElement.reset();
+        if (!hideIntentSelector) {
+            setIntent('other');
+        }
+        setSelectedProperties(defaultProperties);
+        setPhone("");
+
+        // Submit in background
         try {
             await submitContactForm({
                 name,
@@ -151,36 +169,41 @@ export function UnifiedContactForm({
                 inquiry_type: inquiryType
             });
 
-            // Track analytics
+            // Track analytics (non-blocking)
             if (intent === 'sell') {
                 trackValuationRequest();
-            } else if (selectedProperties.length > 0) {
-                const p = selectedProperties[0];
+            } else if (formSnapshot.selectedProperties.length > 0) {
+                const p = formSnapshot.selectedProperties[0];
                 const priceVal = typeof p.price === 'number' ? p.price : (parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0);
                 trackPropertyEnquiry(String(p.id), p.title, priceVal);
             } else {
                 trackContactFormSubmit(inquiryType);
             }
 
-            // Show internal success state instead of toast
-            setIsSubmitted(true);
-            onSubmitted?.();
-
-            // Reset form
-            (e.target as HTMLFormElement).reset();
-            if (!hideIntentSelector) {
-                setIntent('other');
-            }
-            setSelectedProperties(defaultProperties);
-            setPhone("");
-
         } catch (error) {
             console.error(error);
+
+            // ROLLBACK: Restore form state on error
+            setIsSubmitted(false);
+            setIntent(formSnapshot.intent);
+            setSelectedProperties(formSnapshot.selectedProperties);
+            setPhone(formSnapshot.phone);
+
+            // Show error toast
             toast.error("Failed to send message.", {
                 description: "Please try again or call us directly."
             });
-        } finally {
-            setIsSubmitting(false);
+
+            // Restore form field values
+            setTimeout(() => {
+                const nameInput = formElement.querySelector('[name="name"]') as HTMLInputElement;
+                const emailInput = formElement.querySelector('[name="email"]') as HTMLInputElement;
+                const messageInput = formElement.querySelector('[name="message"]') as HTMLTextAreaElement;
+
+                if (nameInput) nameInput.value = formSnapshot.name;
+                if (emailInput) emailInput.value = formSnapshot.email;
+                if (messageInput) messageInput.value = formSnapshot.message;
+            }, 100);
         }
     };
 
@@ -358,11 +381,10 @@ export function UnifiedContactForm({
                 {/* Submit Button */}
                 <Button
                     type="submit"
-                    disabled={isSubmitting}
                     className="w-full shadow-lg shadow-[#1A2551]/20"
                     premium
                 >
-                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Enquiry"}
+                    Send Enquiry
                 </Button>
             </form>
         </div>

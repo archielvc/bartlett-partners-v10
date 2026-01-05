@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Figtree:wght@300;400;500;600&display=swap');
+/* Fonts are loaded via index.html link tag for better performance */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -311,6 +311,16 @@ a {
 
 .logo-shimmer {
   animation: logoShimmer 3s ease-in-out 1.5s 1;
+}
+
+/* Shimmer animation for loading skeletons */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Card scroll animations */

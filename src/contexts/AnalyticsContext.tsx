@@ -36,9 +36,26 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       initClarity();
     }
 
-    // PostHog (analytics, heatmaps, session recordings)
+    // PostHog - delay initialization to improve initial page load
+    // Load after 2 seconds or on first user interaction
     if (POSTHOG_API_KEY && POSTHOG_API_KEY !== '') {
-      initPostHog();
+      const timer = setTimeout(() => {
+        initPostHog();
+      }, 2000);
+
+      const handleInteraction = () => {
+        clearTimeout(timer);
+        initPostHog();
+      };
+
+      window.addEventListener('click', handleInteraction, { once: true });
+      window.addEventListener('scroll', handleInteraction, { once: true });
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('click', handleInteraction);
+        window.removeEventListener('scroll', handleInteraction);
+      };
     }
   }, [isEnabled]);
 

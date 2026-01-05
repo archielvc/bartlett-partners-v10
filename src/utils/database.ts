@@ -67,6 +67,76 @@ function setPersistentCache<T>(key: string, data: T): void {
 // In-memory cache for ultra-fast access during session
 const memoryCache = new Map<string, any>();
 
+// =====================================================
+// REQUEST DEDUPLICATION
+// =====================================================
+// Prevents duplicate simultaneous queries for the same data
+
+const inflightRequests = new Map<string, Promise<any>>();
+
+/**
+ * Wraps a fetch function to prevent duplicate simultaneous requests.
+ * If a request for the same key is already in-flight, returns the existing promise.
+ */
+async function withDeduplication<T>(
+  key: string,
+  fetcher: () => Promise<T>
+): Promise<T> {
+  // If there's already an in-flight request for this key, return it
+  if (inflightRequests.has(key)) {
+    console.log(`🔄 Dedup: Reusing in-flight request for ${key}`);
+    return inflightRequests.get(key)! as Promise<T>;
+  }
+
+  // Create the promise and store it
+  const promise = fetcher().finally(() => {
+    // Clean up after request completes (success or failure)
+    inflightRequests.delete(key);
+  });
+
+  inflightRequests.set(key, promise);
+  return promise;
+}
+
+/**
+ * Stale-while-revalidate caching pattern.
+ * Returns cached data immediately if available, then revalidates in background.
+ */
+async function withStaleWhileRevalidate<T>(
+  cacheKey: string,
+  fetcher: () => Promise<T | null>,
+  shortTTL: number = 30000 // 30 seconds default
+): Promise<T | null> {
+  const cached = getStored<T>(cacheKey);
+
+  if (cached) {
+    // Return stale data immediately, revalidate in background
+    console.log(`⚡ SWR: Returning cached ${cacheKey}, revalidating in background`);
+
+    // Background revalidation (non-blocking)
+    setTimeout(async () => {
+      try {
+        const fresh = await fetcher();
+        if (fresh) {
+          setCache(cacheKey, fresh);
+          console.log(`🔄 SWR: Background revalidation complete for ${cacheKey}`);
+        }
+      } catch (e) {
+        console.warn(`SWR: Background revalidation failed for ${cacheKey}`, e);
+      }
+    }, 0);
+
+    return cached;
+  }
+
+  // No cache, fetch fresh data
+  const data = await fetcher();
+  if (data) {
+    setCache(cacheKey, data);
+  }
+  return data;
+}
+
 export function getStored<T>(key: string): T | null {
   // 1. Try memory
   if (memoryCache.has(key)) return memoryCache.get(key);
@@ -210,52 +280,102 @@ export async function getAllPropertiesAdmin(): Promise<Property[]> {
 export async function getPublishedProperties(): Promise<UIProperty[]> {
   const cacheKey = 'properties_published_raw_v2';
 
-  // 1. Get Raw Data (Cached)
-  let properties: Property[] = getStored<Property[]>(cacheKey) || [];
+  // Use request deduplication to prevent duplicate simultaneous fetches
+  return withDeduplication(cacheKey, async () => {
+    // 1. Get Raw Data (Cached)
+    let properties: Property[] = getStored<Property[]>(cacheKey) || [];
 
-  if (properties.length === 0) {
-    console.log('🔍 Fetching published properties from database...');
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .in('status', ['available', 'under_offer', 'sold', 'sale-agreed', 'under-offer'])
-      .order('created_at', { ascending: false });
+    if (properties.length === 0) {
+      console.log('🔍 Fetching published properties from database...');
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .in('status', ['available', 'under_offer', 'sold', 'sale-agreed', 'under-offer'])
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('❌ Error fetching published properties:', error);
-      return [];
+      if (error) {
+        console.error('❌ Error fetching published properties:', error);
+        return [];
+      }
+
+      properties = data || [];
+
+      if (properties.length > 0) {
+        setCache(cacheKey, properties);
+        console.log('💾 Cached', properties.length, 'raw published properties');
+      }
+    } else {
+      console.log('✅ Used cached raw properties:', properties.length);
     }
 
-    properties = data || [];
+    // 2. Get Sort Order (Fresh)
+    const orderIds = await get<number[]>('property_sort_order') || [];
 
-    if (properties.length > 0) {
-      setCache(cacheKey, properties);
-      console.log('💾 Cached', properties.length, 'raw published properties');
-    }
-  } else {
-    console.log('✅ Used cached raw properties:', properties.length);
-  }
-
-  // 2. Get Sort Order (Fresh)
-  const orderIds = await get<number[]>('property_sort_order') || [];
-
-  // 3. Apply Sort & Transform
-  const sortedProperties = sortProperties(properties, orderIds);
-  return sortedProperties.map(transformPropertyToUI);
+    // 3. Apply Sort & Transform
+    const sortedProperties = sortProperties(properties, orderIds);
+    return sortedProperties.map(transformPropertyToUI);
+  });
 }
 
 export async function getPropertyBySlug(slug: string): Promise<PropertyWithDetails | null> {
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .eq('slug', slug)
-    .maybeSingle();
+  const cacheKey = `property_slug_${slug}`;
 
-  if (error) {
-    console.error('Error fetching property:', error);
-    return null;
+  // Use request deduplication + stale-while-revalidate for fast repeat visits
+  return withDeduplication(cacheKey, () =>
+    withStaleWhileRevalidate<PropertyWithDetails>(
+      cacheKey,
+      async () => {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('slug', slug)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching property:', error);
+          return null;
+        }
+        return data;
+      },
+      30000 // 30 second TTL for property details
+    )
+  );
+}
+
+export async function getRelatedProperties(
+  excludeId: number,
+  limit = 3
+): Promise<UIProperty[]> {
+  const cacheKey = `related_properties_${excludeId}_${limit}`;
+  const cached = getStored<UIProperty[]>(cacheKey);
+  if (cached) {
+    console.log(`✅ Cache hit: related properties for ID ${excludeId}`);
+    return cached;
   }
-  return data;
+
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .in('status', ['available', 'under_offer', 'under-offer', 'sale-agreed', 'sold'])
+      .neq('id', excludeId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching related properties:', error);
+      return [];
+    }
+
+    const result = (data || []).map(transformPropertyToUI);
+    if (result.length > 0) {
+      setCache(cacheKey, result);
+    }
+    return result;
+  } catch (error) {
+    console.error('Error fetching related properties:', error);
+    return [];
+  }
 }
 
 export async function getFeaturedProperty(): Promise<Property | null> {
@@ -304,12 +424,19 @@ export async function getFeaturedProperty(): Promise<Property | null> {
 }
 
 export async function getHomeFeaturedProperties(): Promise<UIProperty[]> {
+  const cacheKey = 'home_featured_properties_v1';
+  const cached = getStored<UIProperty[]>(cacheKey);
+  if (cached) {
+    console.log('✅ Cache hit: featured properties');
+    return cached;
+  }
+
   try {
-    // Always get IDs fresh
+    // Get IDs from settings
     const ids = await get<number[]>('home_featured_ids');
 
     if (ids && ids.length > 0) {
-      // We could check cache for each ID, but fetching 3 items is cheap
+      // Fetch the featured properties
       const { data } = await supabase
         .from('properties')
         .select('*')
@@ -321,13 +448,21 @@ export async function getHomeFeaturedProperties(): Promise<UIProperty[]> {
           return ids.indexOf(a.id) - ids.indexOf(b.id);
         });
 
-        return sortedData.map(transformPropertyToUI);
+        const result = sortedData.map(transformPropertyToUI);
+        if (result.length > 0) {
+          setCache(cacheKey, result);
+        }
+        return result;
       }
     }
 
     // Fallback
     const result = await getPublishedProperties();
-    return result.filter(p => p.status.toLowerCase() === 'available').slice(0, 3);
+    const fallback = result.filter(p => p.status.toLowerCase() === 'available').slice(0, 3);
+    if (fallback.length > 0) {
+      setCache(cacheKey, fallback);
+    }
+    return fallback;
 
   } catch (error) {
     console.error('Error fetching home featured properties:', error);
@@ -446,6 +581,13 @@ export async function getAllTestimonialsAdmin(): Promise<Testimonial[]> {
 }
 
 export async function getPublishedTestimonials(): Promise<Testimonial[]> {
+  const cacheKey = 'testimonials_published_v1';
+  const cached = getStored<Testimonial[]>(cacheKey);
+  if (cached) {
+    console.log('✅ Cache hit: testimonials');
+    return cached;
+  }
+
   const { data, error } = await supabase
     .from('testimonials')
     .select('*')
@@ -456,7 +598,12 @@ export async function getPublishedTestimonials(): Promise<Testimonial[]> {
     console.error('Error fetching testimonials:', error);
     return [];
   }
-  return data || [];
+
+  const result = data || [];
+  if (result.length > 0) {
+    setCache(cacheKey, result);
+  }
+  return result;
 }
 
 export async function createTestimonial(testimonial: Partial<Testimonial>): Promise<Testimonial | null> {

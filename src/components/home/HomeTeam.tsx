@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ImageWithFallback } from "../ui/ImageWithFallback";
+import { OptimizedImage } from "../OptimizedImage";
 import { Linkedin, Mail, Phone } from "lucide-react";
 import { useSiteSettings } from "../../contexts/SiteContext";
 import { trackPhoneClick, trackEmailClick } from "../../utils/analytics";
@@ -65,10 +65,12 @@ export function HomeTeam() {
             >
               {/* Card Image */}
               <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-6 shadow-sm">
-                <ImageWithFallback
+                <OptimizedImage
                   src={member.image || getDefaultImage(index)}
                   alt={member.name}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+                  className="transition-transform duration-700 ease-in-out group-hover:scale-105"
+                  aspectRatio="3/4"
+                  enableLQIP={true}
                 />
 
                 {/* Soft Overlay */}

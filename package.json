@@ -41,7 +41,6 @@
             "cmdk": "*",
             "date-fns": "*",
             "embla-carousel-react": "*",
-            "gsap": "^3.14.2",
             "hono": "*",
             "input-otp": "*",
             "lenis": "^1.3.16",

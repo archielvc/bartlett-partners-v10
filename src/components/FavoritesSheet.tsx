@@ -106,12 +106,13 @@ export function FavoritesSheet({ isOpen, onClose, onInquire }: FavoritesSheetPro
                   className="group relative bg-white border border-[#1A2551]/10 rounded-xl overflow-hidden hover:shadow-lg hover:shadow-[#1A2551]/5 transition-all duration-300"
                 >
                   {/* Remove button - positioned absolutely over the card */}
+                  {/* Always visible on mobile, hover-reveal on desktop */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       removeFromFavorites(property.id);
                     }}
-                    className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full shadow-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#DC2626] hover:text-white text-[#1A2551]"
+                    className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full shadow-sm flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-[#DC2626] hover:text-white text-[#1A2551]"
                     aria-label="Remove from favorites"
                   >
                     <X className="w-4 h-4" />
