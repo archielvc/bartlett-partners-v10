@@ -94,9 +94,10 @@ export function PropertyCard({ property, className, index = 0, priority }: Prope
         {/* Status badge - top left */}
         <div className="absolute top-4 left-4 z-10">
           <span
-            className={`h-8 px-3 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center justify-center ${getStatusStyle(property.status)}`}
+            className={`h-8 px-3 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center justify-center ${getStatusStyle(property.status).className}`}
             style={{
               fontFamily: "'Figtree', sans-serif",
+              ...getStatusStyle(property.status).style,
             }}
           >
             {property.status === 'under_offer' || property.status === 'under-offer' ? 'Sale Agreed' : property.status.replace(/_/g, ' ')}

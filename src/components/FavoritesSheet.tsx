@@ -128,11 +128,12 @@ export function FavoritesSheet({ isOpen, onClose, onInquire }: FavoritesSheetPro
                       {/* Status badge overlay */}
                       <div className="absolute top-4 left-4 z-10 pointer-events-none">
                         <span
-                          className={`px-3 py-1.5 rounded-md text-[10px] font-bold inline-block shadow-sm ${getPropertyStatusStyles(property.status)}`}
+                          className={`px-3 py-1.5 rounded-md text-[10px] font-bold inline-block shadow-sm ${getPropertyStatusStyles(property.status).className}`}
                           style={{
                             fontFamily: "'Figtree', sans-serif",
                             textTransform: "uppercase",
-                            letterSpacing: "0.1em"
+                            letterSpacing: "0.1em",
+                            ...getPropertyStatusStyles(property.status).style,
                           }}
                         >
                           {property.status.replace(/_/g, ' ')}

@@ -10,7 +10,6 @@ import { useSiteSettings } from "../../contexts/SiteContext";
 const MotionLink = motion.create(Link);
 
 export function HomeHero() {
-  const navigate = useNavigate();
   // MotionLink removed from here as it caused re-renders
 
 

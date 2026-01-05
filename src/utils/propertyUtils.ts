@@ -1,14 +1,15 @@
-export const getPropertyStatusStyles = (status: string) => {
+export const getPropertyStatusStyles = (status: string): { className: string; style: React.CSSProperties } => {
     const s = status.toLowerCase();
     switch (s) {
         case "available":
-            return "bg-[#6B6548] text-white";
+            // Darker gold (#5C572E) with white text meets WCAG AA (4.5:1 contrast)
+            return { className: "text-white", style: { backgroundColor: "#5C572E" } };
         case "sale agreed":
         case "under_offer":
-            return "bg-[#1A2551] text-white";
+            return { className: "text-white", style: { backgroundColor: "#1A2551" } };
         case "sold":
-            return "bg-[#1A2551] text-white";
+            return { className: "text-white", style: { backgroundColor: "#1A2551" } };
         default:
-            return "bg-[#1A2551] text-white";
+            return { className: "text-white", style: { backgroundColor: "#1A2551" } };
     }
 };
