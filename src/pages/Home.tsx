@@ -16,7 +16,7 @@ export function Home() {
   }, []);
 
   return (
-    <main className="w-full bg-white">
+    <main id="main-content" className="w-full bg-white">
       <HomeHero />
 
       <HomeFeaturedProperties />

@@ -89,25 +89,32 @@ export function CMSImageUpload({
 
     let fileToUpload = file;
 
-    // If file is larger than 10MB, try to compress it
-    if (file.size > 10 * 1024 * 1024) {
+    // Compress images larger than 2MB OR any image (to ensure resolution is within Supabase's 50MP limit)
+    // Supabase image transformations fail for images exceeding 50 megapixels
+    // High-end cameras (like Sony A7R V) produce 60MP+ images that need resizing
+    if (file.size > 2 * 1024 * 1024) {
       try {
-        const toastId = toast.loading(`Compressing ${file.name}...`);
+        const toastId = toast.loading(`Optimizing ${file.name}...`);
         fileToUpload = await compressImage(file, {
-          maxWidth: 2048,
-          quality: 0.8
+          maxWidth: 3840,  // 4K max width - good for hero images
+          maxHeight: 3840, // 4K max height
+          quality: 0.85    // Slightly higher quality for hero images
         });
         toast.dismiss(toastId);
 
-        // Check if it's still too big (unlikely with these settings)
+        // Check if it's still too big
         if (fileToUpload.size > 10 * 1024 * 1024) {
           const sizeMB = (fileToUpload.size / (1024 * 1024)).toFixed(2);
           toast.error(`Image is still too large (${sizeMB}MB) after compression.`);
           return;
         }
+
+        const originalMB = (file.size / (1024 * 1024)).toFixed(2);
+        const newMB = (fileToUpload.size / (1024 * 1024)).toFixed(2);
+        console.log(`Compressed ${file.name}: ${originalMB}MB → ${newMB}MB`);
       } catch (error) {
         console.error('Compression failed:', error);
-        toast.error(`Failed to compress large image. Error: ${error}`);
+        toast.error(`Failed to compress image. Error: ${error}`);
         return;
       }
     } else {

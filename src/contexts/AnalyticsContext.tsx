@@ -23,40 +23,47 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 
   const isEnabled = consent.analytics;
 
-  // Initialize analytics on consent
+  // Initialize analytics on consent - delayed to improve initial page load performance
   useEffect(() => {
     if (!isEnabled) return;
 
-    // Only initialize if IDs are configured
-    if (GA_MEASUREMENT_ID && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
-      initGA();
-    }
+    const timers: NodeJS.Timeout[] = [];
 
-    if (CLARITY_PROJECT_ID && CLARITY_PROJECT_ID !== 'xxxxxxxxxx') {
-      initClarity();
-    }
-
-    // PostHog - delay initialization to improve initial page load
+    // Delay all analytics initialization to avoid blocking initial render
     // Load after 2 seconds or on first user interaction
-    if (POSTHOG_API_KEY && POSTHOG_API_KEY !== '') {
-      const timer = setTimeout(() => {
+    const handleInteraction = () => {
+      timers.forEach(clearTimeout);
+      initAllAnalytics();
+    };
+
+    const initAllAnalytics = () => {
+      if (GA_MEASUREMENT_ID && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
+        initGA();
+      }
+      if (CLARITY_PROJECT_ID && CLARITY_PROJECT_ID !== 'xxxxxxxxxx') {
+        initClarity();
+      }
+      if (POSTHOG_API_KEY && POSTHOG_API_KEY !== '') {
         initPostHog();
-      }, 2000);
+      }
+      // Remove listeners after initialization
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('scroll', handleInteraction);
+    };
 
-      const handleInteraction = () => {
-        clearTimeout(timer);
-        initPostHog();
-      };
+    // Set timer for delayed initialization
+    const timer = setTimeout(initAllAnalytics, 2000);
+    timers.push(timer);
 
-      window.addEventListener('click', handleInteraction, { once: true });
-      window.addEventListener('scroll', handleInteraction, { once: true });
+    // Initialize on first user interaction (whichever comes first)
+    window.addEventListener('click', handleInteraction, { once: true });
+    window.addEventListener('scroll', handleInteraction, { once: true });
 
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener('click', handleInteraction);
-        window.removeEventListener('scroll', handleInteraction);
-      };
-    }
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('scroll', handleInteraction);
+    };
   }, [isEnabled]);
 
   // Track page views on route change

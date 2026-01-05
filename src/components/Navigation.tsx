@@ -29,8 +29,9 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
   const { favorites } = useFavorites();
   const { images } = useSiteSettings();
 
-  const blueLogo = images.branding.brand_logo_dark;
-  const whiteLogo = images.branding.brand_logo_white;
+  // Use CMS logos if available, otherwise fallback to local logos for instant loading
+  const blueLogo = images.branding.brand_logo_dark || '/logo-dark.png';
+  const whiteLogo = images.branding.brand_logo_white || '/logo-white.png';
 
   // Detect current page from URL
   const getCurrentPage = () => {

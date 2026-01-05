@@ -10,7 +10,8 @@ import { submitContactForm } from "../utils/database";
 export function Footer() {
   const navigate = useNavigate();
   const { images } = useSiteSettings();
-  const whiteLogo = images.branding.brand_logo_white;
+  // Use CMS logo if available, otherwise fallback to local logo for instant loading
+  const whiteLogo = images.branding.brand_logo_white || '/logo-white.png';
 
   const handleNavClick = (path: string) => {
     trackNavigation(path);
@@ -78,7 +79,7 @@ export function Footer() {
                 <h3 className="text-lg font-medium mb-6 md:mb-8" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Newsletter
                 </h3>
-                <p className="text-white/60 text-sm mb-6 font-light leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
+                <p className="text-white/80 text-sm mb-6 font-light leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
                   Get first-look access to new listings and off-market opportunities - often 2-3 days before they hit the portals.
                 </p>
                 {isSubmitted ? (
@@ -106,7 +107,7 @@ export function Footer() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
-                      className="w-full bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
+                      className="w-full bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/80 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
                       style={{ fontFamily: "'Figtree', sans-serif" }}
                     />
                     <input
@@ -115,7 +116,7 @@ export function Footer() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/60 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
+                      className="w-full bg-transparent border border-[#8E8567] text-white px-4 py-2 rounded-md placeholder:text-white/80 focus:outline-none focus:ring-1 focus:ring-[#8E8567] transition-all text-sm"
                       style={{ fontFamily: "'Figtree', sans-serif" }}
                     />
                     <button
@@ -136,27 +137,27 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
                   <li>
-                    <Link to="/" onClick={() => handleNavClick('/')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/" onClick={() => handleNavClick('/')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Home
                     </Link>
                   </li>
                   <li>
-                    <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Properties
                     </Link>
                   </li>
                   <li>
-                    <Link to="/about" onClick={() => handleNavClick('/about')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/about" onClick={() => handleNavClick('/about')} className="text-white/80 hover:text-white transition-colors text-sm">
                       About Us
                     </Link>
                   </li>
                   <li>
-                    <Link to="/insights" onClick={() => handleNavClick('/insights')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/insights" onClick={() => handleNavClick('/insights')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Insights
                     </Link>
                   </li>
                   <li>
-                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Contact
                     </Link>
                   </li>
@@ -170,25 +171,25 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
                   <li>
-                    <Link to="/twickenham" onClick={() => handleNavClick('/twickenham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/twickenham" onClick={() => handleNavClick('/twickenham')} className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Twickenham
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
                   </li>
                   <li>
-                    <Link to="/teddington" onClick={() => handleNavClick('/teddington')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/teddington" onClick={() => handleNavClick('/teddington')} className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Teddington
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
                   </li>
                   <li>
-                    <Link to="/kew" onClick={() => handleNavClick('/kew')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/kew" onClick={() => handleNavClick('/kew')} className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Kew
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
                   </li>
                   <li>
-                    <Link to="/ham" onClick={() => handleNavClick('/ham')} className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group">
+                    <Link to="/ham" onClick={() => handleNavClick('/ham')} className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group">
                       Ham
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
@@ -203,22 +204,22 @@ export function Footer() {
                 </h3>
                 <ul className="space-y-3 md:space-y-4">
                   <li>
-                    <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/properties" onClick={() => handleNavClick('/properties')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Buying
                     </Link>
                   </li>
                   <li>
-                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Selling
                     </Link>
                   </li>
                   <li>
-                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Both
                     </Link>
                   </li>
                   <li>
-                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/60 hover:text-white transition-colors text-sm">
+                    <Link to="/contact" onClick={() => handleNavClick('/contact')} className="text-white/80 hover:text-white transition-colors text-sm">
                       Other
                     </Link>
                   </li>
@@ -236,7 +237,7 @@ export function Footer() {
                       href="https://www.instagram.com/bartlettandpartners"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group"
+                      className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group"
                       onClick={() => trackEvent('click', 'Social', 'Instagram')}
                     >
                       Instagram
@@ -248,7 +249,7 @@ export function Footer() {
                       href="https://www.facebook.com/bartlettandpartners"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group"
+                      className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group"
                       onClick={() => trackEvent('click', 'Social', 'Facebook')}
                     >
                       Facebook
@@ -260,7 +261,7 @@ export function Footer() {
                       href="https://www.linkedin.com/company/bartlettandpartners/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group"
+                      className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group"
                       onClick={() => trackEvent('click', 'Social', 'LinkedIn')}
                     >
                       LinkedIn
@@ -281,7 +282,7 @@ export function Footer() {
                       href="https://www.rightmove.co.uk/property-for-sale/find/Bartlett-and-Partners---Luxury-Real-Estate-Consultancy/Covering-Richmond-upon-Thames.html?locationIdentifier=BRANCH%5E239564&includeSSTC=true&_includeSSTC=on"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group"
+                      className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group"
                       onClick={() => trackEvent('click', 'Find Us', 'Rightmove')}
                     >
                       Rightmove
@@ -293,7 +294,7 @@ export function Footer() {
                       href="https://www.zoopla.co.uk/find-agents/branch/bartlett-and-partners-richmond-126269/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group"
+                      className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group"
                       onClick={() => trackEvent('click', 'Find Us', 'Zoopla')}
                     >
                       Zoopla
@@ -305,7 +306,7 @@ export function Footer() {
                       href="https://www.primelocation.com/find-agents/branch/bartlett-and-partners-richmond-126269/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/60 hover:text-white transition-colors text-sm flex items-center gap-2 group"
+                      className="text-white/80 hover:text-white transition-colors text-sm flex items-center gap-2 group"
                       onClick={() => trackEvent('click', 'Find Us', 'Prime Location')}
                     >
                       Prime Location
@@ -327,15 +328,15 @@ export function Footer() {
 
             {/* Left: Copyright */}
             <div>
-              <p className="text-xs text-white/40 font-light" style={{ fontFamily: "'Figtree', sans-serif" }}>
+              <p className="text-xs text-white/70 font-light" style={{ fontFamily: "'Figtree', sans-serif" }}>
                 © 2025 Bartlett & Partners. All rights reserved.
               </p>
             </div>
 
             {/* Right: Legal Links */}
             <div className="flex gap-8">
-              <Link to="/privacy-policy" onClick={() => handleNavClick('/privacy-policy')} className="text-xs text-white/40 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Privacy Policy</Link>
-              <Link to="/cookie-policy" onClick={() => handleNavClick('/cookie-policy')} className="text-xs text-white/40 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Cookie Policy</Link>
+              <Link to="/privacy-policy" onClick={() => handleNavClick('/privacy-policy')} className="text-xs text-white/70 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Privacy Policy</Link>
+              <Link to="/cookie-policy" onClick={() => handleNavClick('/cookie-policy')} className="text-xs text-white/70 hover:text-white transition-colors" style={{ fontFamily: "'Figtree', sans-serif" }}>Cookie Policy</Link>
             </div>
 
           </div>

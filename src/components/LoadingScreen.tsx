@@ -7,8 +7,9 @@ export function LoadingScreen() {
   const [isVisible, setIsVisible] = useState(true);
   const [shouldRender, setShouldRender] = useState(true);
   const { images } = useSiteSettings();
-  // Use specific load logo if available, otherwise fallback to white logo
-  const stagImage = (images.branding as any).brand_logo_load || images.branding.brand_logo_white;
+  // Use CMS logo if available, otherwise fallback to local logo for instant loading
+  const LOCAL_LOAD_LOGO = '/logo-load.png';
+  const stagImage = (images.branding as any).brand_logo_load || images.branding.brand_logo_white || LOCAL_LOAD_LOGO;
 
   useEffect(() => {
     // Check if user has visited before in this session

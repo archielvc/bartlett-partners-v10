@@ -14,7 +14,6 @@ import { useRef, useState } from "react";
 import { Property } from "../types/property";
 import { OptimizedImage } from "./OptimizedImage";
 import { Heart, Bed, Bath } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { cn } from "./ui/utils";
 import { PredictiveLink } from "./features/PredictiveLink";
@@ -33,7 +32,6 @@ interface PropertyCardProps {
 export function PropertyCard({ property, className, index = 0, priority }: PropertyCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const isPropertyFavorite = isFavorite(property.id);
-  const navigate = useNavigate();
 
   // Refs
   const cardRef = useRef<HTMLAnchorElement>(null);
@@ -63,10 +61,6 @@ export function PropertyCard({ property, className, index = 0, priority }: Prope
   // Get status badge styling
   const getStatusStyle = (status: string) => {
     return getPropertyStatusStyles(status);
-  };
-
-  const handleCardClick = () => {
-    navigate(`/properties/${property.slug}`);
   };
 
   return (

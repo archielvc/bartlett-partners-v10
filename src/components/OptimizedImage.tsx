@@ -16,16 +16,19 @@ interface OptimizedImageProps {
 
 /**
  * Generate optimized URL for different image providers
+ * Supports Supabase Storage (Pro plan) and Unsplash image transformations
  */
 export function getOptimizedUrl(url: string, width: number, quality: number = 75, format: 'webp' | 'jpeg' = 'webp'): string {
   if (!url) return '';
 
-  // Handle Supabase Storage URLs
-  // Note: Image Transformation (/render/image/) requires Supabase Pro plan
-  // On free tier, return original URL to avoid broken images
+  // Handle Supabase Storage URLs - Use render/image endpoint for on-the-fly transformations
+  // Available on Pro plan and above: https://supabase.com/docs/guides/storage/serving/image-transformations
   if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
-    // Return original URL - images are already optimized on upload
-    return url;
+    // Transform: /object/public/ -> /render/image/public/
+    const transformedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+    // Supabase auto-serves WebP when browser supports it, no format param needed
+    // resize=contain scales image to fit width while maintaining aspect ratio (no cropping)
+    return `${transformedUrl}?width=${width}&quality=${quality}&resize=contain`;
   }
 
   // Handle Unsplash URLs (existing logic)
@@ -50,20 +53,13 @@ function getLQIPUrl(url: string): string | undefined {
     return `${baseUrl}?w=20&q=20&blur=10&fm=webp`;
   }
 
-  // Supabase: No transformation available on free tier
-  // Return undefined to use CSS skeleton instead
-  if (url.includes('supabase.co')) {
-    return undefined;
+  // Supabase: Use render/image endpoint with tiny dimensions for LQIP
+  if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
+    const transformedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+    return `${transformedUrl}?width=20&quality=20&resize=contain`;
   }
 
   return undefined;
-}
-
-/**
- * Check if URL supports LQIP generation
- */
-function supportsLQIP(url: string): boolean {
-  return url.includes('unsplash');
 }
 
 /**
@@ -136,10 +132,26 @@ export function OptimizedImage({
     }
   }, [isInView, src, hasLQIP, lqipUrl, loadState]);
 
+  // Check for already-loaded images (from browser cache)
+  // This handles the case where onLoad fires before React attaches the handler
+  useEffect(() => {
+    if (isInView && imgRef.current?.complete && imgRef.current?.naturalHeight > 0 && loadState !== 'loaded') {
+      setLoadState('loaded');
+    }
+  }, [isInView, src, loadState]);
+
   // Generate srcset for responsive images
   const generateSrcSet = (url: string) => {
     if (!url) return undefined;
 
+    // Supabase Storage: Generate responsive srcset with render/image endpoint
+    // Using width-only to maintain aspect ratio (no cropping)
+    if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
+      const transformedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+      return `${transformedUrl}?width=400&quality=70&resize=contain 400w, ${transformedUrl}?width=800&quality=75&resize=contain 800w, ${transformedUrl}?width=1200&quality=75&resize=contain 1200w, ${transformedUrl}?width=1600&quality=80&resize=contain 1600w`;
+    }
+
+    // Unsplash
     if (url.includes('unsplash')) {
       const baseUrl = url.split('?')[0];
       return `${baseUrl}?w=400&q=70&fm=webp&fit=crop&auto=format 400w, ${baseUrl}?w=800&q=75&fm=webp&fit=crop&auto=format 800w, ${baseUrl}?w=1200&q=75&fm=webp&fit=crop&auto=format 1200w, ${baseUrl}?w=1600&q=80&fm=webp&fit=crop&auto=format 1600w`;
@@ -191,7 +203,7 @@ export function OptimizedImage({
       {isInView && (
         <img
           ref={imgRef}
-          src={src}
+          src={getOptimizedUrl(src, width || 800, 75)}
           srcSet={generateSrcSet(src)}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           alt={alt}
@@ -201,6 +213,10 @@ export function OptimizedImage({
           fetchPriority={priority ? 'high' : fetchPriority}
           decoding="async"
           onLoad={handleFullImageLoad}
+          onError={() => {
+            // Log error for debugging - image transformation failed
+            console.error('Image failed to load:', src);
+          }}
           className={`w-full h-full object-cover transition-all duration-700 ease-out ${isFullyLoaded
             ? 'opacity-100 blur-0 scale-100'
             : 'opacity-0 blur-sm scale-[1.02]'
