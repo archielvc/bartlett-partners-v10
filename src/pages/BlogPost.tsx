@@ -174,8 +174,8 @@ export default function BlogPost() {
                 <TableOfContents content={post.content} contentRef={articleRef} />
               )}
 
-              {/* Main Content Column */}
-              <div className="max-w-[680px] w-full">
+              {/* Main Content Column - full width on mobile, max-width on desktop */}
+              <div className="w-full max-w-none xl:max-w-[680px]">
                 {/* TL;DR Summary Box */}
                 <ArticleSummary
                   excerpt={post.excerpt}

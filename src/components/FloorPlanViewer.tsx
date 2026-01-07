@@ -1,10 +1,29 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { ImageWithFallback } from './ui/ImageWithFallback';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface FloorPlanViewerProps {
   src: string;
   alt: string;
+}
+
+// Helper to get distance between two touch points
+function getTouchDistance(touches: TouchList): number {
+  if (touches.length < 2) return 0;
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Helper to get center point between two touches
+function getTouchCenter(touches: TouchList): { x: number; y: number } {
+  if (touches.length < 2) {
+    return { x: touches[0].clientX, y: touches[0].clientY };
+  }
+  return {
+    x: (touches[0].clientX + touches[1].clientX) / 2,
+    y: (touches[0].clientY + touches[1].clientY) / 2
+  };
 }
 
 export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
@@ -14,14 +33,24 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  // Touch-specific state
+  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
+  const [isPinching, setIsPinching] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const scaleRef = useRef(scale);
+  const positionRef = useRef(position);
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setScale(prev => Math.min(Math.max(1, prev + delta), 5));
-  };
+  // Keep refs in sync for use in native event handlers
+  useEffect(() => {
+    scaleRef.current = scale;
+  }, [scale]);
 
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  // Mouse handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStart({
@@ -43,22 +72,22 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
     setIsDragging(false);
   };
 
-  const zoomIn = () => {
+  const zoomIn = useCallback(() => {
     setScale(prev => Math.min(prev + 0.5, 5));
-  };
+  }, []);
 
-  const zoomOut = () => {
+  const zoomOut = useCallback(() => {
     setScale(prev => {
       const next = Math.max(prev - 0.5, 1);
       if (next === 1) setPosition({ x: 0, y: 0 });
       return next;
     });
-  };
+  }, []);
 
-  const resetZoom = () => {
+  const resetZoom = useCallback(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
-  };
+  }, []);
 
   useEffect(() => {
     const handleMouseUpWindow = () => setIsDragging(false);
@@ -69,11 +98,12 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
     };
   }, []);
 
-  // Use native event listener for wheel to support non-passive behavior
+  // Native event listeners for wheel and touch (to support non-passive)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    // Wheel zoom handler
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -81,11 +111,74 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
       setScale(prev => Math.min(Math.max(1, prev + delta), 5));
     };
 
+    // Touch start handler
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        // Pinch start
+        e.preventDefault();
+        setIsPinching(true);
+        setLastTouchDistance(getTouchDistance(e.touches));
+      } else if (e.touches.length === 1) {
+        // Pan start
+        setIsDragging(true);
+        setDragStart({
+          x: e.touches[0].clientX - positionRef.current.x,
+          y: e.touches[0].clientY - positionRef.current.y
+        });
+      }
+    };
+
+    // Touch move handler
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        // Pinch zoom
+        e.preventDefault();
+        const currentDistance = getTouchDistance(e.touches);
+
+        if (lastTouchDistance !== null) {
+          const delta = (currentDistance - lastTouchDistance) * 0.01;
+          setScale(prev => Math.min(Math.max(1, prev + delta), 5));
+        }
+        setLastTouchDistance(currentDistance);
+      } else if (e.touches.length === 1 && !isPinching) {
+        // Pan (only if not transitioning from pinch)
+        if (scaleRef.current > 1) {
+          e.preventDefault();
+          setPosition({
+            x: e.touches[0].clientX - dragStart.x,
+            y: e.touches[0].clientY - dragStart.y
+          });
+        }
+      }
+    };
+
+    // Touch end handler
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        setIsPinching(false);
+        setLastTouchDistance(null);
+      }
+      if (e.touches.length === 0) {
+        setIsDragging(false);
+        // Reset position if zoomed all the way out
+        if (scaleRef.current <= 1) {
+          setPosition({ x: 0, y: 0 });
+        }
+      }
+    };
+
     container.addEventListener('wheel', onWheel, { passive: false });
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd, { passive: false });
+
     return () => {
       container.removeEventListener('wheel', onWheel);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
     };
-  }, []);
+  }, [lastTouchDistance, isPinching, dragStart]);
 
   return (
     <div className="relative w-full h-full flex flex-col overflow-hidden bg-white">
@@ -159,16 +252,25 @@ export function FloorPlanViewer({ src, alt }: FloorPlanViewerProps) {
         </div>
       </div>
 
-      {/* Instructions */}
+      {/* Instructions - different for mobile vs desktop */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-white/90 px-4 py-2 rounded shadow-lg pointer-events-none border border-gray-100">
         <p
-          className="text-[#6B7280] text-center"
+          className="text-[#6B7280] text-center hidden md:block"
           style={{
             fontFamily: "'Figtree', sans-serif",
             fontSize: "0.875rem"
           }}
         >
           Scroll to zoom • Drag to pan
+        </p>
+        <p
+          className="text-[#6B7280] text-center md:hidden"
+          style={{
+            fontFamily: "'Figtree', sans-serif",
+            fontSize: "0.875rem"
+          }}
+        >
+          Pinch to zoom • Drag to pan
         </p>
       </div>
     </div>

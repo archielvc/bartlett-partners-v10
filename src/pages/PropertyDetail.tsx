@@ -723,18 +723,30 @@ export default function PropertyDetail() {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-12 overscroll-contain"
                         onClick={() => setActiveModal(null)}
+                        onTouchEnd={(e) => {
+                            // Only close if touching the backdrop directly
+                            if (e.target === e.currentTarget) {
+                                setActiveModal(null);
+                            }
+                        }}
                     >
                         {/* Wrapper for the viewer to give it a nice frame */}
                         <div
                             className="relative w-full max-w-5xl h-full max-h-[85vh] bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col"
-                            onClick={(e) => e.stopPropagation()} // Prevent close on clicking invalid area
+                            onClick={(e) => e.stopPropagation()}
+                            onTouchEnd={(e) => e.stopPropagation()}
                         >
-                            <div className="absolute top-4 right-4 z-50">
+                            <div className="absolute top-2 right-2 md:top-4 md:right-4 z-50">
                                 <button
                                     onClick={() => setActiveModal(null)}
-                                    className="bg-white/90 hover:bg-[#F3F4F6] p-2 rounded-full transition-colors border border-gray-200 shadow-sm"
+                                    onTouchEnd={(e) => {
+                                        e.stopPropagation();
+                                        setActiveModal(null);
+                                    }}
+                                    className="bg-white hover:bg-[#F3F4F6] p-3 md:p-2 rounded-full transition-colors border border-gray-200 shadow-lg touch-manipulation"
+                                    aria-label="Close floor plan"
                                 >
-                                    <X className="w-5 h-5 text-[#1A2551]" />
+                                    <X className="w-6 h-6 md:w-5 md:h-5 text-[#1A2551]" />
                                 </button>
                             </div>
 

@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { List } from 'lucide-react';
 
 export interface TOCItem {
   id: string;
@@ -66,7 +65,6 @@ function extractHeadings(content: string): TOCItem[] {
 
 export function TableOfContents({ content, contentRef }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const headings = useMemo(() => extractHeadings(content), [content]);
 
@@ -124,102 +122,44 @@ export function TableOfContents({ content, contentRef }: TableOfContentsProps) {
         behavior: 'smooth',
       });
     }
-    setIsExpanded(false);
   };
 
   if (headings.length === 0) return null;
 
   return (
-    <>
-      {/* Desktop: Sticky Sidebar */}
-      <nav
-        className="hidden xl:block w-48 shrink-0"
-        aria-label="Table of contents"
-      >
-        <div className="sticky top-28">
-          <h4
-            className="text-[#1A2551] text-[10px] font-bold uppercase tracking-[0.12em] mb-3"
-            style={{ fontFamily: "'Figtree', sans-serif" }}
-          >
-            In This Article
-          </h4>
-          <ul className="space-y-1.5">
-            {headings.map((heading) => (
-              <li
-                key={heading.id}
-                style={{ paddingLeft: heading.level === 3 ? '0.75rem' : '0' }}
-              >
-                <button
-                  onClick={() => handleClick(heading.id)}
-                  className={`text-left text-xs leading-relaxed transition-colors duration-200 hover:text-[#8E8567] ${
-                    activeId === heading.id
-                      ? 'text-[#8E8567] font-medium'
-                      : 'text-gray-500'
-                  }`}
-                  style={{ fontFamily: "'Figtree', sans-serif" }}
-                >
-                  {heading.text}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
-
-      {/* Mobile: Collapsible Accordion */}
-      <div className="xl:hidden mb-6">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-[#1A2551] text-xs font-semibold uppercase tracking-wider w-full py-2.5 border-b border-gray-200"
+    /* Desktop: Sticky Sidebar - hidden on mobile, takes no space */
+    <nav
+      className="hidden xl:block w-48 shrink-0"
+      aria-label="Table of contents"
+    >
+      <div className="sticky top-28">
+        <h4
+          className="text-[#1A2551] text-[10px] font-bold uppercase tracking-[0.12em] mb-3"
           style={{ fontFamily: "'Figtree', sans-serif" }}
-          aria-expanded={isExpanded}
-          aria-controls="mobile-toc"
         >
-          <List className="w-3.5 h-3.5" />
-          Table of Contents
-          <span
-            className={`ml-auto transform transition-transform ${
-              isExpanded ? 'rotate-180' : ''
-            }`}
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          In This Article
+        </h4>
+        <ul className="space-y-1.5">
+          {headings.map((heading) => (
+            <li
+              key={heading.id}
+              style={{ paddingLeft: heading.level === 3 ? '0.75rem' : '0' }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </span>
-        </button>
-        {isExpanded && (
-          <ul id="mobile-toc" className="py-3 space-y-2.5 bg-gray-50 px-4 rounded-b-lg">
-            {headings.map((heading) => (
-              <li
-                key={heading.id}
-                style={{ paddingLeft: heading.level === 3 ? '0.75rem' : '0' }}
+              <button
+                onClick={() => handleClick(heading.id)}
+                className={`text-left text-xs leading-relaxed transition-colors duration-200 hover:text-[#8E8567] ${
+                  activeId === heading.id
+                    ? 'text-[#8E8567] font-medium'
+                    : 'text-gray-500'
+                }`}
+                style={{ fontFamily: "'Figtree', sans-serif" }}
               >
-                <button
-                  onClick={() => handleClick(heading.id)}
-                  className={`text-left text-xs leading-relaxed transition-colors hover:text-[#8E8567] ${
-                    activeId === heading.id
-                      ? 'text-[#8E8567] font-medium'
-                      : 'text-gray-600'
-                  }`}
-                  style={{ fontFamily: "'Figtree', sans-serif" }}
-                >
-                  {heading.text}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+                {heading.text}
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
-    </>
+    </nav>
   );
 }

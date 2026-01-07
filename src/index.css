@@ -522,6 +522,7 @@
     font-family: Figtree, sans-serif;
     width: 100%;
     position: relative;
+    overflow-x: hidden;
   }
 
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) h1,

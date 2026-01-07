@@ -330,40 +330,6 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between mt-6 pt-6 border-t border-[#1A2551]/10">
-                      <div className="flex gap-4">
-                        <a
-                          href="https://www.instagram.com/bartlettandpartners"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#1A2551]/40 hover:text-[#1A2551] transition-colors"
-                          onClick={() => trackEvent('click', 'Social', 'Instagram')}
-                        >
-                          <Instagram className="w-5 h-5" />
-                        </a>
-                        <a
-                          href="https://www.facebook.com/bartlettandpartners"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#1A2551]/40 hover:text-[#1A2551] transition-colors"
-                          onClick={() => trackEvent('click', 'Social', 'Facebook')}
-                        >
-                          <Facebook className="w-5 h-5" />
-                        </a>
-                        <a
-                          href="https://www.linkedin.com/company/bartlettandpartners/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#1A2551]/40 hover:text-[#1A2551] transition-colors"
-                          onClick={() => trackEvent('click', 'Social', 'LinkedIn')}
-                        >
-                          <Linkedin className="w-5 h-5" />
-                        </a>
-                      </div>
-                      <span className="text-[#1A2551]/40 text-xs font-medium" style={{ fontFamily: "'Figtree', sans-serif" }}>
-                        London, UK
-                      </span>
-                    </div>
                   </div>
                 </motion.div>
               </div>
