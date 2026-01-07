@@ -1,7 +1,7 @@
 
 import { ImageWithFallback } from "../components/ui/ImageWithFallback";
 import { PropertyInquiryDialog } from "../components/PropertyInquiryDialog";
-import { BookEvaluationDialog } from "../components/BookEvaluationDialog";
+import { useFavorites } from "../contexts/FavoritesContext";
 import { PropertyCard } from "../components/PropertyCard";
 import { Button } from "../components/ui/button";
 
@@ -15,12 +15,11 @@ import {
     X,
     Calendar,
     Download,
-    Camera
+    Camera,
+    Heart
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// import { useFavorites } from "../contexts/FavoritesContext"; // Unused in this file according to linter rules usually, but user included it. I'll keep it if they used it, but they didn't seem to use it in the snippet provided (except import). 
-// Actually, looking at the code: "const { slug } = useParams<{ slug: string }>();" - useFavorites is imported but NOT USED in the user snippet. I will remove it to be clean, or keep it to be safe. I'll keep it commented or remove it if unused.
 import { motion, AnimatePresence } from "motion/react";
 import { useSEO } from "../contexts/SEOContext";
 import { updateSEO, injectSchema, SchemaGenerator } from "../utils/seo";
@@ -62,6 +61,7 @@ export default function PropertyDetail() {
     const navigate = useNavigate();
     const { slug } = useParams<{ slug: string }>();
     const { setSEOData } = useSEO();
+    const { isFavorite, toggleFavorite } = useFavorites();
 
     const thumbnailContainerRef = useRef<HTMLDivElement>(null);
     const thumbnailsRef = useRef<(HTMLButtonElement | null)[]>([]);
@@ -247,7 +247,7 @@ export default function PropertyDetail() {
     const sqftDisplay = property.sqft ? `${property.sqft.toLocaleString()} sq ft` : null;
 
     return (
-        <main id="main-content" className="w-full bg-[#FDFBF7] pt-24 md:pt-32 pb-20">
+        <main id="main-content" className="w-full bg-white pt-24 md:pt-32 pb-20">
 
             {/* 1. Image Grid Section */}
             <section className="px-4 md:px-8 lg:px-12 xl:px-20 mb-12">
@@ -529,7 +529,7 @@ export default function PropertyDetail() {
                         </div>
 
                         {/* RIGHT COLUMN (Sticky Sidebar) */}
-                        <div className="w-full lg:w-1/3 lg:sticky lg:top-32 h-fit">
+                        <div className="w-full lg:w-1/3 lg:sticky lg:top-32 lg:self-start">
                             <div className="space-y-6">
 
                                 {/* Main Action Card */}
@@ -566,25 +566,38 @@ export default function PropertyDetail() {
                                                         borderColor: '#1A2551'
                                                     }}
                                                 >
-                                                    Enquire
+                                                    Book a viewing
                                                 </Button>
                                             }
                                         />
 
-                                        <BookEvaluationDialog
-                                            trigger={
-                                                <Button
-                                                    premium
-                                                    className="w-full h-12 text-white"
-                                                    style={{
-                                                        backgroundColor: '#A89F81',
-                                                        borderColor: '#A89F81'
-                                                    }}
-                                                >
-                                                    Sell with us
-                                                </Button>
-                                            }
-                                        />
+                                        <Button
+                                            premium
+                                            onClick={() => toggleFavorite({
+                                                id: property.id,
+                                                title: property.title,
+                                                location: property.location || '',
+                                                price: formattedPrice,
+                                                priceValue: priceValue,
+                                                image: property.hero_image || '',
+                                                beds: property.beds || 0,
+                                                baths: property.baths || 0,
+                                                sqft: property.sqft?.toString() || '0',
+                                                type: property.property_type || '',
+                                                status: property.status || '',
+                                                slug: property.slug
+                                            })}
+                                            className="w-full h-12 flex items-center justify-center gap-2"
+                                            style={{
+                                                backgroundColor: isFavorite(property.id) ? '#A89F81' : 'transparent',
+                                                borderColor: '#A89F81',
+                                                borderWidth: '2px',
+                                                color: isFavorite(property.id) ? 'white' : '#A89F81'
+                                            }}
+                                        >
+                                            <Heart className={`w-4 h-4 ${isFavorite(property.id) ? 'fill-current' : ''}`} />
+                                            {isFavorite(property.id) ? 'Saved' : 'Save Property'}
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -842,7 +855,7 @@ export default function PropertyDetail() {
                                         borderColor: '#1A2551'
                                     }}
                                 >
-                                    Enquire
+                                    Book a viewing
                                 </Button>
                             }
                         />

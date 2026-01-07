@@ -300,7 +300,7 @@ export default function AreaGuide() {
               className="flex items-center gap-3 mb-6"
             >
               <div className="h-[1px] w-12 bg-white/80"></div>
-              <span className="text-[#8E8567] uppercase tracking-[0.2em] text-sm font-bold">Area Guide</span>
+              <span className="text-white uppercase tracking-[0.2em] text-sm font-bold">Area Guide</span>
             </motion.div>
 
             <motion.h1

@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Save, X, Upload, Move } from 'lucide-react';
-import { getTeamMembers, upsertTeamMember, deleteTeamMember, reorderTeamMembers } from '../../../utils/database';
+import { toast } from 'sonner';
+import { getAllTeamMembersAdmin, upsertTeamMember, deleteTeamMember, reorderTeamMembers } from '../../../utils/database';
 import { ImageWithFallback } from '../../ui/ImageWithFallback';
 import { CMSImageUpload } from '../CMSImageUpload';
 import type { TeamMember } from '../../../types/database';
@@ -17,7 +18,7 @@ export function CMSTeam() {
 
     async function loadMembers() {
         setLoading(true);
-        const data = await getTeamMembers();
+        const data = await getAllTeamMembersAdmin();
         setMembers(data);
         setLoading(false);
     }
@@ -40,8 +41,11 @@ export function CMSTeam() {
 
         const saved = await upsertTeamMember(payload);
         if (saved) {
+            toast.success('Team member saved successfully');
             setEditingMember(null);
             loadMembers();
+        } else {
+            toast.error('Failed to save team member. Please check all required fields.');
         }
     }
 
