@@ -170,6 +170,10 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
   // Removed default hover:shadow-md to prevent sticky hover on mobile
   const buttonBaseStyles = "relative w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm lg:hover:shadow-md active:scale-95";
 
+  // Optical alignment: antlers are ~25% of logo height
+  // At 80px display, offset ~16px to align with text portion
+  const LOGO_OPTICAL_OFFSET = '1rem';
+
   // Common Style - Matches new card scheme (White Bg, Dark Text, Blue Border)
   const commonButtonStyle = "bg-white border border-[#1A2551] text-[#1A2551] lg:hover:bg-[#1A2551] lg:hover:text-white shadow-sm";
 
@@ -218,7 +222,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
           </Link>
         </nav>
 
-        <nav className="fixed top-4 sm:top-6 right-6 md:right-12 lg:right-20 z-[70] mt-2 sm:mt-3 md:mt-5 pointer-events-auto">
+        <nav className="fixed top-4 sm:top-6 right-6 md:right-12 lg:right-20 z-[70] mt-3 sm:mt-4 md:mt-5 pointer-events-auto">
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Static button, no animation to prevent flickering/glitching */}
             <button
@@ -380,7 +384,10 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                   />
                 </Link>
 
-                <div className={`flex items-center gap-8 transition-opacity duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div
+                  className={`flex items-center gap-8 transition-opacity duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                  style={{ marginTop: LOGO_OPTICAL_OFFSET }}
+                >
                   {['Properties', 'About', 'Insights', 'Contact'].map((item) => (
                     <Link
                       key={item}
@@ -410,7 +417,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
       <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
         <div className="px-6 md:px-12 lg:px-20">
           <div className="w-full max-w-[1600px] mx-auto">
-            <div className="flex justify-end py-8 mt-5">
+            <div className="flex justify-end items-center py-8" style={{ marginTop: '1.75rem' }}>
               <div className="flex items-center gap-4 pointer-events-auto">
 
                 <div className="relative flex flex-col items-center">
