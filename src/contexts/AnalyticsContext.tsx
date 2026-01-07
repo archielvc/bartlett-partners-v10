@@ -3,11 +3,9 @@ import { useLocation } from 'react-router-dom';
 import { useCookie } from './CookieContext';
 import {
   initGA,
-  initClarity,
   initPostHog,
   trackPageView,
   GA_MEASUREMENT_ID,
-  CLARITY_PROJECT_ID,
   POSTHOG_API_KEY,
 } from '../utils/analytics';
 
@@ -39,9 +37,6 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
     const initAllAnalytics = () => {
       if (GA_MEASUREMENT_ID && GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
         initGA();
-      }
-      if (CLARITY_PROJECT_ID && CLARITY_PROJECT_ID !== 'xxxxxxxxxx') {
-        initClarity();
       }
       if (POSTHOG_API_KEY && POSTHOG_API_KEY !== '') {
         initPostHog();

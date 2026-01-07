@@ -1,5 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { SkipToContent } from './components/SkipToContent';
 import { Footer } from './components/Footer';
@@ -18,6 +18,7 @@ import { TwoStepPopup } from './components/popups/TwoStepPopup';
 import { CookieBanner } from './components/CookieBanner';
 import { CookieSettingsModal } from './components/CookieSettingsModal';
 import { Toaster } from './components/ui/sonner';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Lazy load pages for performance
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
@@ -102,9 +103,14 @@ export default function App() {
                           <Route path="/blog/:slug" element={<BlogPost />} />
                           <Route path="/contact" element={<Contact />} />
 
-                          <Route path="/:slug" element={<AreaGuide />} />
+                          {/* Area Guide routes - explicit paths for each area */}
+                          <Route path="/twickenham" element={<AreaGuide />} />
+                          <Route path="/teddington" element={<AreaGuide />} />
+                          <Route path="/kew" element={<AreaGuide />} />
+                          <Route path="/ham" element={<AreaGuide />} />
                           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                           <Route path="/cookie-policy" element={<CookiePolicy />} />
+                          <Route path="/404" element={<NotFound />} />
                           {/* Catch-all route for preview_page.html and other unmatched routes */}
                           <Route path="*" element={<NotFound />} />
                         </Route>
@@ -119,6 +125,7 @@ export default function App() {
       </SEOProvider>
       {/* Toaster for notifications */}
       <Toaster />
+      <SpeedInsights />
     </BrowserRouter>
   );
 }

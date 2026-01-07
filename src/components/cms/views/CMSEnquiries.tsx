@@ -125,7 +125,8 @@ export function CMSEnquiries() {
   const newsletters = enquiries.filter(e => e.inquiry_type === 'newsletter');
 
   // Apply status filter
-  const filteredEnquiries = (activeTab === 'enquiries' ? realEnquiries : newsletters).filter(e => {
+  const baseArray = activeTab === 'enquiries' ? realEnquiries : newsletters;
+  const filteredEnquiries = baseArray.filter(e => {
     if (statusFilter !== 'all') {
       if (statusFilter === 'closed') {
         if (e.status !== 'closed' && e.status !== 'archived') return false;
@@ -137,6 +138,18 @@ export function CMSEnquiries() {
     }
     return true;
   });
+
+  // Calculate counts for each filter status
+  const statusCounts: Record<FilterStatus, number> = {
+    all: baseArray.length,
+    new: baseArray.filter(e => e.status === 'new').length,
+    in_progress: baseArray.filter(e =>
+      e.status === 'in_progress' || e.status === 'read' || e.status === 'replied'
+    ).length,
+    closed: baseArray.filter(e =>
+      e.status === 'closed' || e.status === 'archived'
+    ).length,
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -236,12 +249,18 @@ export function CMSEnquiries() {
               <button
                 key={f}
                 onClick={() => setStatusFilter(f)}
-                className={`px-4 py-2 rounded-md text-sm font-medium capitalize transition-all ${statusFilter === f
+                className={`px-4 py-2 rounded-md text-sm font-medium capitalize transition-all flex items-center gap-2 ${statusFilter === f
                   ? 'bg-[#1A2551] text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-50'
                   }`}
               >
                 {f.replace('_', ' ')}
+                <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${statusFilter === f
+                  ? 'bg-white/20 text-white'
+                  : 'bg-gray-100 text-gray-600'
+                  }`}>
+                  {statusCounts[f]}
+                </span>
               </button>
             ))}
           </div>

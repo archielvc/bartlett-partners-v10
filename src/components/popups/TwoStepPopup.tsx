@@ -131,6 +131,9 @@ export function TwoStepPopup() {
   const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate all required fields
+    if (!address || !phoneNumber || !timeline || !priceRange || !minBeds) return;
+
     // Update the existing enquiry with preferences (saved to individual columns)
     if (enquiryId) {
       await updateEnquiryById(enquiryId, {
@@ -292,7 +295,7 @@ export function TwoStepPopup() {
 
                     <div className="space-y-2 text-left">
                       <Label htmlFor="address" className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">
-                        Current Address
+                        Current Address*
                       </Label>
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1A2551]/40" />
@@ -302,29 +305,31 @@ export function TwoStepPopup() {
                           className="h-11 pl-10 rounded-md border-[#1A2551]/20 bg-white/80 focus:bg-white text-sm"
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
+                          required
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2 text-left">
                       <Label htmlFor="phone" className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">
-                        Phone Number
+                        Phone Number*
                       </Label>
                       <PhoneInput
                         id="phone"
                         placeholder="Phone number"
                         value={phoneNumber}
                         onChange={setPhoneNumber}
+                        required
                       />
                     </div>
 
                     <div className="space-y-2 text-left">
                       <Label className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">
-                        When Are You Looking to Move?
+                        When Are You Looking to Move?*
                       </Label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1A2551]/40 pointer-events-none z-10" />
-                        <Select value={timeline} onValueChange={setTimeline}>
+                        <Select value={timeline} onValueChange={setTimeline} required>
                           <SelectTrigger className="h-11 w-full pl-10 rounded-md border-[#1A2551]/20 bg-white/80 text-sm">
                             <SelectValue placeholder="Select timeline" />
                           </SelectTrigger>
@@ -340,8 +345,8 @@ export function TwoStepPopup() {
 
                     <div className="grid grid-cols-2 gap-4 text-left">
                       <div className="space-y-2">
-                        <Label className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">Price Range</Label>
-                        <Select value={priceRange} onValueChange={setPriceRange}>
+                        <Label className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">Price Range*</Label>
+                        <Select value={priceRange} onValueChange={setPriceRange} required>
                           <SelectTrigger className="h-11 w-full rounded-md border-[#1A2551]/20 bg-white/80 text-sm">
                             <SelectValue placeholder="Any" />
                           </SelectTrigger>
@@ -354,8 +359,8 @@ export function TwoStepPopup() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">Min Beds</Label>
-                        <Select value={minBeds} onValueChange={setMinBeds}>
+                        <Label className="text-[10px] uppercase tracking-widest font-bold text-[#1A2551] ml-1">Min Beds*</Label>
+                        <Select value={minBeds} onValueChange={setMinBeds} required>
                           <SelectTrigger className="h-11 w-full rounded-md border-[#1A2551]/20 bg-white/80 text-sm">
                             <SelectValue placeholder="Any" />
                           </SelectTrigger>

@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { StickyScroll } from '../components/ui/StickyScroll';
 import { ArrowDown, MapPin, Home, School, TreePine, Train, Coffee, Trophy, UtensilsCrossed, ArrowRight } from 'lucide-react';
@@ -184,49 +184,14 @@ const AREA_DATA: Record<string, AreaData> = {
     ],
     quote: "Ham attracts buyers who've discovered its secret—families wanting outdoor space, dog owners, and those escaping busier areas. We understand what makes Ham special and how to market its unique lifestyle appeal.",
     quoteAuthor: "Bartlett & Partners"
-  },
-  'st-margarets': {
-    name: "St Margarets",
-    heroImage: "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=2000&q=80",
-    description: "A hidden gem between Richmond and Twickenham—village charm with urban convenience.",
-    longDescription: "Tucked between Richmond and Twickenham, St Margarets offers the best of both worlds: a genuine village atmosphere with easy access to London. This residential enclave attracts families seeking excellent schools, green space, and a strong sense of community without the premium of neighbouring Richmond. St Margarets' property market features a mix of Victorian and Edwardian family homes, 1930s semis, and some new developments. The tree-lined streets around St Margarets Road and Crown Road are particularly desirable. Family homes typically range from £800,000 to £2 million.",
-    detailedSections: [
-      {
-        title: "Property in St Margarets",
-        content: "St Margarets features a mix of Victorian and Edwardian family homes, 1930s semis, and some new developments. The tree-lined streets around St Margarets Road and Crown Road are particularly desirable. Family homes typically range from £800,000 to £2 million.",
-        icon: Home
-      },
-      {
-        title: "Living in St Margarets",
-        content: "St Margarets combines village charm with urban convenience: local shops and cafés along St Margarets Road, Marble Hill Park on your doorstep, excellent schools including St Stephens and Orleans Park, easy walking distance to both Richmond and Twickenham, and a strong community spirit.",
-        icon: Coffee
-      },
-      {
-        title: "Transport & Connectivity",
-        content: "St Margarets station offers direct trains to London Waterloo in about 25 minutes. Buses connect to Richmond, Twickenham, and beyond. The area is well-positioned for both the A316 and South Circular routes.",
-        icon: Train
-      }
-    ],
-    stats: {
-      avgPrice: '£1.2M',
-      growth: '+4.5%',
-      schools: '10 Outstanding',
-      transport: '25min to Waterloo'
-    },
-    highlights: [
-      { title: 'Marble Hill Park', desc: 'Beautiful riverside parkland and historic house.', icon: TreePine },
-      { title: 'Village Feel', desc: 'Local shops, cafés, and genuine community.', icon: MapPin },
-      { title: 'Best of Both', desc: 'Near Richmond and Twickenham amenities.', icon: Home },
-    ],
-    quote: "St Margarets attracts savvy buyers who've done their research. They want the lifestyle of Richmond at a more accessible price point, with excellent schools and a real sense of community. We know every street.",
-    quoteAuthor: "Bartlett & Partners"
   }
 };
 
 export default function AreaGuide() {
-  const { slug } = useParams<{ slug: string }>();
-  const normalizedSlug = slug?.toLowerCase() || 'twickenham';
-  const data = AREA_DATA[normalizedSlug] || AREA_DATA['twickenham'];
+  const location = useLocation();
+  // Extract slug from pathname (e.g., "/twickenham" -> "twickenham")
+  const normalizedSlug = location.pathname.slice(1).toLowerCase() || 'twickenham';
+  const data = AREA_DATA[normalizedSlug];
 
   const { images } = useSiteSettings();
   const [properties, setProperties] = useState<Property[]>([]);

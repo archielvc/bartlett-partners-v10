@@ -1,12 +1,11 @@
-// Analytics Configuration for Google Analytics 4, Microsoft Clarity, and PostHog
+// Analytics Configuration for Google Analytics 4 and PostHog
 // PostHog is lazy-loaded to reduce initial bundle size (162KB saved)
 
 // ============================================
 // CONFIGURATION - Replace with your IDs
 // ============================================
 
-export const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // Replace with your GA4 Measurement ID
-export const CLARITY_PROJECT_ID = 'xxxxxxxxxx'; // Replace with your Clarity Project ID
+export const GA_MEASUREMENT_ID = 'G-WEZ5YMVB83';
 export const POSTHOG_API_KEY = 'phc_jd9q0sygkrnsvnrcUl6WV5erGkWBigAW3DsxUQM0gP7'; // Your PostHog Project API Key
 export const POSTHOG_HOST = 'https://eu.i.posthog.com'; // EU region (as per your PostHog account)
 
@@ -189,41 +188,6 @@ export const trackMapInteraction = (propertyId: string): void => {
 };
 
 // ============================================
-// MICROSOFT CLARITY
-// ============================================
-
-export const initClarity = (): void => {
-  if (typeof window === 'undefined') return;
-
-  // Clarity initialization script
-  (function (c: any, l: any, a: any, r: any, i: any, t?: any, y?: any) {
-    c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
-    t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
-    y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
-  })(window, document, "clarity", "script", CLARITY_PROJECT_ID);
-};
-
-// Clarity custom tags (for segmentation)
-export const claritySetTag = (key: string, value: string): void => {
-  if (typeof window !== 'undefined' && window.clarity) {
-    window.clarity('set', key, value);
-  }
-};
-
-// Clarity identify user (for logged-in users, if applicable)
-export const clarityIdentify = (userId: string, sessionId?: string, pageId?: string): void => {
-  if (typeof window !== 'undefined' && window.clarity) {
-    window.clarity('identify', userId, sessionId, pageId);
-  }
-};
-
-// Clarity custom event
-export const clarityEvent = (eventName: string): void => {
-  if (typeof window !== 'undefined' && window.clarity) {
-    window.clarity('event', eventName);
-  }
-};
-// ============================================
 // POSTHOG (lazy-loaded for performance)
 // ============================================
 
@@ -329,6 +293,5 @@ declare global {
   interface Window {
     dataLayer: any[];
     gtag: (...args: any[]) => void;
-    clarity: (...args: any[]) => void;
   }
 }
