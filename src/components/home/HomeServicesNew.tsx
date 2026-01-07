@@ -168,7 +168,7 @@ function ServiceCard({ service, isActive, onActivate, isDesktop }: ServiceCardPr
         }
         : {
             backgroundColor: THEME.cardBg,
-            height: isActive ? '450px' : '80px',
+            height: isActive ? '500px' : '80px',
             flexShrink: 0,
         };
 
