@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { StickyScroll } from '../components/ui/StickyScroll';
 import { ArrowDown, MapPin, Home, School, TreePine, Train, Coffee, Trophy, UtensilsCrossed, ArrowRight } from 'lucide-react';
 import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { PropertyCard } from '../components/PropertyCard';
@@ -363,7 +364,8 @@ export default function AreaGuide() {
           </div>
 
           {/* Right Column: Stats Sticky */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24 h-fit">
+          <div className="lg:col-span-5 lg:self-start">
+            <StickyScroll topOffset={96}>
             <blockquote className="border-l-4 border-[#8E8567] pl-6 py-4 italic text-[#1A2551]/80 text-xl font-serif font-light mb-12 bg-[#F9F9F9] p-6 rounded-r-xl">
               "{data.quote}"
               <footer className="text-sm text-[#1A2551]/50 mt-3 font-sans not-italic uppercase tracking-widest">— {data.quoteAuthor}</footer>
@@ -385,6 +387,7 @@ export default function AreaGuide() {
                 <p className="text-[#1A2551]/60 text-sm mt-2">Rated 'Outstanding' by Ofsted</p>
               </div>
             </div>
+            </StickyScroll>
           </div>
         </div>
       </section>

@@ -122,7 +122,7 @@ export function HomeHero() {
               y: featuredProperty ? 0 : 20
             }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-sm w-full bg-white border border-[#1A2551] rounded-xl overflow-hidden shadow-2xl relative cursor-pointer group hover:shadow-xl transition-all duration-300 block"
+            className="max-w-sm w-full bg-white border border-gray-200 rounded-xl overflow-hidden shadow-2xl relative cursor-pointer group hover:shadow-xl hover:border-gray-300 transition-all duration-300 block"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >

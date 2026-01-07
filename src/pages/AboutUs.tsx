@@ -1,19 +1,13 @@
 import { PageHeader } from "../components/global/PageHeader";
 
-import { AboutStats } from "../components/about/AboutStats";
+import { AboutStoryWithStats } from "../components/about/AboutStoryWithStats";
 import { AboutValues } from "../components/about/AboutValues";
 import { AboutApproach } from "../components/about/AboutApproach";
-import { AboutStory } from "../components/about/AboutStory";
 import { GlobalTestimonials } from "../components/global/GlobalTestimonials";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { applySEO } from "../utils/seo";
-import { useNavigate, Link } from "react-router-dom";
-import { Button } from "../components/ui/button";
-import { trackCTAClick } from "../utils/analytics";
-import { getGlobalSettings } from "../utils/database";
 
 export default function AboutUs() {
-  const navigate = useNavigate();
   useEffect(() => {
     applySEO('about');
   }, []);
@@ -22,8 +16,7 @@ export default function AboutUs() {
     <div className="w-full bg-white">
       <main id="main-content" className="w-full">
         <PageHeader title="About Us" />
-        <AboutStory />
-        <AboutStats />
+        <AboutStoryWithStats />
         <AboutValues />
         <AboutApproach />
 

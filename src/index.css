@@ -513,7 +513,7 @@
   }
 
   html {
-    overflow-x: hidden;
+    /* overflow-x removed to enable position:sticky - body overflow-x is sufficient */
   }
 
   body {
@@ -522,7 +522,7 @@
     font-family: Figtree, sans-serif;
     width: 100%;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: clip; /* clip prevents horizontal scroll without breaking position:sticky */
   }
 
   :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) h1,

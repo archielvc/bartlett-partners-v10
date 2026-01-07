@@ -71,7 +71,7 @@ export function PropertyCard({ property, className, index = 0, priority }: Prope
       onClick={() => trackEvent('select_content', 'Property Card', property.title)}
       className={cn(
         "property-card group flex flex-col bg-white cursor-pointer h-full overflow-hidden transition-all duration-300",
-        "border border-[#1A2551] rounded-xl hover:shadow-xl hover:border-[#1A2551]/30",
+        "border border-gray-200 rounded-xl hover:shadow-lg hover:border-gray-300",
         className
       )}
       data-index={index}

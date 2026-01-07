@@ -8,7 +8,7 @@ export function AboutStats() {
   ];
 
   return (
-    <section className="w-full bg-[#1A2551] py-32 text-white overflow-hidden">
+    <section className="w-full bg-[#1A2551] py-16 text-white overflow-hidden">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
 
         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10 border-y border-white/10">

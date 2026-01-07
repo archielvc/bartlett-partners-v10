@@ -10,7 +10,7 @@ export function AboutStory() {
   const { images } = useSiteSettings();
 
   return (
-    <section className="w-full bg-white py-32 relative overflow-hidden">
+    <section className="w-full bg-white py-32 relative overflow-hidden border-t border-[#1A2551]/10">
       {/* Giant Background Watermark */}
       <div className="absolute top-1/2 -translate-y-1/2 left-0 text-[40vw] font-serif leading-none text-[#F5F5F5] pointer-events-none select-none opacity-50">
         10

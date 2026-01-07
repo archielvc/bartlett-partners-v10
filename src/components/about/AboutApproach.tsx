@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform, useSpring, useInView } from "motion/re
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
+import { StickyScroll } from "../ui/StickyScroll";
 
 import { trackCTAClick } from "../../utils/analytics";
 
@@ -25,13 +26,14 @@ export function AboutApproach() {
   return (
     <section ref={containerRef} className="relative w-full bg-[#1A2551] text-white py-32 overflow-visible">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
-        <div className="flex flex-col lg:flex-row items-start gap-16 lg:gap-32">
+        <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
 
           {/* Sticky Left Column */}
-          <div className="lg:w-5/12 lg:sticky lg:top-32 self-start z-10">
+          <div className="lg:w-5/12 lg:self-start">
+            <StickyScroll topOffset={128}>
             <motion.div
               style={{ opacity, scale }}
-              className="relative"
+              className="relative z-10"
             >
 
               <span className="text-[#8E8567] text-sm uppercase tracking-[0.2em] font-bold mb-6 block">
@@ -66,6 +68,7 @@ export function AboutApproach() {
               </div>
 
             </motion.div>
+            </StickyScroll>
           </div>
 
           {/* Scrollable Right Column */}

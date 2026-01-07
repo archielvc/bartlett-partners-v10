@@ -35,7 +35,8 @@ import {
     getPublishedTestimonials
 } from "../utils/database";
 
-import { FloorPlanViewer } from "../components/FloorPlanViewer"; // Add import
+import { FloorPlanViewer } from "../components/FloorPlanViewer";
+import { StickyScroll } from "../components/ui/StickyScroll";
 
 export default function PropertyDetail() {
     useScrollDepth();
@@ -47,8 +48,7 @@ export default function PropertyDetail() {
     useEffect(() => {
         const handleScroll = () => {
             const scrollY = window.scrollY;
-            const threshold = 600; // Simplified threshold
-            setShowMobileAction(scrollY > threshold);
+            setShowMobileAction(scrollY > 0);
         };
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
@@ -322,7 +322,7 @@ export default function PropertyDetail() {
             {/* 2. Main Content Layout */}
             <section className="px-4 md:px-8 lg:px-12 xl:px-20">
                 <div className="max-w-[1600px] mx-auto">
-                    <div className="flex flex-col lg:flex-row items-start gap-16 relative">
+                    <div className="flex flex-col lg:flex-row gap-16">
 
                         {/* LEFT COLUMN (Content) */}
                         <div className="w-full lg:flex-1 min-w-0">
@@ -529,8 +529,8 @@ export default function PropertyDetail() {
                         </div>
 
                         {/* RIGHT COLUMN (Sticky Sidebar) */}
-                        <div className="w-full lg:w-1/3 lg:sticky lg:top-32 lg:self-start">
-                            <div className="space-y-6">
+                        <div className="hidden lg:block w-full lg:w-1/3 lg:self-start">
+                            <StickyScroll topOffset={128} className="space-y-6">
 
                                 {/* Main Action Card */}
                                 <div className="bg-white rounded-2xl border-2 border-[#1A2551] p-6 shadow-xl shadow-[#1A2551]/5">
@@ -587,20 +587,24 @@ export default function PropertyDetail() {
                                                 status: property.status || '',
                                                 slug: property.slug
                                             })}
-                                            className="w-full h-12 flex items-center justify-center gap-2"
+                                            className={`w-full h-12 flex items-center justify-center gap-2 transition-all duration-300 ${
+                                                isFavorite(property.id)
+                                                    ? 'hover:opacity-90'
+                                                    : 'hover:bg-[#DC2626] hover:border-[#DC2626] hover:text-white'
+                                            }`}
                                             style={{
-                                                backgroundColor: isFavorite(property.id) ? '#A89F81' : 'transparent',
-                                                borderColor: '#A89F81',
+                                                backgroundColor: isFavorite(property.id) ? '#DC2626' : 'transparent',
+                                                borderColor: isFavorite(property.id) ? '#DC2626' : '#1A2551',
                                                 borderWidth: '2px',
-                                                color: isFavorite(property.id) ? 'white' : '#A89F81'
+                                                color: isFavorite(property.id) ? 'white' : '#1A2551'
                                             }}
                                         >
-                                            <Heart className={`w-4 h-4 ${isFavorite(property.id) ? 'fill-current' : ''}`} />
+                                            <Heart className={`w-4 h-4 transition-all duration-300 ${isFavorite(property.id) ? 'fill-current' : ''}`} />
                                             {isFavorite(property.id) ? 'Saved' : 'Save Property'}
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
+                            </StickyScroll>
                         </div>
                     </div>
                 </div>
@@ -830,7 +834,31 @@ export default function PropertyDetail() {
                         <span className="text-[#1A2551]/60 text-[10px] uppercase tracking-widest font-bold">Guide Price</span>
                         <span className="text-[#1A2551] text-lg font-serif">{formattedPrice}</span>
                     </div>
-                    <div className="flex gap-2 flex-1 justify-end">
+                    <div className="flex gap-2 flex-1 justify-end items-center">
+                        <button
+                            onClick={() => toggleFavorite({
+                                id: property.id,
+                                title: property.title,
+                                location: property.location || '',
+                                price: formattedPrice,
+                                priceValue: priceValue,
+                                image: property.hero_image || '',
+                                beds: property.beds || 0,
+                                baths: property.baths || 0,
+                                sqft: property.sqft?.toString() || '0',
+                                type: property.property_type || '',
+                                status: property.status || '',
+                                slug: property.slug
+                            })}
+                            className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                                isFavorite(property.id)
+                                    ? 'bg-[#DC2626] border-[#DC2626] text-white'
+                                    : 'bg-white border-[#1A2551] text-[#1A2551]'
+                            }`}
+                            aria-label={isFavorite(property.id) ? "Remove from favorites" : "Add to favorites"}
+                        >
+                            <Heart className={`w-5 h-5 ${isFavorite(property.id) ? 'fill-current' : ''}`} />
+                        </button>
                         <PropertyInquiryDialog
                             property={{
                                 id: property.id,
