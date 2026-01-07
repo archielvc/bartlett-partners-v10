@@ -1,9 +1,13 @@
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import { queryClient } from './lib/queryClient';
 import App from "./App.tsx";
 import "./index.css";
+
+// Initialize Vercel Speed Insights
+injectSpeedInsights();
 
 const container = document.getElementById("root")!;
 
