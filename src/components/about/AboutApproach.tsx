@@ -1,8 +1,8 @@
 import { motion, useScroll, useTransform, useSpring, useInView } from "motion/react";
 import { useRef } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { StickyScroll } from "../ui/StickyScroll";
+import { BookEvaluationDialog } from "../BookEvaluationDialog";
 
 import { trackCTAClick } from "../../utils/analytics";
 
@@ -51,20 +51,22 @@ export function AboutApproach() {
 
               <div className="w-full h-[1px] bg-white/10 mb-12" />
 
-              <div className="hidden lg:block mt-8">
-                <Button
-                  variant="ghost"
-                  premium
-                  size="lg"
-                  className="bg-white border border-[#1A2551] text-[#1A2551] transition-colors px-8 py-6 text-base w-full justify-center rounded-md"
-                  asChild
-                >
-                  <Link to="/contact" onClick={() => trackCTAClick('Start your journey', 'About Approach')}>
-                    <span className="premium-hover !inline-flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm">
-                      Book Valuation
-                    </span>
-                  </Link>
-                </Button>
+              <div className="mt-8">
+                <BookEvaluationDialog
+                  trigger={
+                    <Button
+                      variant="ghost"
+                      premium
+                      size="lg"
+                      className="bg-white border border-[#1A2551] text-[#1A2551] transition-colors px-8 py-6 text-base w-full justify-center rounded-md"
+                      onClick={() => trackCTAClick('Book Valuation', 'About Approach')}
+                    >
+                      <span className="premium-hover !inline-flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-sm">
+                        Book Valuation
+                      </span>
+                    </Button>
+                  }
+                />
               </div>
 
             </motion.div>

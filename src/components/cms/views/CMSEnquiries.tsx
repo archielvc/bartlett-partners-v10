@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { CMSPageLayout } from '../CMSPageLayout';
 import { Button } from '../../ui/button';
 import { getContactSubmissions, updateContactSubmissionStatus, deleteContactSubmission } from '../../../utils/database';
+import { enquiryEvents } from '../../../utils/enquiryEvents';
 import type { ContactSubmission, ContactSubmissionWithProperty } from '../../../types/database';
 import {
   AlertDialog,
@@ -51,9 +52,21 @@ export function CMSEnquiries() {
   }, []);
 
   const handleStatusChange = async (id: number, newStatus: ContactSubmission['status']) => {
+    // Find the enquiry to get its previous status
+    const enquiry = enquiries.find(e => e.id === id);
+    const previousStatus = enquiry?.status;
+
     await updateContactSubmissionStatus(id, newStatus);
     // Optimistic update
     setEnquiries(prev => prev.map(e => e.id === id ? { ...e, status: newStatus } : e));
+
+    // Emit event for sidebar badge to update
+    enquiryEvents.emit({
+      type: 'status-changed',
+      enquiryId: id,
+      previousStatus,
+      newStatus
+    });
   };
 
   const handleDeleteClick = (enquiry: ContactSubmissionWithProperty) => {
@@ -63,11 +76,20 @@ export function CMSEnquiries() {
   const confirmDelete = async () => {
     if (!enquiryToDelete) return;
 
+    const previousStatus = enquiryToDelete.status;
+
     try {
       const success = await deleteContactSubmission(enquiryToDelete.id);
       if (success) {
         setEnquiries(prev => prev.filter(e => e.id !== enquiryToDelete.id));
         toast.success('Inquiry deleted successfully');
+
+        // Emit event for sidebar badge to update
+        enquiryEvents.emit({
+          type: 'deleted',
+          enquiryId: enquiryToDelete.id,
+          previousStatus
+        });
       } else {
         toast.error('Failed to delete inquiry');
       }

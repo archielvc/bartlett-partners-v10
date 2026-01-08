@@ -57,7 +57,7 @@ export function AboutProcess() {
                 </div>
 
                 <span
-                  className="text-[#8E8567] text-6xl font-serif opacity-20 absolute top-0 right-1/2 translate-x-1/2 -translate-y-4 select-none"
+                  className="text-[#8E8567] text-6xl opacity-20 absolute top-0 right-1/2 translate-x-1/2 -translate-y-4 select-none"
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
                   {step.number}

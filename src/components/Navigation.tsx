@@ -46,6 +46,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
   const getCurrentPage = () => {
     const path = location.pathname;
     if (path === '/' || path === '/home' || path === '') return 'home';
+    if (path === '/404') return 'notFound';
     if (path.startsWith('/properties/')) return 'propertyDetail';
     if (path.startsWith('/blog/')) return 'blogPost';
     if (path === '/properties') return 'properties';
@@ -54,7 +55,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
     if (path === '/contact') return 'contact';
     if (path === '/privacy-policy') return 'privacyPolicy';
     if (path === '/cookie-policy') return 'cookiePolicy';
-    return 'home';
+    return 'notFound';
   };
 
   const actualCurrentPage = getCurrentPage();

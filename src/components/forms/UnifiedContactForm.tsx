@@ -315,7 +315,7 @@ export function UnifiedContactForm({
                                         {selectedProperties.map(p => (
                                             <div key={p.id} className="flex flex-col text-left">
                                                 <span className="text-sm font-medium text-[#1A2551]">{p.title}</span>
-                                                <span className="text-xs text-gray-500 font-serif italic">
+                                                <span className="text-xs text-gray-500 italic" style={{ fontFamily: "'Playfair Display', serif" }}>
                                                     {formatPrice(p.price)}
                                                 </span>
                                             </div>

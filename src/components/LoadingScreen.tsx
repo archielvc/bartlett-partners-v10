@@ -79,7 +79,7 @@ export function LoadingScreen() {
                   className="w-full h-full object-contain opacity-90"
                 />
               ) : (
-                <div className="text-3xl font-serif text-white">Bartlett & Partners</div>
+                <div className="text-3xl text-white" style={{ fontFamily: "'Playfair Display', serif" }}>Bartlett & Partners</div>
               )}
 
               {/* Subtle Glow Effect */}

@@ -104,7 +104,7 @@ export function HomeExperience() {
 
                                             {/* Large Number Watermark */}
                                             <div
-                                                className="absolute -bottom-4 right-8 text-[12rem] leading-none font-serif text-white/[0.03] font-black select-none"
+                                                className="absolute -bottom-4 right-8 text-[12rem] leading-none text-white/[0.03] font-black select-none"
                                                 style={{ fontFamily: "'Playfair Display', serif" }}
                                             >
                                                 {index + 1}

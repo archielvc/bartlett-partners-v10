@@ -57,7 +57,7 @@ export function AdminLogin() {
               className="h-16 w-auto mb-12"
             />
           ) : (
-            <div className="text-2xl font-serif text-[#1A2551] mb-12 uppercase tracking-tighter">Bartlett <span className="text-[#C5A059]">&</span> Partners</div>
+            <div className="text-2xl text-[#1A2551] mb-12 uppercase tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>Bartlett <span className="text-[#C5A059]">&</span> Partners</div>
           )}
         </Link>
 

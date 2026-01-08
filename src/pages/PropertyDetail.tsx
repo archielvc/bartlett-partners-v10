@@ -832,7 +832,7 @@ export default function PropertyDetail() {
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col">
                         <span className="text-[#1A2551]/60 text-[10px] uppercase tracking-widest font-bold">Guide Price</span>
-                        <span className="text-[#1A2551] text-lg font-serif">{formattedPrice}</span>
+                        <span className="text-[#1A2551] text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>{formattedPrice}</span>
                     </div>
                     <div className="flex gap-2 flex-1 justify-end items-center">
                         <button

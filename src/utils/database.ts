@@ -357,7 +357,7 @@ export async function getRelatedProperties(
     const { data, error } = await supabase
       .from('properties')
       .select('*')
-      .in('status', ['available', 'under_offer', 'under-offer', 'sale-agreed', 'sold'])
+      .eq('status', 'available')
       .neq('id', excludeId)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -367,7 +367,9 @@ export async function getRelatedProperties(
       return [];
     }
 
-    const result = (data || []).map(transformPropertyToUI);
+    const result = (data || [])
+      .map(transformPropertyToUI)
+      .sort((a, b) => b.priceValue - a.priceValue);
     if (result.length > 0) {
       setCache(cacheKey, result);
     }

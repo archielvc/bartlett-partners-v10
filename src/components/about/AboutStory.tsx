@@ -12,7 +12,7 @@ export function AboutStory() {
   return (
     <section className="w-full bg-white py-32 relative overflow-hidden border-t border-[#1A2551]/10">
       {/* Giant Background Watermark */}
-      <div className="absolute top-1/2 -translate-y-1/2 left-0 text-[40vw] font-serif leading-none text-[#F5F5F5] pointer-events-none select-none opacity-50">
+      <div className="absolute top-1/2 -translate-y-1/2 left-0 text-[40vw] leading-none text-[#F5F5F5] pointer-events-none select-none opacity-50" style={{ fontFamily: "'Playfair Display', serif" }}>
         10
       </div>
 
@@ -75,7 +75,7 @@ export function AboutStory() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="absolute top-12 -left-12 w-1/2 aspect-square bg-[#1A2551] p-12 flex items-center justify-center shadow-2xl hidden md:flex z-20"
             >
-              <div className="text-white text-4xl font-serif italic text-center leading-tight">
+              <div className="text-white text-4xl italic text-center leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                 "We treat your home as our only asset."
               </div>
             </motion.div>

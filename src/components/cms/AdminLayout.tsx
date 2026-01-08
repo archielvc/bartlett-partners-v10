@@ -59,7 +59,7 @@ export function AdminLayout({ children, currentView, onChangeView }: AdminLayout
             />
           ) : (
             <div
-              className="text-xl font-serif text-white cursor-pointer uppercase tracking-tighter"
+              className="text-xl text-white cursor-pointer uppercase tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}
               onClick={() => navigate('/')}
             >
               Bartlett <span className="text-[#C5A059]">&</span> Partners

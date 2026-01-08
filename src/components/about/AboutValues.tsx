@@ -37,7 +37,7 @@ export function AboutValues() {
       {values.map((value, index) => (
         <div
           key={index}
-          className="flex flex-col md:flex-row w-full md:h-[600px] lg:h-[700px] sticky bg-white shadow-xl"
+          className="flex flex-col md:flex-row w-full md:h-[600px] lg:h-[700px] md:sticky bg-white shadow-xl"
           style={{
             top: 0,
             zIndex: index + 1
@@ -66,7 +66,7 @@ export function AboutValues() {
                 {value.title}
               </span>
               <h3
-                className="text-[#1A2551] text-4xl md:text-5xl mb-8 font-serif font-light"
+                className="text-[#1A2551] text-4xl md:text-5xl mb-8 font-light"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 {value.subtitle}
