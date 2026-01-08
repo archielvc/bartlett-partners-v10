@@ -53,6 +53,8 @@ export function UnifiedContactForm({
     const [internalShowPropertySelector, setInternalShowPropertySelector] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [phone, setPhone] = useState<string | undefined>("");
+    const [sellerPostcode, setSellerPostcode] = useState("");
+    const [sellerHouseNumber, setSellerHouseNumber] = useState("");
 
     // Use controlled or internal state
     const selectedProperties = controlledSelectedProperties ?? internalSelectedProperties;
@@ -62,6 +64,7 @@ export function UnifiedContactForm({
     const handleClosePropertySelector = () => setInternalShowPropertySelector(false);
 
     const showPropertySelection = intent === 'buy' || intent === 'both';
+    const showSellerFields = intent === 'sell' || intent === 'both';
 
     const intentLabels: Record<ContactIntent, string> = {
         buy: 'Buying',
@@ -117,6 +120,18 @@ export function UnifiedContactForm({
             return;
         }
 
+        // Validate seller fields if selling
+        if (showSellerFields) {
+            if (!sellerPostcode.trim()) {
+                toast.error("Please enter your property postcode");
+                return;
+            }
+            if (!sellerHouseNumber.trim()) {
+                toast.error("Please enter your house number or name");
+                return;
+            }
+        }
+
         const formElement = e.currentTarget;
         const formData = new FormData(formElement);
         const name = formData.get('name') as string;
@@ -131,6 +146,8 @@ export function UnifiedContactForm({
             message,
             intent,
             selectedProperties: [...selectedProperties],
+            sellerPostcode,
+            sellerHouseNumber,
         };
 
         // Determine inquiry type for database
@@ -141,6 +158,9 @@ export function UnifiedContactForm({
         // Build message with context
         const contextParts: string[] = [];
         contextParts.push(`Interest: ${intent.charAt(0).toUpperCase() + intent.slice(1)}`);
+        if (showSellerFields && sellerHouseNumber && sellerPostcode) {
+            contextParts.push(`Property to sell: ${sellerHouseNumber}, ${sellerPostcode}`);
+        }
         if (selectedProperties.length > 0) {
             contextParts.push(`Properties: ${selectedProperties.map(p => p.title).join(', ')}`);
         }
@@ -157,6 +177,8 @@ export function UnifiedContactForm({
         }
         setSelectedProperties(defaultProperties);
         setPhone("");
+        setSellerPostcode("");
+        setSellerHouseNumber("");
 
         // Submit in background
         try {
@@ -166,7 +188,9 @@ export function UnifiedContactForm({
                 phone: phone || "",
                 message: fullMessage,
                 property_id: selectedProperties.length > 0 ? String(selectedProperties[0].id) : undefined,
-                inquiry_type: inquiryType
+                inquiry_type: inquiryType,
+                seller_postcode: showSellerFields ? sellerPostcode : undefined,
+                seller_house_number: showSellerFields ? sellerHouseNumber : undefined,
             });
 
             // Track analytics (non-blocking)
@@ -188,6 +212,8 @@ export function UnifiedContactForm({
             setIntent(formSnapshot.intent);
             setSelectedProperties(formSnapshot.selectedProperties);
             setPhone(formSnapshot.phone);
+            setSellerPostcode(formSnapshot.sellerPostcode);
+            setSellerHouseNumber(formSnapshot.sellerHouseNumber);
 
             // Show error toast
             toast.error("Failed to send message.", {
@@ -291,6 +317,32 @@ export function UnifiedContactForm({
                                     {intentLabels[option]}
                                 </Button>
                             ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Seller Property Fields (shown for Sell/Both) */}
+                {showSellerFields && (
+                    <div className="animate-in fade-in slide-in-from-top-4 duration-500 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                            <label style={inputLabelStyle}>House Number / Name*</label>
+                            <input
+                                type="text"
+                                value={sellerHouseNumber}
+                                onChange={(e) => setSellerHouseNumber(e.target.value)}
+                                className={inputClasses}
+                                placeholder="e.g. 42 or Rose Cottage"
+                            />
+                        </div>
+                        <div>
+                            <label style={inputLabelStyle}>Postcode*</label>
+                            <input
+                                type="text"
+                                value={sellerPostcode}
+                                onChange={(e) => setSellerPostcode(e.target.value.toUpperCase())}
+                                className={inputClasses}
+                                placeholder="e.g. SW1A 1AA"
+                            />
                         </div>
                     </div>
                 )}

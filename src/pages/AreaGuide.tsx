@@ -235,9 +235,17 @@ export default function AreaGuide() {
     });
   }, [normalizedSlug, data, heroImage]);
 
-  // Filter properties for this area
-  const areaProperties = properties
+  // Filter available properties for this area
+  const availableProperties = properties
     .filter(p => p.status.toLowerCase() === 'available')
+    .filter(p =>
+      (p.location || '').toLowerCase().includes(data.name.toLowerCase()) ||
+      (p.address || '').toLowerCase().includes(data.name.toLowerCase())
+    );
+
+  // Filter sold properties for this area
+  const soldProperties = properties
+    .filter(p => p.status.toLowerCase() === 'sold')
     .filter(p =>
       (p.location || '').toLowerCase().includes(data.name.toLowerCase()) ||
       (p.address || '').toLowerCase().includes(data.name.toLowerCase())
@@ -392,9 +400,9 @@ export default function AreaGuide() {
             </Link>
           </div>
 
-          {areaProperties.length > 0 ? (
+          {availableProperties.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-              {areaProperties.slice(0, 3).map((property) => (
+              {availableProperties.slice(0, 3).map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
             </div>
@@ -412,6 +420,41 @@ export default function AreaGuide() {
           )}
         </div>
       </section>
+
+      {/* Recently Sold in Area */}
+      {soldProperties.length > 0 && (
+        <section className="py-12 md:py-20 px-6 md:px-12 lg:px-20 bg-[#F5F5F0]">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="flex justify-between items-end mb-8 md:mb-12">
+              <div>
+                <span className="block text-[#8E8567] text-sm tracking-[0.2em] uppercase mb-3 font-bold">
+                  Recently Sold
+                </span>
+                <h2
+                  className="text-[#1A2551] text-4xl md:text-5xl font-light"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  Previous Sales in {data.name}
+                </h2>
+              </div>
+              <Link
+                to={`/properties?location=${data.name}`}
+                onClick={() => trackEvent('click', 'Area Guide', `View All ${data.name} Properties (from Sold)`)}
+                className="hidden md:flex items-center gap-2 text-[#1A2551] hover:text-[#8E8567] transition-colors"
+              >
+                <span className="uppercase tracking-widest text-sm font-medium">View All</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+              {soldProperties.slice(0, 3).map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Spiced Up CTA (Grey Background) */}
       <section className="py-12 md:py-20 bg-[#F5F5F0] px-6">

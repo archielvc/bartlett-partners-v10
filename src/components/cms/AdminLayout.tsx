@@ -40,7 +40,7 @@ export function AdminLayout({ children, currentView, onChangeView }: AdminLayout
     { id: 'blog' as CMSView, label: 'Insights', icon: BookOpen, roles: ['administrator', 'editor'] },
     { id: 'testimonials' as CMSView, label: 'Testimonials', icon: Quote, roles: ['administrator', 'editor'] },
     { id: 'enquiries' as CMSView, label: 'Enquiries', icon: MessageSquare, roles: ['administrator', 'editor'] },
-    { id: 'team' as CMSView, label: 'Team', icon: Users, roles: ['administrator'] },
+    { id: 'team' as CMSView, label: 'Team', icon: Users, roles: ['administrator', 'editor'] },
     { id: 'site-images' as CMSView, label: 'Site Images', icon: Image, roles: ['administrator'] },
     { id: 'seo' as CMSView, label: 'SEO Toolkit', icon: Search, roles: ['administrator'] },
   ];

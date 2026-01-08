@@ -444,6 +444,18 @@ export function CMSEnquiries() {
                                 </div>
                               </div>
                             )}
+                            {/* Seller property details for valuation enquiries */}
+                            {(enquiry.seller_house_number || enquiry.seller_postcode) && (
+                              <div className="flex items-start gap-2 text-sm">
+                                <Home className="w-4 h-4 text-gray-400 mt-0.5" />
+                                <div>
+                                  <span className="text-gray-500">Property to Sell: </span>
+                                  <span className="text-[#1A2551] font-medium">
+                                    {enquiry.seller_house_number}{enquiry.seller_house_number && enquiry.seller_postcode ? ', ' : ''}{enquiry.seller_postcode}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                             {enquiry.inquiry_type && (
                               <div className="flex items-center gap-2 text-sm text-gray-700">
                                 <FileText className="w-4 h-4 text-gray-400" />

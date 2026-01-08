@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Loader2, Plus, Pencil, Trash2, ShieldCheck, Shield } from 'lucide-react';
+import { Users, Loader2, Plus, Pencil, Trash2, ShieldCheck, Shield, Mail, X } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
@@ -52,6 +52,11 @@ export function CMSSettings() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
 
+  // Notification Settings
+  const [notificationEmails, setNotificationEmails] = useState<string[]>([]);
+  const [newEmail, setNewEmail] = useState('');
+  const [isSavingEmails, setIsSavingEmails] = useState(false);
+
   const { user: currentUser } = useAuth();
 
   // ----------------------------------------------------------------------
@@ -65,10 +70,22 @@ export function CMSSettings() {
   const loadSettings = async () => {
     setIsLoading(true);
     try {
+      // Load profiles
       const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: true });
 
       if (data) {
         setProfiles(data as UserProfile[]);
+      }
+
+      // Load notification email settings
+      const { data: emailSettings } = await supabase
+        .from('global_settings')
+        .select('setting_value')
+        .eq('setting_key', 'enquiry_notification_emails')
+        .single();
+
+      if (emailSettings?.setting_value) {
+        setNotificationEmails(emailSettings.setting_value as string[]);
       }
     } catch (error) {
       console.error('Failed to load settings', error);
@@ -196,8 +213,67 @@ export function CMSSettings() {
   };
 
   // ----------------------------------------------------------------------
-  // Notification Actions
+  // Notification Email Actions
   // ----------------------------------------------------------------------
+
+  const saveNotificationEmails = async (emails: string[]) => {
+    setIsSavingEmails(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("No active session");
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/cms-settings/set`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          key: 'enquiry_notification_emails',
+          value: emails
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save settings');
+      }
+
+      setNotificationEmails(emails);
+      toast.success('Notification recipients updated');
+    } catch (error: any) {
+      console.error('Error saving notification emails:', error);
+      toast.error(error.message || 'Failed to save settings');
+    } finally {
+      setIsSavingEmails(false);
+    }
+  };
+
+  const handleAddNotificationEmail = () => {
+    const email = newEmail.trim().toLowerCase();
+    if (!email) return;
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    if (notificationEmails.includes(email)) {
+      toast.error('This email is already in the list');
+      return;
+    }
+
+    const updatedEmails = [...notificationEmails, email];
+    saveNotificationEmails(updatedEmails);
+    setNewEmail('');
+  };
+
+  const handleRemoveNotificationEmail = (emailToRemove: string) => {
+    const updatedEmails = notificationEmails.filter(e => e !== emailToRemove);
+    saveNotificationEmails(updatedEmails);
+  };
 
 
 
@@ -314,6 +390,95 @@ export function CMSSettings() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* NOTIFICATION SETTINGS */}
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+        <div>
+          <h2 className="text-xl font-semibold text-[#1A2551]">Enquiry Notifications</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Manage who receives email notifications when new enquiries are submitted.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-[#1A2551]">Email Recipients</h3>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Add email addresses to receive notifications for new enquiries from the website.
+              </p>
+            </div>
+          </div>
+
+          {/* Add email input */}
+          <div className="flex gap-2 mb-4">
+            <Input
+              type="email"
+              placeholder="Enter email address"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddNotificationEmail();
+                }
+              }}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleAddNotificationEmail}
+              disabled={isSavingEmails || !newEmail.trim()}
+              className="bg-[#1A2551] hover:bg-[#1A2551]/90"
+            >
+              {isSavingEmails ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              <span className="ml-2">Add</span>
+            </Button>
+          </div>
+
+          {/* Email list */}
+          {notificationEmails.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Mail className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No notification recipients configured.</p>
+              <p className="text-xs text-gray-400 mt-1">Add an email address above to start receiving enquiry notifications.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {notificationEmails.map((email) => (
+                <div
+                  key={email}
+                  className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg group hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
+                      {email.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm text-gray-700">{email}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveNotificationEmail(email)}
+                    disabled={isSavingEmails}
+                    className="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {notificationEmails.length > 0 && (
+            <p className="text-xs text-gray-400 mt-4">
+              {notificationEmails.length} recipient{notificationEmails.length !== 1 ? 's' : ''} will be notified when new enquiries are submitted.
+            </p>
+          )}
         </div>
       </div>
 

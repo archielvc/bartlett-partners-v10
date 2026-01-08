@@ -4,6 +4,8 @@ import { AdminLogin } from './AdminLogin';
 import { AdminLayout } from './AdminLayout';
 import type { CMSView } from '../../types/cms';
 import { SEOManager } from '../SEOManager';
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import { Monitor } from 'lucide-react';
 
 // View Components (Lazy loaded or direct imports)
 import { CMSProperties } from './views/CMSProperties';
@@ -18,7 +20,25 @@ import { CMSTeam } from './views/CMSTeam';
 
 function AdminContent() {
   const { user, isLoading } = useAuth();
+  const isMobile = useIsMobile();
   const [currentView, setCurrentView] = useState<CMSView>('properties');
+
+  // Block mobile access
+  if (isMobile) {
+    return (
+      <div className="min-h-screen w-full bg-[#1A2551] flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white/10 flex items-center justify-center">
+            <Monitor className="w-8 h-8 text-white/60" />
+          </div>
+          <h2 className="text-white text-xl font-medium mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>Desktop Required</h2>
+          <p className="text-white/60 text-sm leading-relaxed" style={{ fontFamily: "'Figtree', sans-serif" }}>
+            The CMS is optimised for desktop use. Please access this page from a laptop or desktop computer.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading state while checking authentication
   if (isLoading) {

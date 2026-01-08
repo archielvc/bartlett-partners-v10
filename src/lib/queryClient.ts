@@ -28,4 +28,6 @@ export const queryKeys = {
   testimonials: ['testimonials'] as const,
   blogPosts: ['blog', 'posts'] as const,
   blogPostsLight: ['blog', 'posts', 'light'] as const,
+  areas: ['areas'] as const,
+  areasEnabled: ['areas', 'enabled'] as const,
 } as const;

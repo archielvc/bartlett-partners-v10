@@ -66,6 +66,9 @@ export default function PropertyDetail() {
     const thumbnailContainerRef = useRef<HTMLDivElement>(null);
     const thumbnailsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
+    // Video aspect ratio from CMS toggle
+    const isVideoPortrait = property?.video_is_portrait || false;
+
     useEffect(() => {
         if (selectedImageIndex !== null && thumbnailContainerRef.current && thumbnailsRef.current[selectedImageIndex]) {
             const container = thumbnailContainerRef.current;
@@ -127,6 +130,18 @@ export default function PropertyDetail() {
             return property.gallery_images_alt?.[index] || `Interior photo ${index + 1} of ${property.title}`;
         }
         return property?.hero_image_alt || "";
+    };
+
+    // Check if property is available for booking viewings
+    const isPropertyAvailable = (status: string) => {
+        const s = status?.toLowerCase();
+        return s === 'available';
+    };
+
+    // Scroll to Similar Residences section for sold/sale agreed properties
+    const scrollToSimilarProperties = () => {
+        const section = document.getElementById('similar-residences');
+        section?.scrollIntoView({ behavior: 'smooth' });
     };
 
     useEffect(() => {
@@ -477,52 +492,55 @@ export default function PropertyDetail() {
                             {property.video_url && (
                                 <div className="mt-12">
                                     <h2 className="text-[#1A2551] text-2xl mb-6 font-semibold" style={{ fontFamily: "'Figtree', sans-serif" }}>Video Tour</h2>
-                                    <div className="w-full relative pt-[56.25%] md:pt-[calc(50%-1rem)] bg-white rounded-xl overflow-hidden border border-[#1A2551]/10">
-                                        <iframe
-                                            width="100%"
-                                            height="100%"
-                                            src={(() => {
-                                                let url = property.video_url || '';
+                                    {/* Grid wrapper - mirrors Location & Floor Plan layout for portrait videos */}
+                                    <div className={`grid ${isVideoPortrait ? 'md:grid-cols-2' : 'grid-cols-1'} gap-8`}>
+                                        <div className={`w-full bg-white rounded-xl overflow-hidden border border-[#1A2551]/10`} style={{ aspectRatio: isVideoPortrait ? '9/16' : '16/9' }}>
+                                            <iframe
+                                                width="100%"
+                                                height="100%"
+                                                src={(() => {
+                                                    let url = property.video_url || '';
 
-                                                // Handle if user pasted full iframe code
-                                                if (url.includes('<iframe')) {
-                                                    const srcMatch = url.match(/src="([^"]+)"/);
-                                                    if (srcMatch) url = srcMatch[1];
-                                                }
+                                                    // Handle if user pasted full iframe code
+                                                    if (url.includes('<iframe')) {
+                                                        const srcMatch = url.match(/src="([^"]+)"/);
+                                                        if (srcMatch) url = srcMatch[1];
+                                                    }
 
-                                                url = url.replace(/&amp;/g, '&');
+                                                    url = url.replace(/&amp;/g, '&');
 
-                                                // Simple parser
-                                                let id = '';
-                                                let hash = '';
+                                                    // Simple parser
+                                                    let id = '';
+                                                    let hash = '';
 
-                                                // Try to find the numeric video ID
-                                                const idMatch = url.match(/([0-9]{8,10})/);
-                                                if (idMatch) id = idMatch[1];
+                                                    // Try to find the numeric video ID
+                                                    const idMatch = url.match(/([0-9]{8,10})/);
+                                                    if (idMatch) id = idMatch[1];
 
-                                                // Try to find the hash
-                                                if (url.includes(`/${id}/`)) {
-                                                    const parts = url.split(`/${id}/`);
-                                                    if (parts[1]) hash = parts[1].split(/[?&/]/)[0];
-                                                } else if (url.includes('h=')) {
-                                                    const match = url.match(/h=([a-zA-Z0-9]+)/);
-                                                    if (match) hash = match[1];
-                                                }
+                                                    // Try to find the hash
+                                                    if (url.includes(`/${id}/`)) {
+                                                        const parts = url.split(`/${id}/`);
+                                                        if (parts[1]) hash = parts[1].split(/[?&/]/)[0];
+                                                    } else if (url.includes('h=')) {
+                                                        const match = url.match(/h=([a-zA-Z0-9]+)/);
+                                                        if (match) hash = match[1];
+                                                    }
 
-                                                if (id) {
-                                                    let embedUrl = `https://player.vimeo.com/video/${id}?`;
-                                                    if (hash) embedUrl += `h=${hash}`;
-                                                    return embedUrl;
-                                                }
+                                                    if (id) {
+                                                        let embedUrl = `https://player.vimeo.com/video/${id}?`;
+                                                        if (hash) embedUrl += `h=${hash}`;
+                                                        return embedUrl;
+                                                    }
 
-                                                return url.includes('player.vimeo.com') ? url : '';
-                                            })()}
-                                            title="Property Video Tour"
-                                            frameBorder="0"
-                                            allow="autoplay; fullscreen; picture-in-picture"
-                                            allowFullScreen
-                                            className="absolute inset-0 w-full h-full"
-                                        ></iframe>
+                                                    return url.includes('player.vimeo.com') ? url : '';
+                                                })()}
+                                                title="Property Video Tour"
+                                                frameBorder="0"
+                                                style={{ border: 0 }}
+                                                allow="autoplay; fullscreen; picture-in-picture"
+                                                allowFullScreen
+                                            ></iframe>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -542,34 +560,48 @@ export default function PropertyDetail() {
                                     </div>
 
                                     <div className="space-y-3 mb-8">
-                                        <PropertyInquiryDialog
-                                            property={{
-                                                id: property.id,
-                                                title: property.title,
-                                                location: property.location || '',
-                                                price: formattedPrice,
-                                                priceValue: priceValue,
-                                                image: property.hero_image || '',
-                                                beds: property.beds || 0,
-                                                baths: property.baths || 0,
-                                                sqft: property.sqft?.toString() || '0',
-                                                type: property.property_type || '',
-                                                status: property.status as any,
-                                                slug: property.slug
-                                            }}
-                                            trigger={
-                                                <Button
-                                                    premium
-                                                    className="w-full h-12 text-white"
-                                                    style={{
-                                                        backgroundColor: '#1A2551',
-                                                        borderColor: '#1A2551'
-                                                    }}
-                                                >
-                                                    Book a viewing
-                                                </Button>
-                                            }
-                                        />
+                                        {isPropertyAvailable(property.status) ? (
+                                            <PropertyInquiryDialog
+                                                property={{
+                                                    id: property.id,
+                                                    title: property.title,
+                                                    location: property.location || '',
+                                                    price: formattedPrice,
+                                                    priceValue: priceValue,
+                                                    image: property.hero_image || '',
+                                                    beds: property.beds || 0,
+                                                    baths: property.baths || 0,
+                                                    sqft: property.sqft?.toString() || '0',
+                                                    type: property.property_type || '',
+                                                    status: property.status as any,
+                                                    slug: property.slug
+                                                }}
+                                                trigger={
+                                                    <Button
+                                                        premium
+                                                        className="w-full h-12 text-white"
+                                                        style={{
+                                                            backgroundColor: '#1A2551',
+                                                            borderColor: '#1A2551'
+                                                        }}
+                                                    >
+                                                        Book a viewing
+                                                    </Button>
+                                                }
+                                            />
+                                        ) : (
+                                            <Button
+                                                premium
+                                                onClick={scrollToSimilarProperties}
+                                                className="w-full h-12 text-white"
+                                                style={{
+                                                    backgroundColor: '#1A2551',
+                                                    borderColor: '#1A2551'
+                                                }}
+                                            >
+                                                View Similar Properties
+                                            </Button>
+                                        )}
 
                                         <Button
                                             premium
@@ -813,7 +845,7 @@ export default function PropertyDetail() {
                 )}
             </AnimatePresence>
 
-            <section className="px-4 md:px-8 lg:px-12 xl:px-20 mt-20">
+            <section id="similar-residences" className="px-4 md:px-8 lg:px-12 xl:px-20 mt-20">
                 <div className="max-w-[1600px] mx-auto">
                     <h2 className="text-[#1A2551] text-3xl mb-8" style={{ fontFamily: "'Playfair Display', serif" }}>Similar Residences</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -859,34 +891,48 @@ export default function PropertyDetail() {
                         >
                             <Heart className={`w-5 h-5 ${isFavorite(property.id) ? 'fill-current' : ''}`} />
                         </button>
-                        <PropertyInquiryDialog
-                            property={{
-                                id: property.id,
-                                title: property.title,
-                                location: property.location || '',
-                                price: formattedPrice,
-                                priceValue: priceValue,
-                                image: property.hero_image || '',
-                                beds: property.beds || 0,
-                                baths: property.baths || 0,
-                                sqft: property.sqft?.toString() || '0',
-                                type: property.property_type || '',
-                                status: property.status as any,
-                                slug: property.slug
-                            }}
-                            trigger={
-                                <Button
-                                    premium
-                                    className="flex-1 h-11 text-white text-xs uppercase tracking-widest px-6"
-                                    style={{
-                                        backgroundColor: '#1A2551',
-                                        borderColor: '#1A2551'
-                                    }}
-                                >
-                                    Book a viewing
-                                </Button>
-                            }
-                        />
+                        {isPropertyAvailable(property.status) ? (
+                            <PropertyInquiryDialog
+                                property={{
+                                    id: property.id,
+                                    title: property.title,
+                                    location: property.location || '',
+                                    price: formattedPrice,
+                                    priceValue: priceValue,
+                                    image: property.hero_image || '',
+                                    beds: property.beds || 0,
+                                    baths: property.baths || 0,
+                                    sqft: property.sqft?.toString() || '0',
+                                    type: property.property_type || '',
+                                    status: property.status as any,
+                                    slug: property.slug
+                                }}
+                                trigger={
+                                    <Button
+                                        premium
+                                        className="flex-1 h-11 text-white text-xs uppercase tracking-widest px-6"
+                                        style={{
+                                            backgroundColor: '#1A2551',
+                                            borderColor: '#1A2551'
+                                        }}
+                                    >
+                                        Book a viewing
+                                    </Button>
+                                }
+                            />
+                        ) : (
+                            <Button
+                                premium
+                                onClick={scrollToSimilarProperties}
+                                className="flex-1 h-11 text-white text-xs uppercase tracking-widest px-6"
+                                style={{
+                                    backgroundColor: '#1A2551',
+                                    borderColor: '#1A2551'
+                                }}
+                            >
+                                View Similar
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>

@@ -3,7 +3,7 @@
 // =====================================================
 // Supabase with localStorage fallback for development
 
-import type { Property, PropertyWithDetails, Testimonial, BlogPost, ContactSubmission, ContactSubmissionWithProperty, StaticPage, TeamMember } from '../types/database';
+import type { Property, PropertyWithDetails, Testimonial, BlogPost, ContactSubmission, ContactSubmissionWithProperty, StaticPage, TeamMember, Area } from '../types/database';
 import type { Property as UIProperty } from '../types/property';
 import { transformPropertyToUI } from './adapters';
 
@@ -1023,6 +1023,8 @@ export async function createContactSubmission(submission: Partial<ContactSubmiss
       property_id: submission.property_id || null,
       property_title: submission.property_title || null,
       inquiry_type: submission.inquiry_type || 'general',
+      seller_postcode: submission.seller_postcode || null,
+      seller_house_number: submission.seller_house_number || null,
       status: 'new'
     })
     .select('id')
@@ -1044,6 +1046,8 @@ export async function submitContactForm(formData: {
   propertyId?: number;
   propertyTitle?: string;
   inquiry_type?: 'general' | 'property' | 'valuation' | 'newsletter';
+  seller_postcode?: string;
+  seller_house_number?: string;
 }): Promise<number | null> {
   // Handle both property_id and propertyId
   const propertyId = formData.property_id || formData.propertyId;
@@ -1056,6 +1060,8 @@ export async function submitContactForm(formData: {
     property_id: propertyId ? (typeof propertyId === 'string' ? parseInt(propertyId) : propertyId) : null,
     property_title: formData.propertyTitle || null,
     inquiry_type: formData.inquiry_type || 'general',
+    seller_postcode: formData.seller_postcode || null,
+    seller_house_number: formData.seller_house_number || null,
   });
 }
 
@@ -1356,4 +1362,72 @@ export async function reorderTeamMembers(members: TeamMember[]): Promise<boolean
     console.error('Error reordering team members:', error);
     return false;
   }
+}
+
+// =====================================================
+// AREAS (Location filtering)
+// =====================================================
+
+export async function getEnabledAreas(): Promise<Area[]> {
+  const cacheKey = 'areas_enabled';
+
+  return withDeduplication(cacheKey, async () => {
+    const cached = getStored<Area[]>(cacheKey);
+    if (cached) {
+      console.log('✅ Cache hit: enabled areas');
+      return cached;
+    }
+
+    const { data, error } = await supabase
+      .from('areas')
+      .select('*')
+      .eq('enabled', true)
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching areas:', error);
+      return [];
+    }
+
+    const result = data || [];
+    if (result.length > 0) {
+      setCache(cacheKey, result);
+    }
+    return result;
+  });
+}
+
+/**
+ * Get distinct locations that have available properties.
+ * Used for nav dropdowns to only show areas with active listings.
+ */
+export async function getAreasWithAvailableProperties(): Promise<string[]> {
+  const cacheKey = 'areas_with_available';
+
+  return withDeduplication(cacheKey, async () => {
+    const cached = getStored<string[]>(cacheKey);
+    if (cached) {
+      console.log('✅ Cache hit: areas with available properties');
+      return cached;
+    }
+
+    const { data, error } = await supabase
+      .from('properties')
+      .select('location')
+      .eq('status', 'available')
+      .not('location', 'is', null);
+
+    if (error) {
+      console.error('Error fetching areas with available properties:', error);
+      return [];
+    }
+
+    // Get unique locations and sort alphabetically
+    const locations = [...new Set(data.map(p => p.location as string))].filter(Boolean).sort();
+
+    if (locations.length > 0) {
+      setCache(cacheKey, locations);
+    }
+    return locations;
+  });
 }

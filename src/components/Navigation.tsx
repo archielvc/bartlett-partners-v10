@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { trackEvent, trackNavigation, trackCTAClick } from "../utils/analytics";
 import { getOptimizedUrl } from "./OptimizedImage";
+import { NavPropertiesDropdown } from "./navigation/NavPropertiesDropdown";
+import { MobileNavPropertiesDropdown } from "./navigation/MobileNavPropertiesDropdown";
 
 const MotionLink = motion.create(Link);
 
@@ -55,6 +57,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
     if (path === '/contact') return 'contact';
     if (path === '/privacy-policy') return 'privacyPolicy';
     if (path === '/cookie-policy') return 'cookiePolicy';
+    if (['/twickenham', '/teddington', '/kew', '/ham'].includes(path)) return 'areaGuide';
     return 'notFound';
   };
 
@@ -155,7 +158,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const hasDarkHero = ['home'].includes(actualCurrentPage);
+  const hasDarkHero = ['home', 'areaGuide'].includes(actualCurrentPage);
   const textColor = hasDarkHero ? 'text-white' : 'text-[#1A2551]';
   const hoverColor = hasDarkHero ? 'hover:text-white/70' : 'hover:text-[#1A2551]/70';
 
@@ -265,7 +268,7 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }} // Fast, simple fade
               className="fixed inset-0 z-[60] bg-white flex flex-col"
-              style={{ touchAction: "none" }} // Prevent bounce scrolling
+              style={{ touchAction: "pan-y" }} // Allow vertical scrolling
             >
               {/* Ultra-lightweight background blobs - NO BLUR, just gradients */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -273,16 +276,20 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                 <div className="absolute top-[40%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-[radial-gradient(circle,rgba(26,37,81,0.05)_0%,rgba(255,255,255,0)_70%)]" />
               </div>
 
-              <div className="flex-1 flex flex-col justify-center px-8 relative z-10 pt-32 sm:pt-40 md:pt-48 pb-12">
+              <div className="flex-1 flex flex-col justify-start px-8 relative z-10 pt-32 sm:pt-40 md:pt-48 pb-12 overflow-y-auto">
                 <div className="flex flex-col gap-6">
-                  {['Properties', 'About', 'Insights', 'Contact'].map((item, index) => (
+                  <MobileNavPropertiesDropdown
+                    onNavigate={handleNavigate}
+                    index={0}
+                  />
+                  {['About', 'Insights', 'Contact'].map((item, index) => (
                     <MotionLink
                       key={item}
                       to={item.toLowerCase() === 'login' ? '/admin' : (item.toLowerCase() === 'home' ? '/' : `/${item.toLowerCase()}`)}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{
-                        delay: 0.1 + (index * 0.05), // Staggered
+                        delay: 0.1 + ((index + 1) * 0.05), // Staggered, starting after Properties
                         duration: 0.3,
                         ease: "easeOut"
                       }}
@@ -389,7 +396,13 @@ export function Navigation({ currentPage = 'home' }: NavigationProps) {
                   className={`flex items-center gap-8 transition-opacity duration-300 ${isScrolled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                   style={{ marginTop: LOGO_OPTICAL_OFFSET }}
                 >
-                  {['Properties', 'About', 'Insights', 'Contact'].map((item) => (
+                  <NavPropertiesDropdown
+                    textColor={textColor}
+                    hoverColor={hoverColor}
+                    onNavigate={handleNavigate}
+                    isMobile={false}
+                  />
+                  {['About', 'Insights', 'Contact'].map((item) => (
                     <Link
                       key={item}
                       to={item.toLowerCase() === 'login' ? '/admin' : `/${item.toLowerCase()}`}

@@ -3,7 +3,7 @@ import { OptimizedImage } from "../OptimizedImage";
 import { Linkedin, Mail, Phone } from "lucide-react";
 import { useSiteSettings } from "../../contexts/SiteContext";
 import { trackPhoneClick, trackEmailClick } from "../../utils/analytics";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { getTeamMembers } from "../../utils/database";
 import type { TeamMember } from "../../types/database";
 
@@ -11,21 +11,73 @@ export function HomeTeam() {
   const { images } = useSiteSettings();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [centredMemberId, setCentredMemberId] = useState<number | null>(null);
+  const [hoveredMemberId, setHoveredMemberId] = useState<number | null>(null);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Callback ref to track card elements
+  const setCardRef = useCallback((id: number, element: HTMLDivElement | null) => {
+    if (element) {
+      cardRefs.current.set(id, element);
+    } else {
+      cardRefs.current.delete(id);
+    }
+  }, []);
 
   useEffect(() => {
     async function loadTeam() {
       const members = await getTeamMembers();
       if (members.length > 0) {
         setTeam(members);
-      } else {
-        // Fallback or empty state if needed, but we seeded data so it should be fine.
-        // If DB is empty, maybe fallback to hardcoded? 
-        // For now, let's stick to DB data.
       }
       setLoading(false);
     }
     loadTeam();
   }, []);
+
+  // Track mobile viewport for grayscale behaviour
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    setIsMobileViewport(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsMobileViewport(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  // IntersectionObserver for mobile centre detection
+  useEffect(() => {
+    // Only set up observer on mobile viewports
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    if (!isMobile || team.length === 0) return;
+
+    // rootMargin: -40% top and bottom means only the centre 20% of viewport triggers
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const memberId = Number(entry.target.getAttribute('data-member-id'));
+            setCentredMemberId(memberId);
+          }
+        });
+      },
+      {
+        rootMargin: '-40% 0px -40% 0px',
+        threshold: 0,
+      }
+    );
+
+    // Observe all card elements
+    cardRefs.current.forEach((element) => {
+      observerRef.current?.observe(element);
+    });
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [team]);
 
   // Default images mapping if DB image is empty
   const getDefaultImage = (index: number) => {
@@ -53,18 +105,30 @@ export function HomeTeam() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {team.map((member, index) => (
+          {team.map((member, index) => {
+            const isCentred = centredMemberId === member.id;
+            const isHovered = hoveredMemberId === member.id;
+            // Show colour on desktop hover OR when centred on mobile
+            const showColour = (isHovered && !isMobileViewport) || (isCentred && isMobileViewport);
+            return (
             <motion.div
               key={member.id}
+              ref={(el) => setCardRef(member.id, el)}
+              data-member-id={member.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               whileHover={{ y: -12 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.15, duration: 0.5, ease: "easeOut" }}
               className="group"
+              onMouseEnter={() => setHoveredMemberId(member.id)}
+              onMouseLeave={() => setHoveredMemberId(null)}
             >
               {/* Card Image */}
-              <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-6 shadow-sm">
+              <div
+                className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-6 shadow-sm transition-all duration-500"
+                style={{ filter: showColour ? 'grayscale(0)' : 'grayscale(1)' }}
+              >
                 <OptimizedImage
                   src={member.image || getDefaultImage(index)}
                   alt={member.name}
@@ -128,7 +192,8 @@ export function HomeTeam() {
                 </div>
               </div>
             </motion.div>
-          ))}
+          );
+          })}
         </div>
       </div>
     </section>

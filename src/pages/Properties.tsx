@@ -3,13 +3,15 @@ import { PropertyCard } from "../components/PropertyCard";
 import { PageHeader } from "../components/global/PageHeader";
 import { TestimonialsCarousel } from "../components/TestimonialsCarousel";
 import { InsightsNewsletter } from "../components/insights/InsightsNewsletter";
-import { SlidersHorizontal, Search, X } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { PropertyFilterMultiSelect } from "../components/filters";
+import { Search, X } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useFavorites } from "../contexts/FavoritesContext";
 import { applySEO, PAGE_SEO } from "../utils/seo";
 import { getPublishedProperties, getPublishedTestimonials, getStored, getGlobalSettings } from "../utils/database";
 import { trackPropertyFilter, trackEvent } from "../utils/analytics";
+import { useAreas } from "../hooks/useAreas";
 import type { Property } from "../types/property";
 import type { Testimonial } from "../types/database";
 
@@ -20,7 +22,31 @@ const STATUS_MAPPING: Record<string, string[]> = {
 };
 
 export default function Properties() {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const { data: areas = [] } = useAreas();
+
+  // Build location options from database areas (just the names for multi-select)
+  const locationOptions = useMemo(() => {
+    return areas.map(a => a.name);
+  }, [areas]);
+
+  const [selectedLocations, setSelectedLocations] = useState<string[]>(() => {
+    const locationParam = searchParams.get("location");
+    // Support comma-separated locations in URL
+    return locationParam ? locationParam.split(',').filter(Boolean) : [];
+  });
+
+  // Sync selectedLocations with URL search params whenever they change
+  useEffect(() => {
+    const locationParam = searchParams.get("location");
+    if (locationParam) {
+      // Support comma-separated locations in URL
+      const locations = locationParam.split(',').filter(Boolean);
+      setSelectedLocations(locations);
+    } else {
+      setSelectedLocations([]);
+    }
+  }, [searchParams]);
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,36 +111,6 @@ export default function Properties() {
     }
   };
 
-  // Toggle availability filter
-  const toggleAvailability = (status: string) => {
-    const isAdding = !selectedAvailability.includes(status);
-    if (isAdding) {
-      trackPropertyFilter('Availability', status);
-    }
-
-    setSelectedAvailability(prev =>
-      prev.includes(status)
-        ? prev.filter(s => s !== status)
-        : [...prev, status]
-    );
-    changePage(1, false);
-  };
-
-  // Toggle price range filter
-  const togglePriceRange = (range: string) => {
-    const isAdding = !selectedPriceRanges.includes(range);
-    if (isAdding) {
-      trackPropertyFilter('Price Range', range);
-    }
-
-    setSelectedPriceRanges(prev =>
-      prev.includes(range)
-        ? prev.filter(r => r !== range)
-        : [...prev, range]
-    );
-    changePage(1, false);
-  };
-
   // Check if property matches price range
   const matchesPriceRange = (priceValue: number, range: string) => {
     switch (range) {
@@ -132,6 +128,14 @@ export default function Properties() {
       const hasAvailabilityFilter = selectedAvailability.length > 0;
       const hasPriceFilter = selectedPriceRanges.length > 0;
       const hasSearchQuery = searchQuery.trim().length > 0;
+      const hasLocationFilter = selectedLocations.length > 0;
+
+      // Check location filter (matches if property location includes ANY selected location)
+      const matchesLocation = !hasLocationFilter ||
+        selectedLocations.some(loc =>
+          (property.location || '').toLowerCase().includes(loc.toLowerCase()) ||
+          (property.address || '').toLowerCase().includes(loc.toLowerCase())
+        );
 
       // Check availability filter
       const matchesAvailability = !hasAvailabilityFilter ||
@@ -189,7 +193,7 @@ export default function Properties() {
       }
 
       // AND logic: must match all active filters
-      return matchesAvailability && matchesPrice && matchesSearch;
+      return matchesLocation && matchesAvailability && matchesPrice && matchesSearch;
     });
 
   // Pagination calculations
@@ -198,7 +202,7 @@ export default function Properties() {
   const endIndex = startIndex + propertiesPerPage;
   const currentProperties = filteredProperties.slice(startIndex, endIndex);
 
-  const activeFilterCount = selectedAvailability.length + selectedPriceRanges.length;
+  const activeFilterCount = selectedAvailability.length + selectedPriceRanges.length + selectedLocations.length;
 
   useEffect(() => {
     applySEO('properties');
@@ -210,193 +214,130 @@ export default function Properties() {
       <PageHeader title="Our Collection" />
 
       {/* Filter Section */}
-
       <section className="w-full bg-white border-b border-gray-100 shadow-sm">
         <div className="w-full px-6 md:px-12 lg:px-20 py-6">
-          <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
-            <div className="flex items-center gap-6 w-full sm:w-auto">
-              {/* Search Bar */}
-              <div className="group relative flex items-center gap-3 pl-4 pr-4 h-11 bg-white border border-gray-200 rounded-full hover:border-[#1A2551] transition-all shrink-0 cursor-text w-full sm:w-auto" onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="SEARCH"]')?.focus()}>
-                <Search className="w-4 h-4 text-[#1A2551]" />
-                <input
-                  type="text"
-                  placeholder="SEARCH"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    changePage(1, false);
-                  }}
-                  className="w-full sm:w-[60px] sm:focus:w-[150px] transition-all duration-300 bg-transparent border-none p-0 text-[0.75rem] tracking-[0.2em] font-semibold text-[#1A2551] placeholder:text-[#1A2551] focus:ring-0 outline-none uppercase"
-                  style={{
-                    fontFamily: "'Figtree', sans-serif"
-                  }}
-                />
-                {searchQuery && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSearchQuery("");
+          <div className="max-w-[1600px] mx-auto">
+            {/* Desktop: flex row, Mobile: stack vertically */}
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+              {/* Left Side: Search + Count */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                {/* Search Bar */}
+                <div
+                  className="group relative flex items-center gap-3 pl-4 pr-4 h-11 bg-white border border-gray-200 rounded-full hover:border-[#1A2551] transition-all shrink-0 cursor-text w-full sm:w-auto"
+                  onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="SEARCH"]')?.focus()}
+                >
+                  <Search className="w-4 h-4 text-[#1A2551]" />
+                  <input
+                    type="text"
+                    placeholder="SEARCH"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
                       changePage(1, false);
                     }}
-                    className="p-0.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#1A2551] transition-all"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
+                    className="w-full sm:w-[60px] sm:focus:w-[150px] transition-all duration-300 bg-transparent border-none p-0 text-[0.75rem] tracking-[0.2em] font-semibold text-[#1A2551] placeholder:text-[#1A2551] focus:ring-0 outline-none uppercase"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchQuery("");
+                        changePage(1, false);
+                      }}
+                      className="p-0.5 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#1A2551] transition-all"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Showing X Residences - Desktop only */}
+                <p
+                  className="text-[#3A3A3A] whitespace-nowrap hidden lg:block"
+                  style={{
+                    fontFamily: "'Figtree', sans-serif",
+                    fontSize: "0.875rem",
+                    letterSpacing: "0.05em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Showing {filteredProperties.length} {filteredProperties.length === 1 ? "Residence" : "Residences"}
+                </p>
               </div>
 
-              <p
-                className="text-[#3A3A3A] whitespace-nowrap hidden md:block"
-                style={{
-                  fontFamily: "'Figtree', sans-serif",
-                  fontSize: "0.875rem",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase"
-                }}
-              >
-                Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'Residence' : 'Residences'}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-6">
-              {activeFilterCount > 0 && (
-                <button
-                  onClick={() => {
-                    trackEvent('click', 'Filter', 'Clear All');
-                    setSelectedAvailability([]);
-                    setSelectedPriceRanges([]);
-                    changePage(1, false);
-                  }}
-                  className="text-[#1A2551] hover:opacity-70 transition-opacity text-xs uppercase tracking-widest font-medium group"
-                  style={{ fontFamily: "'Figtree', sans-serif" }}
-                >
-                  <span className="premium-hover relative" data-text="Clear Filters">
-                    <span>Clear Filters</span>
-                  </span>
-                </button>
-              )}
-
-              <button
-                onClick={() => {
-                  trackEvent('click', 'Filter', isFilterOpen ? 'Close' : 'Open');
-                  setIsFilterOpen(!isFilterOpen);
-                }}
-                className={`flex items-center gap-3 px-8 h-11 rounded-full transition-all relative cursor-pointer ${isFilterOpen ? 'bg-[#1A2551] text-white' : 'border border-gray-200 text-[#1A2551] hover:border-[#1A2551]'
-                  }`}
-                style={{
-                  fontFamily: "'Figtree', sans-serif",
-                  fontSize: "0.75rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.2em",
-                  fontWeight: 600
-                }}
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-                <span>Filters</span>
+              {/* Right Side: Filter Dropdowns */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 ml-auto">
+                {/* Clear Filters - positioned to the left of dropdowns */}
                 {activeFilterCount > 0 && (
-                  <span className="ml-2 w-5 h-5 bg-[#8E8567] text-white text-[10px] rounded-full flex items-center justify-center">
-                    {activeFilterCount}
-                  </span>
+                  <button
+                    onClick={() => {
+                      trackEvent("click", "Filter", "Clear All");
+                      setSelectedAvailability([]);
+                      setSelectedPriceRanges([]);
+                      setSelectedLocations([]);
+                      changePage(1, false);
+                    }}
+                    className="text-[#1A2551] hover:opacity-70 transition-opacity text-xs uppercase tracking-widest font-medium whitespace-nowrap"
+                    style={{ fontFamily: "'Figtree', sans-serif" }}
+                  >
+                    Clear ({activeFilterCount})
+                  </button>
                 )}
-              </button>
 
+                {/* Filter Dropdowns */}
+                <div className="grid grid-cols-3 sm:flex sm:flex-row gap-3">
+                  {/* Location Filter */}
+                  <PropertyFilterMultiSelect
+                    label="Areas"
+                    options={locationOptions}
+                    selected={selectedLocations}
+                    onChange={(selected) => {
+                      setSelectedLocations(selected);
+                      trackPropertyFilter("Location", selected.join(','));
+                      changePage(1, false);
+                    }}
+                  />
 
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Panel Dropdown */}
-        {isFilterOpen && (
-          <div className="w-full border-t border-gray-100 bg-gray-50/50">
-            <div className="w-full px-6 md:px-12 lg:px-20 py-12">
-              <div className="max-w-[1600px] mx-auto">
-                <div className="grid md:grid-cols-2 gap-12 max-w-3xl">
                   {/* Availability Filter */}
-                  <div>
-                    <h3
-                      className="text-[#1A2551] mb-6"
-                      style={{
-                        fontFamily: "'Figtree', sans-serif",
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em"
-                      }}
-                    >
-                      Availability
-                    </h3>
-                    <div className="space-y-4">
-                      {["Available", "Sale Agreed", "Sold"].map((status) => (
-                        <label key={status} className="flex items-center gap-4 cursor-pointer group">
-                          <div className="relative flex items-center justify-center">
-                            <input
-                              type="checkbox"
-                              checked={selectedAvailability.includes(status)}
-                              onChange={() => toggleAvailability(status)}
-                              className="w-5 h-5 border border-gray-300 rounded-none appearance-none checked:bg-[#1A2551] checked:border-[#1A2551] cursor-pointer transition-colors"
-                            />
-                            {selectedAvailability.includes(status) && (
-                              <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                          <span
-                            className="text-[#3A3A3A] group-hover:text-[#1A2551] transition-colors font-light"
-                            style={{ fontFamily: "'Figtree', sans-serif" }}
-                          >
-                            {status}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                  <PropertyFilterMultiSelect
+                    label="Availability"
+                    options={["Available", "Sale Agreed", "Sold"]}
+                    selected={selectedAvailability}
+                    onChange={(selected) => {
+                      setSelectedAvailability(selected);
+                      changePage(1, false);
+                    }}
+                  />
 
                   {/* Price Range Filter */}
-                  <div>
-                    <h3
-                      className="text-[#1A2551] mb-6"
-                      style={{
-                        fontFamily: "'Figtree', sans-serif",
-                        fontSize: "1rem",
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em"
-                      }}
-                    >
-                      Price Range
-                    </h3>
-                    <div className="space-y-4">
-                      {["Under £750K", "£750K - £1.5M", "£1.5M - £2.5M", "Over £2.5M"].map((range) => (
-                        <label key={range} className="flex items-center gap-4 cursor-pointer group">
-                          <div className="relative flex items-center justify-center">
-                            <input
-                              type="checkbox"
-                              checked={selectedPriceRanges.includes(range)}
-                              onChange={() => togglePriceRange(range)}
-                              className="w-5 h-5 border border-gray-300 rounded-none appearance-none checked:bg-[#1A2551] checked:border-[#1A2551] cursor-pointer transition-colors"
-                            />
-                            {selectedPriceRanges.includes(range) && (
-                              <svg className="absolute w-3 h-3 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                          <span
-                            className="text-[#3A3A3A] group-hover:text-[#1A2551] transition-colors font-light"
-                            style={{ fontFamily: "'Figtree', sans-serif" }}
-                          >
-                            {range}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                  <PropertyFilterMultiSelect
+                    label="Price"
+                    options={["Under £750K", "£750K - £1.5M", "£1.5M - £2.5M", "Over £2.5M"]}
+                    selected={selectedPriceRanges}
+                    onChange={(selected) => {
+                      setSelectedPriceRanges(selected);
+                      changePage(1, false);
+                    }}
+                  />
                 </div>
               </div>
             </div>
+
+            {/* Mobile Count - shown below filters on mobile */}
+            <p
+              className="text-[#3A3A3A] text-center mt-4 lg:hidden"
+              style={{
+                fontFamily: "'Figtree', sans-serif",
+                fontSize: "0.875rem",
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+              }}
+            >
+              Showing {filteredProperties.length} {filteredProperties.length === 1 ? "Residence" : "Residences"}
+            </p>
           </div>
-        )}
+        </div>
       </section>
 
 

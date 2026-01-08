@@ -767,6 +767,18 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A2551] focus:border-transparent"
                   />
                   <p className="text-xs text-gray-500 mt-1">Paste the Vimeo link or the full embed code</p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <input
+                      type="checkbox"
+                      id="video_is_portrait"
+                      checked={formData.video_is_portrait || false}
+                      onChange={(e) => setFormData({ ...formData, video_is_portrait: e.target.checked })}
+                      className="rounded border-gray-300 text-[#1A2551] focus:ring-[#1A2551]"
+                    />
+                    <label htmlFor="video_is_portrait" className="text-sm text-gray-700">
+                      Portrait video (9:16 aspect ratio)
+                    </label>
+                  </div>
                 </div>
               </div>
             )}

@@ -31,6 +31,7 @@ export interface Property {
   floor_plan_image: string | null;
   virtual_tour_url: string | null;
   video_url: string | null;
+  video_is_portrait: boolean | null;
   meta_title: string | null;
   meta_description: string | null;
   keywords: string[] | null; // SEO keywords
@@ -107,6 +108,9 @@ export interface ContactSubmission {
   price_range: string | null;
   min_beds: string | null;
   timeline: string | null;
+  // Seller property fields (for valuation enquiries)
+  seller_postcode: string | null;
+  seller_house_number: string | null;
   created_at: string;
   updated_at: string;
 }
