@@ -19,6 +19,7 @@ import { CookieBanner } from './components/CookieBanner';
 import { CookieSettingsModal } from './components/CookieSettingsModal';
 import { Toaster } from './components/ui/sonner';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 
 // Lazy load pages for performance
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
@@ -126,6 +127,7 @@ export default function App() {
       {/* Toaster for notifications */}
       <Toaster />
       <SpeedInsights />
+      <Analytics />
     </BrowserRouter>
   );
 }
