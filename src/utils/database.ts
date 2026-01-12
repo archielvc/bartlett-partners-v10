@@ -1422,8 +1422,25 @@ export async function getAreasWithAvailableProperties(): Promise<string[]> {
       return [];
     }
 
-    // Get unique locations and sort alphabetically
-    const locations = [...new Set(data.map(p => p.location as string))].filter(Boolean).sort();
+    // Get unique locations and sort with Twickenham and Teddington first
+    const uniqueLocations = [...new Set(data.map(p => p.location as string))].filter(Boolean);
+
+    // Priority areas - Twickenham first, then Teddington
+    const priorityAreas = ['Twickenham', 'Teddington'];
+
+    const locations = uniqueLocations.sort((a, b) => {
+      const aIndex = priorityAreas.indexOf(a);
+      const bIndex = priorityAreas.indexOf(b);
+
+      // Both are priority areas - sort by priority order
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+      // Only a is priority - a comes first
+      if (aIndex !== -1) return -1;
+      // Only b is priority - b comes first
+      if (bIndex !== -1) return 1;
+      // Neither is priority - sort alphabetically
+      return a.localeCompare(b);
+    });
 
     if (locations.length > 0) {
       setCache(cacheKey, locations);
