@@ -140,7 +140,7 @@ export default function Insights() {
                   {currentBlogs.map((post) => (
                     <Link
                       key={post.id}
-                      to={`/blog/${post.slug}`}
+                      to={`/insights/${post.slug}`}
                       onClick={() => {
                         trackEvent('select_content', 'Blog Post', post.title);
                       }}

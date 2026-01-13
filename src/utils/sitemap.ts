@@ -122,7 +122,7 @@ export async function generateSitemap(): Promise<string> {
         blogPosts.forEach(post => {
             if (post.slug) {
                 entries.push({
-                    loc: `/blog/${post.slug}`,
+                    loc: `/insights/${post.slug}`,
                     lastmod: post.updated_at ? formatDate(post.updated_at) : today,
                     changefreq: 'monthly',
                     priority: 0.6
@@ -166,7 +166,7 @@ export async function getSitemapEntries(): Promise<SitemapEntry[]> {
         blogPosts.forEach(post => {
             if (post.slug) {
                 entries.push({
-                    loc: `/blog/${post.slug}`,
+                    loc: `/insights/${post.slug}`,
                     changefreq: 'monthly',
                     priority: 0.6
                 });
@@ -184,5 +184,5 @@ export async function getSitemapEntries(): Promise<SitemapEntry[]> {
  */
 export function isInSitemap(path: string): boolean {
     const allPaths = [...STATIC_PAGES, ...AREA_GUIDES].map(e => e.loc);
-    return allPaths.includes(path) || path.startsWith('/properties/') || path.startsWith('/blog/');
+    return allPaths.includes(path) || path.startsWith('/properties/') || path.startsWith('/insights/');
 }

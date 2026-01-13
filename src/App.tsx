@@ -101,7 +101,7 @@ export default function App() {
                           <Route path="/properties" element={<Properties />} />
                           <Route path="/properties/:slug" element={<PropertyDetail />} />
                           <Route path="/insights" element={<Insights />} />
-                          <Route path="/blog/:slug" element={<BlogPost />} />
+                          <Route path="/insights/:slug" element={<BlogPost />} />
                           <Route path="/contact" element={<Contact />} />
 
                           {/* Area Guide routes - explicit paths for each area */}

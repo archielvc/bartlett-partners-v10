@@ -11,7 +11,7 @@ interface FeaturedPostProps {
 export function FeaturedPost({ post }: FeaturedPostProps) {
   return (
     <Link
-      to={`/blog/${post.slug}`}
+      to={`/insights/${post.slug}`}
       onClick={() => trackEvent('select_content', 'Featured Blog Post', post.title)}
       className="group block mb-8 md:mb-12"
     >
@@ -51,15 +51,15 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
             <span>
               {post.published_at
                 ? new Date(post.published_at).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })
                 : new Date(post.created_at).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
             </span>
             {post.read_time && post.read_time > 0 && (
               <>

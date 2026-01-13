@@ -185,7 +185,7 @@ export default function BlogPost() {
 
                 {/* Main Content */}
                 <article ref={articleRef} className="prose max-w-none">
-                <style>{`
+                  <style>{`
                       /* Blog Article Styles */
                       article.prose {
                         font-family: 'Figtree', sans-serif;
@@ -305,29 +305,29 @@ export default function BlogPost() {
                         article.prose p, article.prose li { font-size: 1.0625rem !important; }
                       }
                     `}</style>
-                {post.content ? (
-                  // Check if content contains HTML tags
-                  post.content.includes('<') ? (
-                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                  {post.content ? (
+                    // Check if content contains HTML tags
+                    post.content.includes('<') ? (
+                      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                    ) : (
+                      <ReactMarkdown
+                        components={{
+                          h1: ({ node, ...props }) => <h1 {...props} />,
+                          h2: ({ node, ...props }) => <h2 {...props} />,
+                          h3: ({ node, ...props }) => <h3 {...props} />,
+                          h4: ({ node, ...props }) => <h4 {...props} />,
+                          p: ({ node, ...props }) => <p {...props} />,
+                          li: ({ node, ...props }) => <li {...props} />,
+                          a: ({ node, ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
+                        }}
+                      >
+                        {post.content}
+                      </ReactMarkdown>
+                    )
                   ) : (
-                    <ReactMarkdown
-                      components={{
-                        h1: ({ node, ...props }) => <h1 {...props} />,
-                        h2: ({ node, ...props }) => <h2 {...props} />,
-                        h3: ({ node, ...props }) => <h3 {...props} />,
-                        h4: ({ node, ...props }) => <h4 {...props} />,
-                        p: ({ node, ...props }) => <p {...props} />,
-                        li: ({ node, ...props }) => <li {...props} />,
-                        a: ({ node, ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
-                      }}
-                    >
-                      {post.content}
-                    </ReactMarkdown>
-                  )
-                ) : (
-                  <p className="text-gray-500 italic">No content available.</p>
-                )}
-              </article>
+                    <p className="text-gray-500 italic">No content available.</p>
+                  )}
+                </article>
               </div>
             </div>
           </div>
@@ -349,7 +349,7 @@ export default function BlogPost() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {relatedPosts.map((relatedPost, index) => (
                   <Link
-                    to={`/blog/${relatedPost.slug}`}
+                    to={`/insights/${relatedPost.slug}`}
                     onClick={() => {
                       trackEvent('related_article_click', 'Related Article', relatedPost.title);
                     }}
