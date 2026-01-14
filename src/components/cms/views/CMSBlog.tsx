@@ -45,6 +45,7 @@ export function CMSBlog() {
     slug: '',
     content: '',
     excerpt: '',
+    tldr: '',
     category: 'Insights',
     status: 'draft',
     featured_image: '',
@@ -73,11 +74,13 @@ export function CMSBlog() {
   };
 
   // Selection Handlers
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = (checked: boolean, targetPosts: BlogPost[]) => {
     if (checked) {
-      setSelectedIds(posts.map(p => p.id));
+      const newIds = targetPosts.map(p => p.id);
+      setSelectedIds(prev => Array.from(new Set([...prev, ...newIds])));
     } else {
-      setSelectedIds([]);
+      const idsToRemove = new Set(targetPosts.map(p => p.id));
+      setSelectedIds(prev => prev.filter(id => !idsToRemove.has(id)));
     }
   };
 
@@ -113,6 +116,7 @@ export function CMSBlog() {
         slug: fullPost.slug,
         content: fullPost.content || '',
         excerpt: fullPost.excerpt || '',
+        tldr: fullPost.tldr || '',
         category: fullPost.category || 'Insights',
         status: fullPost.status,
         published_at: fullPost.published_at,
@@ -134,6 +138,7 @@ export function CMSBlog() {
       slug: '',
       content: '',
       excerpt: '',
+      tldr: '',
       category: 'Insights',
       status: 'draft',
       featured_image: '',
@@ -285,6 +290,7 @@ export function CMSBlog() {
           title: item.title.trim(),
           slug: slug,
           excerpt: item.excerpt?.trim() || null,
+          tldr: item.tldr?.trim() || null,
           content: item.content || '',
 
           // === PUBLISHING FIELDS ===
@@ -322,6 +328,7 @@ export function CMSBlog() {
           author: blogPostData.author,
           status: blogPostData.status,
           hasExcerpt: !!blogPostData.excerpt,
+          hasTldr: !!blogPostData.tldr,
           hasContent: !!blogPostData.content,
           contentLength: blogPostData.content?.length || 0
         });
@@ -381,6 +388,104 @@ export function CMSBlog() {
       post.slug?.toLowerCase().includes(term)
     );
   });
+
+  const drafts = filteredPosts.filter(p => p.status !== 'published');
+  const published = filteredPosts.filter(p => p.status === 'published');
+
+  const renderTable = (tablePosts: BlogPost[], title: string) => (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm mb-8 last:mb-0">
+      <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="font-semibold text-gray-700 flex items-center gap-2">
+          {title}
+          <span className="bg-gray-200 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-normal">
+            {tablePosts.length}
+          </span>
+        </h3>
+      </div>
+      <table className="w-full">
+        <thead className="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th className="w-10 px-6 py-3">
+              <Checkbox
+                checked={tablePosts.length > 0 && tablePosts.every(p => selectedIds.includes(p.id))}
+                onCheckedChange={(checked) => handleSelectAll(checked as boolean, tablePosts)}
+              />
+            </th>
+            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[35%]">Article</th>
+            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">Category</th>
+            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[12%]">Status</th>
+            <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">Published</th>
+            <th className="text-right px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[13%]">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {tablePosts.map((post) => (
+            <tr key={post.id} className="hover:bg-gray-50 transition-colors">
+              <td className="px-6 py-4">
+                <Checkbox
+                  checked={selectedIds.includes(post.id)}
+                  onCheckedChange={(checked) => handleSelect(post.id, checked as boolean)}
+                />
+              </td>
+              <td className="px-6 py-4 w-[35%]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {post.featured_image ? (
+                      <img
+                        src={post.featured_image}
+                        alt={(post as any).featured_image_alt || post.title || 'Blog post featured image'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <FileText className="w-5 h-5 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-gray-900 line-clamp-1">{post.title}</div>
+                    <div className="text-xs text-gray-500 line-clamp-1">/{post.slug}</div>
+                  </div>
+                </div>
+              </td>
+              <td className="px-6 py-4 text-sm text-gray-600 w-[15%]">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap">
+                  {post.category || 'Uncategorized'}
+                </span>
+              </td>
+              <td className="px-6 py-4 w-[12%]">
+                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${post.status === 'published'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                  {post.status === 'published' ? 'Published' : 'Draft'}
+                </span>
+              </td>
+              <td className="px-6 py-4 text-sm text-gray-600 w-[15%]">
+                {post.published_at ? new Date(post.published_at).toLocaleDateString() : '-'}
+              </td>
+              <td className="px-6 py-4 w-[13%]">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => handleEdit(post)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                    title="Edit Article"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(post.id)}
+                    className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-lg transition-colors"
+                    title="Delete Article"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <CMSPageLayout
@@ -450,104 +555,22 @@ export function CMSBlog() {
       </div>
 
       {/* Content Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="w-10 px-6 py-3">
-                <Checkbox
-                  checked={selectedIds.length === posts.length && posts.length > 0}
-                  onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
-                />
-              </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[35%]">Article</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">Category</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[12%]">Status</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">Published</th>
-              <th className="text-right px-6 py-3 text-xs font-medium text-gray-600 uppercase tracking-wider w-[13%]">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {isLoading ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  Loading posts...
-                </td>
-              </tr>
-            ) : filteredPosts.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  {searchTerm ? 'No articles found matching your search.' : 'No blog posts found. Create your first article to get started.'}
-                </td>
-              </tr>
-            ) : (
-              filteredPosts.map((post) => (
-                <tr key={post.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <Checkbox
-                      checked={selectedIds.includes(post.id)}
-                      onCheckedChange={(checked) => handleSelect(post.id, checked as boolean)}
-                    />
-                  </td>
-                  <td className="px-6 py-4 w-[35%]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {post.featured_image ? (
-                          <img
-                            src={post.featured_image}
-                            alt={(post as any).featured_image_alt || post.title || 'Blog post featured image'}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <FileText className="w-5 h-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium text-gray-900 line-clamp-1">{post.title}</div>
-                        <div className="text-xs text-gray-500 line-clamp-1">/{post.slug}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 w-[15%]">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 whitespace-nowrap">
-                      {post.category || 'Uncategorized'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 w-[12%]">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${post.status === 'published'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                      }`}>
-                      {post.status === 'published' ? 'Published' : 'Draft'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 w-[15%]">
-                    {post.published_at ? new Date(post.published_at).toLocaleDateString() : '-'}
-                  </td>
-                  <td className="px-6 py-4 w-[13%]">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(post)}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-                        title="Edit Article"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(post.id)}
-                        className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded-lg transition-colors"
-                        title="Delete Article"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {isLoading ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500">
+          Loading posts...
+        </div>
+      ) : filteredPosts.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-500">
+          {searchTerm ? 'No articles found matching your search.' : 'No blog posts found. Create your first article to get started.'}
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {drafts.length > 0 && renderTable(drafts, 'Drafts')}
+          {published.length > 0 && renderTable(published, 'Published Articles')}
+          {/* Fallback for anything else (should be empty but keeping robust) */}
+          {filteredPosts.length > (drafts.length + published.length) && renderTable(filteredPosts.filter(p => p.status !== 'published' && p.status !== 'draft'), 'Other')}
+        </div>
+      )}
 
       {/* Edit Modal */}
       {showModal && (

@@ -15,9 +15,9 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
       onClick={() => trackEvent('select_content', 'Featured Blog Post', post.title)}
       className="group block mb-8 md:mb-12"
     >
-      <div className="grid md:grid-cols-2 gap-0 bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300">
-        {/* Image */}
-        <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[320px] lg:min-h-[360px] overflow-hidden">
+      <div className="flex flex-col md:flex-row bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+        {/* Image - flexbox makes this match content height */}
+        <div className="relative aspect-[4/3] md:aspect-auto md:w-1/2 md:shrink-0 overflow-hidden">
           {post.featured_image && (
             <OptimizedImage
               src={post.featured_image}
@@ -25,29 +25,25 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
           )}
-          <div className="absolute top-3 left-3 md:top-4 md:left-4 bg-[#8E8567] px-3 py-1.5 rounded">
+          <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-md">
             <span
-              className="text-white text-[10px] md:text-xs font-bold uppercase tracking-[0.12em]"
+              className="text-[#8E8567] text-sm font-bold uppercase tracking-[0.2em]"
               style={{ fontFamily: "'Figtree', sans-serif" }}
             >
-              Featured
+              {post.category || "Insight"}
             </span>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 md:p-8 lg:p-10 flex flex-col justify-center">
+        <div className="p-6 md:p-8 lg:p-10 md:w-1/2 flex flex-col justify-center">
           {/* Meta */}
           <div
             className="flex flex-wrap items-center gap-2 md:gap-3 mb-3 text-gray-400 text-[10px] md:text-xs uppercase tracking-wider font-medium"
             style={{ fontFamily: "'Figtree', sans-serif" }}
           >
-            {post.category && (
-              <>
-                <span className="text-[#8E8567]">{post.category}</span>
-                <span className="text-gray-300">|</span>
-              </>
-            )}
+            <span className="text-[#8E8567]">Featured</span>
+            <span className="text-gray-300">|</span>
             <span>
               {post.published_at
                 ? new Date(post.published_at).toLocaleDateString('en-US', {

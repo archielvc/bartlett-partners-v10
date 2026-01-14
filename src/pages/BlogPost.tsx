@@ -88,8 +88,8 @@ export default function BlogPost() {
       <main id="main-content">
         {/* Hero Section */}
         <section className="w-full bg-white pt-24 md:pt-32 pb-12 md:pb-20 px-6 md:px-12 lg:px-20">
+          {/* Back Button - in wider container */}
           <div className="max-w-[1600px] mx-auto">
-            {/* Back Button */}
             <Link
               to="/insights"
               onClick={() => {
@@ -110,8 +110,11 @@ export default function BlogPost() {
                 Back to Insights
               </span>
             </Link>
+          </div>
 
-            <div className="max-w-3xl">
+          {/* Title - same width as hero image */}
+          <div className="max-w-4xl mx-auto">
+            <div>
               {/* Date & Category */}
               <div className="mb-6 md:mb-8 flex flex-wrap items-center gap-3 md:gap-4">
                 {post.category && (
@@ -150,14 +153,19 @@ export default function BlogPost() {
                 {post.title}
               </h1>
             </div>
+          </div>
 
-            {/* Featured Image */}
+          {/* Featured Image - slightly wider than content */}
+          <div className="max-w-4xl mx-auto">
             {post.featured_image && (
-              <div className="relative w-full mt-8 md:mt-12 overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9] rounded-lg">
+              <div className="relative w-full mt-8 md:mt-12 overflow-hidden bg-gray-100 aspect-[16/9] rounded-lg">
                 <OptimizedImage
                   src={post.featured_image}
-                  alt={post.title}
+                  alt={post.featured_image_alt || post.title}
                   className="w-full h-full object-cover"
+                  sizes="(max-width: 896px) 100vw, 896px"
+                  maxSrcSetWidth={1600}
+                  priority={true}
                 />
               </div>
             )}
@@ -166,19 +174,22 @@ export default function BlogPost() {
 
         {/* Article Content */}
         <section className="w-full bg-white pb-20 md:pb-32 px-6 md:px-12 lg:px-20">
-          <div className="max-w-[1600px] mx-auto">
-            {/* Flex container for TOC sidebar and content */}
-            <div className="flex gap-12 xl:gap-16 justify-center">
-              {/* Table of Contents - Desktop Sidebar */}
-              {post.content && (
-                <TableOfContents content={post.content} contentRef={articleRef} />
-              )}
+          <div className="relative max-w-4xl mx-auto">
+            {/* Table of Contents - Floating sidebar on XL screens */}
+            {post.content && (
+              <TableOfContents
+                content={post.content}
+                contentRef={articleRef}
+                className="hidden xl:block w-48 absolute -left-56 top-0"
+              />
+            )}
 
-              {/* Main Content Column - full width on mobile, max-width on desktop */}
-              <div className="w-full max-w-none xl:max-w-[680px]">
+            {/* Main Content Column - centered */}
+            <div className="w-full">
                 {/* TL;DR Summary Box */}
                 <ArticleSummary
                   excerpt={post.excerpt}
+                  tldr={post.tldr}
                   category={post.category}
                   readTime={post.read_time}
                 />
@@ -329,7 +340,6 @@ export default function BlogPost() {
                   )}
                 </article>
               </div>
-            </div>
           </div>
         </section>
 

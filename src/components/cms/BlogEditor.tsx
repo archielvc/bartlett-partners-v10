@@ -34,6 +34,7 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
         category: post.category || 'Market Updates',
         status: post.status || 'draft',
         excerpt: post.excerpt || '',
+        tldr: post.tldr || '',
         content: post.content || '',
         featured_image: post.featured_image || null,
         featured_image_alt: post.featured_image_alt || null,
@@ -54,6 +55,7 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
       category: 'Market Updates',
       status: 'draft',
       excerpt: '',
+      tldr: '',
       content: '',
       featured_image: null,
       featured_image_alt: null,
@@ -118,6 +120,7 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
         category: post.category || 'Market Updates',
         status: post.status,
         excerpt: post.excerpt || '',
+        tldr: post.tldr || '',
         content: post.content || '',
         featured_image: post.featured_image || null,
         featured_image_alt: post.featured_image_alt || null,
@@ -285,6 +288,7 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
         title: formData.title || '',
         slug: formData.slug || '',
         excerpt: formData.excerpt || null,
+        tldr: formData.tldr || null,
         content: formData.content || '',
         author: formData.author || 'Darren Bartlett',
         category: formData.category || 'Market Updates',
@@ -541,6 +545,30 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
                   <p className="text-xs text-gray-500 mt-1">
                     This will appear on blog listing pages and as the preview text
                   </p>
+                </div>
+
+                {/* TLDR Summary */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    TL;DR Summary <span className="text-gray-400 font-normal">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      rows={3}
+                      value={formData.tldr || ''}
+                      onChange={(e) => setFormData({ ...formData, tldr: e.target.value.substring(0, 300) })}
+                      placeholder="Specific summary for the TL;DR box at the top of the article. If left empty, the excerpt will be used."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A2551] focus:border-transparent resize-none"
+                      maxLength={300}
+                    />
+                    <div className="absolute right-3 bottom-3">
+                      <CharacterCounter
+                        current={formData.tldr?.length || 0}
+                        optimal={160}
+                        max={300}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Content */}

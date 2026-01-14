@@ -73,6 +73,7 @@ export interface BlogPost {
   title: string;
   slug: string;
   excerpt: string | null;
+  tldr: string | null;
   content: string;
   author: string;
   category: string;

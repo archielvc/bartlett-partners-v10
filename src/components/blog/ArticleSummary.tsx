@@ -2,12 +2,15 @@ import { Clock } from 'lucide-react';
 
 interface ArticleSummaryProps {
   excerpt: string | null;
+  tldr?: string | null;
   category: string | null;
   readTime: number | null;
 }
 
-export function ArticleSummary({ excerpt, category, readTime }: ArticleSummaryProps) {
-  if (!excerpt) return null;
+export function ArticleSummary({ excerpt, tldr, category, readTime }: ArticleSummaryProps) {
+  const summaryText = tldr || excerpt;
+
+  if (!summaryText) return null;
 
   return (
     <aside
@@ -25,7 +28,7 @@ export function ArticleSummary({ excerpt, category, readTime }: ArticleSummaryPr
         className="text-[#3A3A3A] text-sm md:text-base leading-relaxed mb-3"
         style={{ fontFamily: "'Figtree', sans-serif" }}
       >
-        {excerpt}
+        {summaryText}
       </p>
       <div
         className="flex flex-wrap items-center gap-2 text-gray-500 text-[10px] md:text-xs uppercase tracking-wider font-medium"

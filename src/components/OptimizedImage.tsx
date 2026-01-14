@@ -12,6 +12,10 @@ interface OptimizedImageProps {
   enableLQIP?: boolean;
   /** Aspect ratio for placeholder (e.g., "4/3", "16/9") */
   aspectRatio?: string;
+  /** Custom sizes attribute for responsive images (default: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw") */
+  sizes?: string;
+  /** Maximum width for srcset (default: 1200, use 1600+ for hero images) */
+  maxSrcSetWidth?: number;
 }
 
 /**
@@ -82,6 +86,8 @@ export function OptimizedImage({
   fetchPriority = 'auto',
   enableLQIP = true,
   aspectRatio,
+  sizes: customSizes,
+  maxSrcSetWidth = 1200,
 }: OptimizedImageProps) {
   const [loadState, setLoadState] = useState<'idle' | 'lqip' | 'loaded'>('idle');
   const [isInView, setIsInView] = useState(priority);
@@ -144,18 +150,26 @@ export function OptimizedImage({
   const generateSrcSet = (url: string) => {
     if (!url) return undefined;
 
+    // Build srcset based on maxSrcSetWidth
+    const breakpoints = [400, 800, 1200];
+    if (maxSrcSetWidth >= 1600) breakpoints.push(1600);
+    if (maxSrcSetWidth >= 2000) breakpoints.push(2000);
+
     // Supabase Storage: Generate responsive srcset with render/image endpoint
     // Using width-only to maintain aspect ratio (no cropping)
-    // Capped at 1200w for better PageSpeed performance (most displays don't need 1600w)
     if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
       const transformedUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-      return `${transformedUrl}?width=400&quality=70&resize=contain 400w, ${transformedUrl}?width=800&quality=75&resize=contain 800w, ${transformedUrl}?width=1200&quality=75&resize=contain 1200w`;
+      return breakpoints
+        .map(w => `${transformedUrl}?width=${w}&quality=${w <= 400 ? 70 : 75}&resize=contain ${w}w`)
+        .join(', ');
     }
 
-    // Unsplash - capped at 1200w for better PageSpeed performance
+    // Unsplash
     if (url.includes('unsplash')) {
       const baseUrl = url.split('?')[0];
-      return `${baseUrl}?w=400&q=70&fm=webp&fit=crop&auto=format 400w, ${baseUrl}?w=800&q=75&fm=webp&fit=crop&auto=format 800w, ${baseUrl}?w=1200&q=75&fm=webp&fit=crop&auto=format 1200w`;
+      return breakpoints
+        .map(w => `${baseUrl}?w=${w}&q=${w <= 400 ? 70 : 75}&fm=webp&fit=crop&auto=format ${w}w`)
+        .join(', ');
     }
 
     return undefined;
@@ -206,7 +220,7 @@ export function OptimizedImage({
           ref={imgRef}
           src={getOptimizedUrl(src, width || 800, 75)}
           srcSet={generateSrcSet(src)}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes={customSizes || "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
           alt={alt}
           width={width || 800}
           height={height || 600}

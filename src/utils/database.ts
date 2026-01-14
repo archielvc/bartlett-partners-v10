@@ -702,7 +702,7 @@ export async function getAllBlogPostsAdminLight(): Promise<Partial<BlogPost>[]> 
   // Fetch essential fields for CMS list view
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('id, title, slug, excerpt, category, status, published_at, featured_image, author, created_at, updated_at')
+    .select('id, title, slug, excerpt, tldr, category, status, published_at, featured_image, author, created_at, updated_at')
     .order('published_at', { ascending: false, nullsFirst: false }) // Published posts newest first, drafts at end
     .limit(100); // Reduced limit for faster queries
 
@@ -842,6 +842,7 @@ export async function createBlogPost(post: Partial<BlogPost>): Promise<BlogPost 
     title: post.title || 'Untitled Post',
     slug: post.slug || `post-${Date.now()}`,
     excerpt: post.excerpt || '',
+    tldr: post.tldr || null,
     content: post.content || '',
     author: post.author || 'Bartlett & Partners',
     featured_image: post.featured_image || null,
@@ -931,6 +932,7 @@ export async function updateBlogPost(id: number, updates: Partial<BlogPost>): Pr
     ...(updates.title !== undefined && { title: updates.title }),
     ...(updates.slug !== undefined && { slug: updates.slug }),
     ...(updates.excerpt !== undefined && { excerpt: updates.excerpt }),
+    ...(updates.tldr !== undefined && { tldr: updates.tldr }),
     ...(updates.content !== undefined && { content: updates.content }),
     ...(updates.author !== undefined && { author: updates.author }),
     ...(updates.category !== undefined && { category: updates.category }),

@@ -34,55 +34,74 @@ export function AboutValues() {
 
   return (
     <section className="w-full bg-white border-t border-[#1A2551]/10">
-      {values.map((value, index) => (
-        <div
-          key={index}
-          className="flex flex-col md:flex-row w-full md:h-[600px] lg:h-[700px] md:sticky bg-white shadow-xl"
-          style={{
-            top: 0,
-            zIndex: index + 1
-          }}
-        >
+      {values.map((value, index) => {
+        const isImageLeft = index % 2 === 0;
 
-          {/* Image Side */}
-          <div className={`w-full md:w-1/2 h-[60vh] md:h-auto relative overflow-hidden ${index % 2 !== 0 ? 'md:order-2' : ''}`}>
-            <ImageWithFallback
-              src={value.image}
-              alt={value.title}
-              className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-[1.5s]"
-            />
-            <div className="absolute inset-0 bg-black/10" />
-          </div>
-
-          {/* Text Side */}
-          <div className={`w-full md:w-1/2 flex flex-col justify-center p-12 md:p-16 lg:p-20 bg-white overflow-hidden ${index % 2 !== 0 ? 'md:order-1' : ''}`}>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
+        return (
+          <div
+            key={index}
+            className="flex flex-col md:flex-row w-full md:h-[600px] lg:h-[700px] md:sticky bg-white shadow-xl"
+            style={{
+              top: 0,
+              zIndex: index + 1
+            }}
+          >
+            {/* Image Side - full width to viewport edge */}
+            <div
+              className={`w-full md:w-1/2 h-[60vh] md:h-auto relative overflow-hidden ${
+                !isImageLeft ? 'md:order-2' : ''
+              }`}
             >
-              <span className="text-[#8E8567] text-sm font-bold uppercase tracking-[0.2em] mb-4 block">
-                {value.title}
-              </span>
-              <h3
-                className="text-[#1A2551] text-4xl md:text-5xl mb-8 font-light"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                {value.subtitle}
-              </h3>
-              <div className="text-[#1A2551]/60 text-lg font-light leading-relaxed space-y-4">
-                {value.description.split('\n\n').map((paragraph, pIndex, arr) => (
-                  <p key={pIndex} className={pIndex === arr.length - 1 && index === 0 ? 'font-medium' : ''}>
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-            </motion.div>
-          </div>
+              <ImageWithFallback
+                src={value.image}
+                alt={value.title}
+                className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-[1.5s]"
+              />
+              <div className="absolute inset-0 bg-black/10" />
+            </div>
 
-        </div>
-      ))}
+            {/* Text Side - aligned to content grid */}
+            <div
+              className={`w-full md:w-1/2 flex bg-white overflow-hidden ${
+                !isImageLeft ? 'md:order-1' : ''
+              }`}
+            >
+              {/* Content wrapper to align with global grid */}
+              <div
+                className={`w-full flex flex-col justify-center py-12 md:py-16 lg:py-20 ${
+                  isImageLeft
+                    ? 'pl-8 md:pl-12 lg:pl-16 pr-6 md:pr-12 lg:pr-20'
+                    : 'pr-8 md:pr-12 lg:pr-16 pl-6 md:pl-12 lg:pl-20'
+                }`}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <span className="text-[#8E8567] text-sm font-bold uppercase tracking-[0.2em] mb-4 block">
+                    {value.title}
+                  </span>
+                  <h3
+                    className="text-[#1A2551] text-4xl md:text-5xl mb-8 font-light"
+                    style={{ fontFamily: "'Playfair Display', serif" }}
+                  >
+                    {value.subtitle}
+                  </h3>
+                  <div className="text-[#1A2551]/60 text-lg font-light leading-relaxed space-y-4">
+                    {value.description.split('\n\n').map((paragraph, pIndex, arr) => (
+                      <p key={pIndex} className={pIndex === arr.length - 1 && index === 0 ? 'font-medium' : ''}>
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </section>
   );
 }

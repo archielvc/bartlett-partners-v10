@@ -8,7 +8,8 @@ export interface TOCItem {
 
 interface TableOfContentsProps {
   content: string;
-  contentRef?: React.RefObject<HTMLElement>;
+  contentRef?: React.RefObject<HTMLElement | null>;
+  className?: string;
 }
 
 // Generate a URL-safe slug from text
@@ -63,7 +64,7 @@ function extractHeadings(content: string): TOCItem[] {
   return headings;
 }
 
-export function TableOfContents({ content, contentRef }: TableOfContentsProps) {
+export function TableOfContents({ content, contentRef, className }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const headings = useMemo(() => extractHeadings(content), [content]);
@@ -129,7 +130,7 @@ export function TableOfContents({ content, contentRef }: TableOfContentsProps) {
   return (
     /* Desktop: Sticky Sidebar - hidden on mobile, takes no space */
     <nav
-      className="hidden xl:block w-48 shrink-0"
+      className={className || "hidden xl:block w-48 shrink-0"}
       aria-label="Table of contents"
     >
       <div className="sticky top-28">
@@ -147,11 +148,10 @@ export function TableOfContents({ content, contentRef }: TableOfContentsProps) {
             >
               <button
                 onClick={() => handleClick(heading.id)}
-                className={`text-left text-xs leading-relaxed transition-colors duration-200 hover:text-[#8E8567] ${
-                  activeId === heading.id
+                className={`text-left text-xs leading-relaxed transition-colors duration-200 hover:text-[#8E8567] ${activeId === heading.id
                     ? 'text-[#8E8567] font-medium'
                     : 'text-gray-500'
-                }`}
+                  }`}
                 style={{ fontFamily: "'Figtree', sans-serif" }}
               >
                 {heading.text}
