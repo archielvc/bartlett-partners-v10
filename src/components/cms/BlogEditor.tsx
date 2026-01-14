@@ -12,6 +12,16 @@ import type { BlogPost } from '../../types/database';
 import { updateBlogPost, createBlogPost, deleteBlogPost, getStaticPageByName } from '../../utils/database';
 import { generateBlogSEO } from '../../utils/autoSEO';
 import { generateSEOFromContent, generateSEOWithAI } from '../../utils/aiSEO';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 interface BlogEditorProps {
   post?: BlogPost | null;
@@ -75,6 +85,7 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [parentSlug, setParentSlug] = useState('insights');
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
@@ -335,15 +346,13 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
 
   const handleDelete = async () => {
     if (!post) return;
-    if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
 
     try {
       await deleteBlogPost(post.id);
-      toast.success('Article deleted successfully');
-      onSave();
-      onClose();
+      toast.success('Article deleted');
+      onSave(); // Refresh list
+      onClose(); // Close editor
     } catch (error) {
-      console.error('Error deleting article:', error);
       toast.error('Failed to delete article');
     }
   };
@@ -897,7 +906,7 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
         <div>
           {post && (
             <button
-              onClick={handleDelete}
+              onClick={() => setIsDeleteDialogOpen(true)}
               className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium flex items-center gap-2"
             >
               <Trash2 className="w-4 h-4" />
@@ -964,6 +973,28 @@ export function BlogEditor({ post, onClose, onSave }: BlogEditorProps) {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the article
+              and remove it from the website.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Article
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

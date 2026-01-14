@@ -25,6 +25,16 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useAuth } from '../../contexts/AuthContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 // Sortable Item Component
 function SortableTestimonialCard({
@@ -102,8 +112,8 @@ function SortableTestimonialCard({
         <button
           onClick={() => onTogglePublished(testimonial)}
           className={`px-3 py-2 text-sm border border-gray-200 rounded-lg transition-colors ${testimonial.published
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
-              : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
+            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
             }`}
           title={testimonial.published ? "Published" : "Hidden"}
         >
@@ -111,7 +121,9 @@ function SortableTestimonialCard({
         </button>
 
         <button
-          onClick={() => onDelete(testimonial.id as number)}
+          onClick={() => {
+            onDelete(testimonial.id as number);
+          }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-100 hover:text-red-600 text-gray-400 transition-colors"
         >
           <Trash2 className="w-4 h-4" />
@@ -131,6 +143,9 @@ export function TestimonialsModule() {
     content: '',
     published: true,
   });
+
+  const [testimonialToDelete, setTestimonialToDelete] = useState<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const [testimonials, setTestimonials] = useState<DBTestimonial[]>([]);
 
@@ -222,10 +237,6 @@ export function TestimonialsModule() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this testimonial?')) {
-      return;
-    }
-
     try {
       await deleteTestimonial(id);
       setTestimonials(testimonials.filter(t => t.id !== id));
@@ -321,7 +332,10 @@ export function TestimonialsModule() {
                     key={testimonial.id}
                     testimonial={testimonial}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onDelete={(id) => {
+                      setTestimonialToDelete(id);
+                      setIsDeleteDialogOpen(true);
+                    }}
                     onTogglePublished={togglePublished}
                   />
                 ))}
@@ -330,6 +344,27 @@ export function TestimonialsModule() {
           </DndContext>
         </>
       )}
+
+      {/* DELETE TESTIMONIAL CONFIRMATION */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the testimonial.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => testimonialToDelete && handleDelete(testimonialToDelete)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Testimonial
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">

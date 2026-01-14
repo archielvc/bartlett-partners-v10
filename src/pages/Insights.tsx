@@ -181,6 +181,10 @@ export default function Insights() {
                               </span>
                             </>
                           )}
+                          <span className="text-gray-300">•</span>
+                          <span className="text-[#1A2551] font-bold">
+                            By {post.author || 'Bartlett & Partners'}
+                          </span>
                         </div>
 
                         {/* Title */}

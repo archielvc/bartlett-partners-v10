@@ -6,11 +6,23 @@ import { getAllTeamMembersAdmin, upsertTeamMember, deleteTeamMember, reorderTeam
 import { ImageWithFallback } from '../../ui/ImageWithFallback';
 import { CMSImageUpload } from '../CMSImageUpload';
 import type { TeamMember } from '../../../types/database';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "../../ui/alert-dialog";
 
 export function CMSTeam() {
     const [members, setMembers] = useState<TeamMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingMember, setEditingMember] = useState<Partial<TeamMember> | null>(null);
+    const [memberToDelete, setMemberToDelete] = useState<number | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     useEffect(() => {
         loadMembers();
@@ -50,10 +62,8 @@ export function CMSTeam() {
     }
 
     async function handleDelete(id: number) {
-        if (confirm('Are you sure you want to delete this team member?')) {
-            await deleteTeamMember(id);
-            loadMembers();
-        }
+        await deleteTeamMember(id);
+        loadMembers();
     }
 
     return (
@@ -229,7 +239,10 @@ export function CMSTeam() {
                                                     <Pencil className="w-4 h-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(member.id)}
+                                                    onClick={() => {
+                                                        setMemberToDelete(member.id);
+                                                        setIsDeleteDialogOpen(true);
+                                                    }}
                                                     className="p-1 text-gray-400 hover:text-red-600 transition-colors"
                                                     title="Delete"
                                                 >
@@ -244,6 +257,28 @@ export function CMSTeam() {
                     )}
                 </div>
             )}
+
+            {/* DELETE MEMBER CONFIRMATION */}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the team member
+                            and remove them from the website.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => memberToDelete && handleDelete(memberToDelete)}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            Delete Member
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

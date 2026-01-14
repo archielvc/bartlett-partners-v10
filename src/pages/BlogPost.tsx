@@ -38,7 +38,7 @@ export default function BlogPost() {
           ogImage: postData.featured_image || undefined,
           type: 'article',
           publishedTime: postData.published_at || postData.created_at,
-          author: 'Bartlett & Partners'
+          author: postData.author || 'Bartlett & Partners'
         });
 
         // Inject Schema
@@ -47,7 +47,7 @@ export default function BlogPost() {
           image: postData.featured_image || undefined,
           datePublished: postData.published_at || postData.created_at,
           description: postData.excerpt || postData.content.substring(0, 160),
-          author: 'Bartlett & Partners'
+          author: postData.author || 'Bartlett & Partners'
         }));
       }
 
@@ -141,6 +141,13 @@ export default function BlogPost() {
                     {post.read_time} min read
                   </span>
                 )}
+                <span
+                  className="text-[#6B7280] flex items-center gap-1.5 uppercase tracking-wider text-xs font-medium"
+                  style={{ fontFamily: "'Figtree', sans-serif" }}
+                >
+                  <span className="text-gray-300">•</span>
+                  By <span className="text-[#1A2551] font-bold">{post.author || 'Bartlett & Partners'}</span>
+                </span>
               </div>
 
               {/* Title */}
@@ -186,17 +193,17 @@ export default function BlogPost() {
 
             {/* Main Content Column - centered */}
             <div className="w-full">
-                {/* TL;DR Summary Box */}
-                <ArticleSummary
-                  excerpt={post.excerpt}
-                  tldr={post.tldr}
-                  category={post.category}
-                  readTime={post.read_time}
-                />
+              {/* TL;DR Summary Box */}
+              <ArticleSummary
+                excerpt={post.excerpt}
+                tldr={post.tldr}
+                category={post.category}
+                readTime={post.read_time}
+              />
 
-                {/* Main Content */}
-                <article ref={articleRef} className="prose max-w-none">
-                  <style>{`
+              {/* Main Content */}
+              <article ref={articleRef} className="prose max-w-none">
+                <style>{`
                       /* Blog Article Styles */
                       article.prose {
                         font-family: 'Figtree', sans-serif;
@@ -316,30 +323,30 @@ export default function BlogPost() {
                         article.prose p, article.prose li { font-size: 1.0625rem !important; }
                       }
                     `}</style>
-                  {post.content ? (
-                    // Check if content contains HTML tags
-                    post.content.includes('<') ? (
-                      <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                    ) : (
-                      <ReactMarkdown
-                        components={{
-                          h1: ({ node, ...props }) => <h1 {...props} />,
-                          h2: ({ node, ...props }) => <h2 {...props} />,
-                          h3: ({ node, ...props }) => <h3 {...props} />,
-                          h4: ({ node, ...props }) => <h4 {...props} />,
-                          p: ({ node, ...props }) => <p {...props} />,
-                          li: ({ node, ...props }) => <li {...props} />,
-                          a: ({ node, ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
-                        }}
-                      >
-                        {post.content}
-                      </ReactMarkdown>
-                    )
+                {post.content ? (
+                  // Check if content contains HTML tags
+                  post.content.includes('<') ? (
+                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
                   ) : (
-                    <p className="text-gray-500 italic">No content available.</p>
-                  )}
-                </article>
-              </div>
+                    <ReactMarkdown
+                      components={{
+                        h1: ({ node, ...props }) => <h1 {...props} />,
+                        h2: ({ node, ...props }) => <h2 {...props} />,
+                        h3: ({ node, ...props }) => <h3 {...props} />,
+                        h4: ({ node, ...props }) => <h4 {...props} />,
+                        p: ({ node, ...props }) => <p {...props} />,
+                        li: ({ node, ...props }) => <li {...props} />,
+                        a: ({ node, ...props }) => <a target="_blank" rel="noopener noreferrer" {...props} />,
+                      }}
+                    >
+                      {post.content}
+                    </ReactMarkdown>
+                  )
+                ) : (
+                  <p className="text-gray-500 italic">No content available.</p>
+                )}
+              </article>
+            </div>
           </div>
         </section>
 

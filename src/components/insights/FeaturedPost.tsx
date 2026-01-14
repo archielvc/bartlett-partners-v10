@@ -66,6 +66,10 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
                 </span>
               </>
             )}
+            <span className="text-gray-300">|</span>
+            <span className="font-semibold text-[#1A2551]">
+              By {post.author || 'Bartlett & Partners'}
+            </span>
           </div>
 
           {/* Title */}

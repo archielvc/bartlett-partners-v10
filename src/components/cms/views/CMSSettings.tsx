@@ -19,6 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../ui/alert-dialog";
 import { toast } from 'sonner';
 import { CMSPageLayout } from '../CMSPageLayout';
 import { supabase, supabaseUrl } from '../../../utils/supabase/client';
@@ -56,6 +66,10 @@ export function CMSSettings() {
   const [notificationEmails, setNotificationEmails] = useState<string[]>([]);
   const [newEmail, setNewEmail] = useState('');
   const [isSavingEmails, setIsSavingEmails] = useState(false);
+
+  // Delete User Confirmation
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { user: currentUser } = useAuth();
 
@@ -184,8 +198,6 @@ export function CMSSettings() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
-
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No active session");
@@ -379,7 +391,10 @@ export function CMSSettings() {
                         variant="ghost"
                         size="icon"
                         disabled={profile.id === currentUser?.id}
-                        onClick={() => handleDeleteUser(profile.id)}
+                        onClick={() => {
+                          setUserToDelete(profile.id);
+                          setIsDeleteDialogOpen(true);
+                        }}
                         className="text-gray-400 hover:text-red-600"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -573,6 +588,28 @@ export function CMSSettings() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* DELETE USER CONFIRMATION */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user account
+              and remove their access to the CMS.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => userToDelete && handleDeleteUser(userToDelete)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CMSPageLayout>
   );
 }

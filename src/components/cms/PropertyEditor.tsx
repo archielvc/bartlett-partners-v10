@@ -14,6 +14,16 @@ import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
 
 import { generateSEOFromContent } from '../../utils/aiSEO';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 interface PropertyEditorProps {
   property: Partial<Property> | null;
@@ -31,6 +41,7 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const parentSlug = 'properties'; // Static - no need to fetch
 
   // Convert Google Maps URL to embed URL (simple version)
@@ -262,7 +273,6 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
 
   const handleDelete = async () => {
     if (!onDelete) return;
-    if (!confirm('Are you sure you want to delete this property? This action cannot be undone.')) return;
 
     try {
       await onDelete();
@@ -1094,8 +1104,8 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
             {property?.id && onDelete && (
               <button
                 type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete Property
@@ -1165,6 +1175,28 @@ export function PropertyEditor({ property, onSave, onDelete, onCancel }: Propert
           </div>
         )
       }
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the property
+              and remove it from the website.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Property
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div >
   );
 }
