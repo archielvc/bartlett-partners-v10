@@ -27,6 +27,7 @@ interface GlobalSEOSettings {
 
   organizationLogo?: string;
   site_favicon?: string;
+  defaultOgImage?: string;
 }
 
 interface SEOSetting {
@@ -40,6 +41,26 @@ interface SEOSetting {
 
 const SEO_KEY = 'seo_settings';
 const SEO_GLOBAL_KEY = 'seo_global';
+
+/**
+ * Generate optimized URL for OG images
+ * OG images should be 1200x630px for optimal display on social media
+ */
+function getOptimizedOgImageUrl(url: string): string {
+  if (!url) return '';
+
+  // Supabase Storage optimization
+  if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
+    const transformedUrl = url.replace(
+      '/storage/v1/object/public/',
+      '/storage/v1/render/image/public/'
+    );
+    return `${transformedUrl}?width=1200&height=630&quality=85&resize=cover`;
+  }
+
+  // For other URLs (external images), return as-is
+  return url;
+}
 
 /**
  * SEOManager Component
@@ -112,6 +133,7 @@ export function SEOManager({
         const finalOgImage = ogImage
           || staticPage?.og_image
           || routeSettings?.og_image
+          || globalSettings?.defaultOgImage
           || globalSettings?.organizationLogo
           || '';
 
@@ -157,7 +179,8 @@ export function SEOManager({
         updateMetaTag('property', 'og:type', type);
         updateMetaTag('property', 'og:url', canonicalUrl);
         if (finalOgImage) {
-          updateMetaTag('property', 'og:image', finalOgImage);
+          const optimizedOgImage = getOptimizedOgImageUrl(finalOgImage);
+          updateMetaTag('property', 'og:image', optimizedOgImage);
         }
         if (globalSettings?.siteName) {
           updateMetaTag('property', 'og:site_name', globalSettings.siteName);
@@ -168,7 +191,8 @@ export function SEOManager({
         updateMetaTag('name', 'twitter:title', displayTitle);
         updateMetaTag('name', 'twitter:description', finalDescription);
         if (finalOgImage) {
-          updateMetaTag('name', 'twitter:image', finalOgImage);
+          const optimizedOgImage = getOptimizedOgImageUrl(finalOgImage);
+          updateMetaTag('name', 'twitter:image', optimizedOgImage);
         }
         if (globalSettings?.twitterHandle) {
           updateMetaTag('name', 'twitter:site', `@${globalSettings.twitterHandle}`);

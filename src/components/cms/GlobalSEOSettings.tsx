@@ -27,6 +27,7 @@ export const DEFAULT_SEO_SETTINGS: GlobalSEODefaults = {
 interface GeneralSEOSettings {
     site_favicon?: string;
     siteName?: string;
+    defaultOgImage?: string;
 }
 
 type Tab = 'defaults' | 'properties';
@@ -300,6 +301,16 @@ export default function GlobalSEOSettings() {
                                         setHasChanges(true);
                                     }}
                                     variant="compact"
+                                />
+                                <CMSImageUpload
+                                    label="Default OG Image"
+                                    description="Default Open Graph image for social sharing. Recommended: 1200x630px. Used when pages don't have specific OG images."
+                                    value={generalSettings.defaultOgImage || ''}
+                                    onChange={(url) => {
+                                        setGeneralSettings(prev => ({ ...prev, defaultOgImage: url }));
+                                        setHasChanges(true);
+                                    }}
+                                    variant="stack"
                                 />
                             </div>
                         </div>
